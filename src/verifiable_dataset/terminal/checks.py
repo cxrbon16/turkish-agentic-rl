@@ -11,6 +11,7 @@ the agent left running can influence the result.
 """
 from __future__ import annotations
 
+import json
 import re
 import shutil
 import subprocess
@@ -116,6 +117,55 @@ def op_dir_entries_eq(root: Path, spec: dict) -> CheckResult:
     )
 
 
+def op_json_field_eq(root: Path, spec: dict) -> CheckResult:
+    """Compare one field of a JSON file.
+
+    Numbers are compared with a tolerance and accept a numeric string, so a
+    model that writes "60.1" instead of 60.1 is not punished for JSON typing.
+    Lists can be compared as sets when order carries no meaning.
+    """
+    p = _resolve(root, spec["path"])
+    if not p.is_file():
+        return CheckResult("json_field_eq", False, f"{spec['path']} yok")
+    try:
+        data = json.loads(_read(root, spec["path"]))
+    except json.JSONDecodeError as e:
+        return CheckResult("json_field_eq", False, f"{spec['path']} gecerli JSON degil: {e}")
+
+    field = spec["field"]
+    if not isinstance(data, dict) or field not in data:
+        return CheckResult("json_field_eq", False,
+                           f"{spec['path']} icinde '{field}' alani yok "
+                           f"(bulunan alanlar: {list(data)[:10] if isinstance(data, dict) else type(data).__name__})")
+
+    actual, expected = data[field], spec["value"]
+
+    if isinstance(expected, list):
+        if not isinstance(actual, list):
+            return CheckResult("json_field_eq", False, f"'{field}' liste degil: {actual!r}")
+        norm = (lambda x: str(x).strip()) if spec.get("strip", True) else str
+        a, e = ([norm(x) for x in actual], [norm(x) for x in expected])
+        ok = set(a) == set(e) if spec.get("as_set", True) else a == e
+        missing, extra = sorted(set(e) - set(a)), sorted(set(a) - set(e))
+        return CheckResult("json_field_eq", ok,
+                           f"'{field}': eksik={missing[:6]} fazla={extra[:6]}")
+
+    if isinstance(expected, (int, float)) and not isinstance(expected, bool):
+        try:
+            num = float(actual)
+        except (TypeError, ValueError):
+            return CheckResult("json_field_eq", False, f"'{field}' sayi degil: {actual!r}")
+        tol = spec.get("tol", 0.01)
+        return CheckResult("json_field_eq", abs(num - float(expected)) <= tol,
+                           f"'{field}': beklenen {expected}, bulunan {actual!r}")
+
+    a_s, e_s = str(actual), str(expected)
+    if spec.get("strip", True):
+        a_s, e_s = a_s.strip(), e_s.strip()
+    return CheckResult("json_field_eq", a_s == e_s,
+                       f"'{field}': beklenen {e_s!r}, bulunan {a_s!r}")
+
+
 # -- execution op -----------------------------------------------------
 
 def op_run_stdout_eq(root: Path, spec: dict) -> CheckResult:
@@ -163,6 +213,7 @@ OPS: dict[str, Callable[[Path, dict], CheckResult]] = {
     "file_matches": op_file_matches,
     "file_line_count_eq": op_file_line_count_eq,
     "dir_entries_eq": op_dir_entries_eq,
+    "json_field_eq": op_json_field_eq,
     "run_stdout_eq": op_run_stdout_eq,
 }
 
