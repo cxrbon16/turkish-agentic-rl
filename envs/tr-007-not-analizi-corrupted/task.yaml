@@ -1,0 +1,199 @@
+id: tr-007-not-analizi-corrupted
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 15
+
+setup: |
+  cat > notlar.csv <<'CSV'
+  isim,not
+  Ceren Celik,56
+  Ufuk Simsek,84
+  Sultan Aslan,76
+  Ahmet Koc,79
+  Onur Kilic,83
+  Ayse Kilic,60
+  Ceren Aydin,4
+  Elif Ozturk,70
+  Elif Kaya,66
+  Onur Ozturk,36
+  Fatma Ozkan,57
+  Ayse Cetin,49
+  Hasan Aslan,42
+  Baris Kurt,63
+  Burak Kaya,
+  Esra Aslan,78
+  Havva Yildiz,57
+  Ahmet Arslan,64
+  Elif Aslan,63
+  Damla Ozkan,57
+  Deniz Celik,53
+  Deniz Dogan,54
+  Irem Sahin,71
+  Irem Simsek,69
+  Onur Cetin,70
+  Selim Ozturk,63
+  Irem Koc,61
+  Fatma Kara,60
+  Pinar Yildirim,56
+  Kerem Kilic,55
+  Cem Aslan,56
+  Zeynep Ozturk,58
+  Ahmet Dogan,67
+  Sultan Aydin,47
+  Damla Cetin,65
+  Onur Ozdemir,67
+  Ufuk Yildirim,58
+  Volkan Cetin,ABC
+  Emre Ozturk,80
+  Melis Sahin,42
+  Cem Koc,50
+  Aslihan Kara,52
+  Baris Cetin,41
+  Baris Yildirim,60
+  Yusuf Sahin,73
+  Kerem Aydin,63
+  Ozge Koc,54
+  Aslihan Kaya,58
+  Ayse Kaya,2
+  Merve Ozdemir,60
+  Elif Celik,68
+  Meryem Kilic,38
+  Mustafa Celik,77
+  Emre Aydin,46
+  Pinar Ozturk,90
+  Ozge Cetin,45
+  Irem Ozkan,62
+  Buse Aslan,70
+  Omer Sahin,71
+  Aslihan Yilmaz,59
+  Ozge Arslan,58
+  Ali Kaya,54
+  Cem Kara,67
+  Merve Ozturk,yok
+  Ebru Sahin,45
+  Onur Kara,69
+  Deniz Demir,71
+  Buse Cetin,41
+  Emre Koc,59
+  Emine Arslan,60
+  Nurten Aydin,49
+  Osman Celik,100
+  Melis Aslan,53
+  Meryem Ozkan,46
+  Yusuf Ozturk,57
+  Esra Sahin,75
+  Melis Ozturk,73
+  Volkan Sahin,79
+  Serkan Arslan,40
+  Onur Simsek,72
+  Damla Kurt,69
+  Serkan Yilmaz,83
+  Gizem Yildirim,62
+  Ayse Ozdemir,62
+  Serkan Simsek,62
+  Ebru Aslan,52
+  Gizem Demir,  
+  Deniz Yilmaz,78
+  Ceren Yildiz,6
+  Ahmet Yildirim,60
+  Buse Demir,64
+  Kemal Yildiz,73
+  Emre Yilmaz,55
+  Ayse Koc,54
+  Baris Simsek,59
+  Sevim Ozturk,43
+  Tolga Cetin,82
+  Volkan Kaya,62
+  Murat Simsek,73
+  Ibrahim Kurt,72
+  CSV
+
+prompt: |
+  Bir Linux terminalindesin, çalışma dizinin /workspace.
+
+  Bu dizindeki "notlar.csv" dosyası bir sınıfın sınav sonuçlarını tutuyor.
+  Dosyanın ilk satırı başlık ("isim,not"), sonraki 100 satırın her biri bir
+  öğrencinin adını ve aldığı notu içeriyor.
+
+  DİKKAT: Veri temiz değil. Bazı satırlarda not alanı boş veya sayı değil.
+  Bu satırları analizin dışında bırak, ama kaç tane olduklarını say.
+
+  Bu veriyi analiz et ve sonuçları "analiz.json" adında bir JSON dosyasına
+  yaz. Dosya tam olarak şu alanları içermeli:
+
+    ortalama             -> geçerli notların aritmetik ortalaması, 2 ondalık basamağa yuvarlanmış
+    medyan               -> geçerli notların medyanı, 2 ondalık basamağa yuvarlanmış
+    aykiri_indeksler     -> aykırı değere sahip satırların numaraları (liste)
+    en_yuksek_isim       -> en yüksek notu alan öğrencinin adı
+    en_dusuk_isim        -> en düşük notu alan öğrencinin adı
+    kirkbes_alti         -> notu 45'in altında olan öğrencilerin adları (liste)
+    hatali_satir_sayisi  -> notu boş veya sayı olmayan satırların sayısı
+
+  Aykırı değer tanımı: Q1 birinci çeyrek, Q3 üçüncü çeyrek ve IQR = Q3 - Q1
+  olmak üzere, (Q1 - 1.5 * IQR) değerinden küçük veya (Q3 + 1.5 * IQR)
+  değerinden büyük olan notlar aykırıdır. Aykırı değer hesabına yalnızca
+  geçerli notlar girer.
+
+  Satır numarası: başlık satırı sayılmaz, veri satırları 1'den başlar. Hatalı
+  satırlar da numara alır, yani numaralar dosyadaki konuma göredir. Örneğin
+  dosyanın 2. satırındaki öğrenci 1 numaralı satırdır.
+
+  İşin bittiğinde kısaca ne yaptığını özetle.
+
+reference_solution: |
+  cat > analiz.py <<'PY'
+  import csv, json, statistics
+
+  with open("notlar.csv", newline="") as f:
+      rows = list(csv.DictReader(f))
+
+  gecerli = []
+  hatali = 0
+  for no, r in enumerate(rows, start=1):
+      ham = (r["not"] or "").strip()
+      if ham.lstrip("-").isdigit():
+          gecerli.append((no, r["isim"], int(ham)))
+      else:
+          hatali += 1
+
+  puanlar = [p for _, _, p in gecerli]
+  q1, _, q3 = statistics.quantiles(puanlar, n=4, method="inclusive")
+  iqr = q3 - q1
+  alt, ust = q1 - 1.5 * iqr, q3 + 1.5 * iqr
+
+  sonuc = {
+      "ortalama": round(sum(puanlar) / len(puanlar), 2),
+      "medyan": round(statistics.median(puanlar), 2),
+      "aykiri_indeksler": [no for no, _, p in gecerli if p < alt or p > ust],
+      "en_yuksek_isim": max(gecerli, key=lambda t: t[2])[1],
+      "en_dusuk_isim": min(gecerli, key=lambda t: t[2])[1],
+      "kirkbes_alti": [ad for _, ad, p in gecerli if p < 45],
+      "hatali_satir_sayisi": hatali,
+  }
+  with open("analiz.json", "w") as f:
+      json.dump(sonuc, f, ensure_ascii=False, indent=2)
+  PY
+  python3 analiz.py
+
+checks:
+  - {op: is_file, path: analiz.json}
+  - {op: json_field_eq, path: analiz.json, field: ortalama, value: 60.15, tol: 0.01}
+  - {op: json_field_eq, path: analiz.json, field: medyan, value: 60.0, tol: 0.01}
+  - {op: json_field_eq, path: analiz.json, field: aykiri_indeksler, value: [7, 49, 72, 89], as_set: true}
+  - {op: json_field_eq, path: analiz.json, field: en_yuksek_isim, value: "Osman Celik"}
+  - {op: json_field_eq, path: analiz.json, field: en_dusuk_isim, value: "Ayse Kaya"}
+  - {op: json_field_eq, path: analiz.json, field: kirkbes_alti, value: ["Ayse Kaya", "Baris Cetin", "Buse Cetin", "Ceren Aydin", "Ceren Yildiz", "Hasan Aslan", "Melis Sahin", "Meryem Kilic", "Onur Ozturk", "Serkan Arslan", "Sevim Ozturk"], as_set: true}
+  - {op: json_field_eq, path: analiz.json, field: hatali_satir_sayisi, value: 4}
+
+metadata:
+  domain: data_analysis
+  language: tr
+  n_ref_steps: 2
+  variant_of: tr-006-not-analizi
+  notes: >
+    tr-006'nin kirli veri varyanti: 4 satirda not alani bos, sayi disi veya
+    yalnizca bosluk. Tek bir heredoc'la cozmek zorlasir cunku ilk naif
+    int() denemesi patlar; model traceback'i okuyup veriye geri donmek
+    zorunda kalir. Aykiri kume yine her iki ceyreklik yontemiyle ayni,
+    cit payi alt+6 / ust-4. Max ve min tekil.
