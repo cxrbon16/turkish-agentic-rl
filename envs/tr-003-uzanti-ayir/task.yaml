@@ -1,0 +1,42 @@
+id: tr-003-uzanti-ayir
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+setup: |
+  mkdir -p dosyalar
+  printf 'birinci not\n'   > dosyalar/notlar.txt
+  printf 'ikinci not\n'    > dosyalar/ozet.txt
+  printf 'ad,soyad\n'      > dosyalar/kisiler.csv
+  printf 'urun,fiyat\n'    > dosyalar/stok.csv
+  printf 'BILGI baslangic\n' > dosyalar/sistem.log
+
+prompt: |
+  Bir Linux terminalindesin, çalışma dizinin /workspace.
+
+  "dosyalar" klasöründe farklı uzantılara sahip dosyalar var. Bu klasörün
+  içinde "txt", "csv" ve "log" adında üç alt klasör oluştur ve her dosyayı
+  uzantısına uyan alt klasöre taşı.
+
+  İşin bittiğinde "dosyalar" klasörünün altında sadece bu üç alt klasör
+  kalmalı, taşınmamış dosya kalmamalı.
+
+reference_solution: |
+  cd dosyalar
+  mkdir -p txt csv log
+  mv notlar.txt ozet.txt txt/
+  mv kisiler.csv stok.csv csv/
+  mv sistem.log log/
+
+checks:
+  - {op: dir_entries_eq, path: dosyalar, value: [txt, csv, log]}
+  - {op: dir_entries_eq, path: dosyalar/txt, value: [notlar.txt, ozet.txt]}
+  - {op: dir_entries_eq, path: dosyalar/csv, value: [kisiler.csv, stok.csv]}
+  - {op: dir_entries_eq, path: dosyalar/log, value: [sistem.log]}
+  - {op: file_contains, path: dosyalar/txt/notlar.txt, value: "birinci not"}
+
+metadata:
+  domain: fs
+  language: tr
+  n_ref_steps: 4

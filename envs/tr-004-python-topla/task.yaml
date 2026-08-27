@@ -1,0 +1,38 @@
+id: tr-004-python-topla
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+setup: |
+  printf '12\n7\n45\n3\n28\n19\n' > sayilar.txt
+
+prompt: |
+  Bir Linux terminalindesin, çalışma dizinin /workspace.
+
+  Bu dizinde her satırında bir tam sayı bulunan "sayilar.txt" dosyası var.
+
+  1) "topla.py" adında bir Python betiği yaz. Bu betik sayilar.txt dosyasını
+     okusun ve içindeki sayıların toplamını ekrana yazdırsın (sadece sayıyı).
+  2) Betiği python3 ile çalıştır ve çıktısını "toplam.txt" dosyasına kaydet.
+
+  İşin bittiğinde kısaca ne yaptığını özetle.
+
+reference_solution: |
+  cat > topla.py <<'PY'
+  with open("sayilar.txt") as f:
+      print(sum(int(line) for line in f if line.strip()))
+  PY
+  python3 topla.py > toplam.txt
+
+checks:
+  - {op: is_file, path: topla.py}
+  - {op: file_content_eq, path: toplam.txt, value: "114"}
+  # Betigin gercekten calistigini dogrula: model toplam.txt'yi elle yazip
+  # topla.py'yi bos birakirsa bu check duser.
+  - {op: run_stdout_eq, cmd: "python3 topla.py", value: "114"}
+
+metadata:
+  domain: python
+  language: tr
+  n_ref_steps: 2

@@ -1,0 +1,42 @@
+id: tr-002-hata-say
+split: single_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 8
+
+setup: |
+  cat > kayitlar.log <<'LOG'
+  BILGI sistem basladi
+  HATA disk dolu
+  BILGI kullanici giris yapti
+  HATA baglanti koptu
+  BILGI islem tamamlandi
+  UYARI bellek az
+  HATA zaman asimi
+  BILGI yedekleme basladi
+  HATA yetki reddedildi
+  BILGI yedekleme bitti
+  UYARI disk yavas
+  BILGI sistem kapandi
+  LOG
+
+prompt: |
+  Bir Linux terminalindesin, çalışma dizinin /workspace.
+
+  Bu dizinde "kayitlar.log" adında bir günlük dosyası var. İçinde "HATA"
+  kelimesi geçen satırların sayısını bul ve bu sayıyı "sonuc.txt" adında
+  bir dosyaya yaz. Dosyada sadece sayı olsun, başka hiçbir şey yazmasın.
+
+  İşin bittiğinde kısaca ne yaptığını özetle.
+
+reference_solution: |
+  grep -c 'HATA' kayitlar.log > sonuc.txt
+
+checks:
+  - {op: is_file, path: sonuc.txt}
+  - {op: file_content_eq, path: sonuc.txt, value: "4"}
+
+metadata:
+  domain: text
+  language: tr
+  n_ref_steps: 1

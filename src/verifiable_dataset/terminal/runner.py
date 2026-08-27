@@ -134,6 +134,7 @@ def run_reference(task: Task, verbose: bool = True) -> Episode:
         raise ValueError(f"{task.id}: reference_solution tanimli degil")
 
     with task.make_sandbox() as sandbox:
+        task.prepare(sandbox)
         _assert_not_pre_solved(task, sandbox)
         result = sandbox.exec(task.reference_solution, timeout=60)
         if verbose:
@@ -167,6 +168,7 @@ def run_model_text(task: Task, client, model: str, verbose: bool = True) -> Epis
     error: str | None = None
 
     with task.make_sandbox() as sandbox:
+        task.prepare(sandbox)
         _assert_not_pre_solved(task, sandbox)
 
         for turns in range(1, task.max_turns + 1):
@@ -241,6 +243,7 @@ def run_model_native(task: Task, client, model: str, verbose: bool = True) -> Ep
     error: str | None = None
 
     with task.make_sandbox() as sandbox:
+        task.prepare(sandbox)
         _assert_not_pre_solved(task, sandbox)
 
         for turns in range(1, task.max_turns + 1):

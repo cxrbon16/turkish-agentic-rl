@@ -1,0 +1,42 @@
+id: tr-005-temizle-yedekle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+setup: |
+  mkdir -p proje
+  printf 'yillik rapor\n'  > proje/rapor.txt
+  printf 'toplanti notu\n' > proje/notlar.txt
+  printf 'ad,deger\n'      > proje/veri.csv
+  printf 'gecici veri\n'   > proje/onbellek1.tmp
+  printf 'gecici veri\n'   > proje/onbellek2.tmp
+
+prompt: |
+  Bir Linux terminalindesin, çalışma dizinin /workspace.
+
+  "proje" klasöründe bazı geçici dosyalar birikmiş. Şunları yap:
+
+  1) "proje" klasöründeki .tmp uzantılı bütün dosyaları sil.
+  2) /workspace altında "yedek" adında bir klasör oluştur.
+  3) "proje" klasöründe kalan .txt dosyalarını "yedek" klasörüne kopyala.
+     Kopyala, taşıma -- dosyalar "proje" içinde de kalmalı.
+
+  İşin bittiğinde kısaca ne yaptığını özetle.
+
+reference_solution: |
+  rm -f proje/*.tmp
+  mkdir -p yedek
+  cp proje/*.txt yedek/
+
+checks:
+  - {op: not_exists, path: proje/onbellek1.tmp}
+  - {op: not_exists, path: proje/onbellek2.tmp}
+  - {op: dir_entries_eq, path: proje, value: [rapor.txt, notlar.txt, veri.csv]}
+  - {op: dir_entries_eq, path: yedek, value: [rapor.txt, notlar.txt]}
+  - {op: file_contains, path: yedek/rapor.txt, value: "yillik rapor"}
+
+metadata:
+  domain: fs
+  language: tr
+  n_ref_steps: 3

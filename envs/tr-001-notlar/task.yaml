@@ -1,0 +1,35 @@
+id: tr-001-notlar
+split: single_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 8
+
+prompt: |
+  Bir Linux terminalindesin, çalışma dizinin /workspace.
+
+  "notlar" adında bir klasör oluştur. Bu klasörün içine "yapilacaklar.txt"
+  adında bir dosya oluştur ve içine her satırda bir tane olacak şekilde şu
+  üç maddeyi yaz:
+
+  sunum hazirla
+  rapor gonder
+  toplanti ayarla
+
+  İşin bittiğinde kısaca ne yaptığını özetle.
+
+reference_solution: |
+  mkdir -p notlar
+  printf 'sunum hazirla\nrapor gonder\ntoplanti ayarla\n' > notlar/yapilacaklar.txt
+
+checks:
+  - {op: is_dir, path: notlar}
+  - {op: is_file, path: notlar/yapilacaklar.txt}
+  - {op: file_line_count_eq, path: notlar/yapilacaklar.txt, value: 3}
+  - {op: file_contains, path: notlar/yapilacaklar.txt, value: "sunum hazirla"}
+  - {op: file_contains, path: notlar/yapilacaklar.txt, value: "rapor gonder"}
+  - {op: file_contains, path: notlar/yapilacaklar.txt, value: "toplanti ayarla"}
+
+metadata:
+  domain: fs
+  language: tr
+  n_ref_steps: 2
