@@ -1,0 +1,28 @@
+id: smoke-001
+split: single_step
+image: verifiable-dataset/smoke-001:latest
+workdir: /workspace
+max_turns: 8
+
+prompt: |
+  Bir Linux terminalindesin ve calisma dizinin /workspace.
+
+  Sunlari yap:
+  1) /workspace altinda "cosmos" ve "yavuz" adinda iki klasor olustur.
+  2) "cosmos" klasorunun icine "yavuz.txt" adinda bir dosya olustur ve
+     iceriginde yalnizca yavuz123 yazsin.
+
+  Isin bittiginde kisaca ne yaptigini ozetle.
+
+# Referans cozum: gorevin gercekten cozulebilir oldugunu ve checker'in
+# dogru calistigini modelsiz dogrulamak icin kullanilir.
+reference_solution: |
+  mkdir -p /workspace/cosmos /workspace/yavuz
+  printf 'yavuz123' > /workspace/cosmos/yavuz.txt
+
+metadata:
+  domain: fs
+  language: tr
+  notes: >
+    Ilk uctan uca duman testi. Checker trailing newline'a duyarsizdir:
+    hem `echo yavuz123 >` hem `printf yavuz123 >` dogru kabul edilir.

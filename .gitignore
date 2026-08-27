@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# Rollout ciktilari yeniden uretilebilir; repoya girmesin.
+data/*.jsonl
+
+.env

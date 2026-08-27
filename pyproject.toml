@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "verifiable-dataset"
+version = "0.1.0"
+description = "Verifiable terminal tool-use datasets"
+requires-python = ">=3.10"
+dependencies = [
+    "jsonschema>=4.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+model = ["openai>=1.40"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
