@@ -154,16 +154,25 @@ def main() -> int:
         return 0 if not bozuk else 1
 
     rewards = [r["mean_reward"] for r in rows]
+    cozulen = sum(1 for r in rows if r["pass_rate"] == 1.0)
+    print(f"Cozulen         : {cozulen}/{len(rows)}")
     print(f"Ortalama reward : {statistics.mean(rewards):.3f}")
     print(f"Ortalama tur    : {statistics.mean([r['mean_turns'] for r in rows]):.1f}")
-    for band in ("BANT", "OLU-kolay", "OLU-zor", "BOZUK"):
-        ids = [r["task_id"] for r in rows if r["band"] == band]
-        if ids:
-            print(f"{band:10} {len(ids):3}  {', '.join(ids)}")
 
-    kullanilir = sum(1 for r in rows if r["band"] == "BANT")
-    print(f"\nEgitimde ise yarar: {kullanilir}/{len(rows)} "
-          f"({kullanilir / len(rows) * 100:.0f}%)")
+    if args.rollouts < 4:
+        # Tek rollout pass rate hakkinda neredeyse hicbir sey soylemez;
+        # bant atamasi yapmak yaniltici olur.
+        print(f"\nZorluk bandi olculmedi: kalibrasyon icin --rollouts 4 veya "
+              f"daha fazlasi gerekir (su an {args.rollouts}).")
+    else:
+        for band in ("BANT", "OLU-kolay", "OLU-zor", "BOZUK"):
+            ids = [r["task_id"] for r in rows if r["band"] == band]
+            if ids:
+                print(f"{band:10} {len(ids):3}  {', '.join(ids)}")
+
+        kullanilir = sum(1 for r in rows if r["band"] == "BANT")
+        print(f"\nEgitimde ise yarar: {kullanilir}/{len(rows)} "
+              f"({kullanilir / len(rows) * 100:.0f}%)")
 
     if args.out:
         out = Path(args.out)
