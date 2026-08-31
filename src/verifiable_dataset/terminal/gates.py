@@ -188,6 +188,8 @@ def main() -> int:
     parser.add_argument("--task", default="")
     parser.add_argument("--all", action="store_true")
     parser.add_argument("--envs", default="envs")
+    parser.add_argument("--spec-only", action="store_true",
+                        help="prompt heniz yazilmamis adaylar icin prompt kapilarini atla")
     args = parser.parse_args()
 
     ok, info = docker_available()
@@ -208,7 +210,7 @@ def main() -> int:
     for task_dir in task_dirs:
         task = Task.load(task_dir)
         print(task.id)
-        results = run_gauntlet(task)
+        results = run_gauntlet(task, spec_only=args.spec_only)
         for r in results:
             # Detay yalnizca aciklayici oldugu yerde: gecen bir kapinin
             # hata mesajini basmak raporu okunmaz hale getiriyordu.

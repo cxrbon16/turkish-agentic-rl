@@ -272,12 +272,27 @@ def run_checks(root: Path, specs: list[dict], image: str) -> list[dict]:
 
 
 def report(results: list[dict]) -> dict[str, Any]:
+    """Score a check run.
+
+    ``reward`` is binary on purpose: the whole task or nothing. Partial
+    credit pays for work that merely looks like progress -- a solution that
+    creates the reference's scratch files, or half-fills the output, earns
+    reward without being right, and the policy learns to chase the checks
+    instead of the goal. Endless Terminals (arXiv:2601.16443) trains on a
+    binary episode reward for the same reason.
+
+    ``partial`` keeps the fraction for diagnostics only: a task nobody
+    solves but everybody nearly solves looks very different from one nobody
+    gets anywhere on, and that difference is worth seeing in a sweep.
+    """
     passed = sum(1 for r in results if r["ok"])
     total = len(results)
+    solved = total > 0 and passed == total
     return {
         "checks": results,
         "passed": passed,
         "total": total,
-        "reward": passed / total if total else 0.0,
-        "solved": total > 0 and passed == total,
+        "reward": 1.0 if solved else 0.0,
+        "partial": passed / total if total else 0.0,
+        "solved": solved,
     }

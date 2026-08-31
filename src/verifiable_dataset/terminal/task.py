@@ -76,11 +76,12 @@ class Task:
 
 @dataclass
 class GradeResult:
-    reward: float
+    reward: float          # ikili: cozuldu mu, cozulmedi mi
     solved: bool
     passed: int
     total: int
     checks: list[dict]
+    partial: float = 0.0   # yalnizca teshis icin: gecen check orani
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -88,6 +89,7 @@ class GradeResult:
             "solved": self.solved,
             "passed": self.passed,
             "total": self.total,
+            "partial": self.partial,
             "checks": self.checks,
         }
 
@@ -113,4 +115,5 @@ def grade(task: Task, sandbox: DockerSandbox) -> GradeResult:
         passed=report["passed"],
         total=report["total"],
         checks=report["checks"],
+        partial=report.get("partial", 0.0),
     )

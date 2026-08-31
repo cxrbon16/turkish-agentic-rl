@@ -54,12 +54,16 @@ def main() -> int:
     checks = run_checks(root)
     passed = sum(1 for c in checks if c["ok"])
     total = len(checks)
+    solved = total > 0 and passed == total
     report = {
         "checks": checks,
         "passed": passed,
         "total": total,
-        "reward": passed / total if total else 0.0,
-        "solved": passed == total,
+        # Ikili odul: gorevin tamami ya da hicbiri. Kismi oran yalnizca
+        # teshis icin tasiniyor (bkz. checks.report).
+        "reward": 1.0 if solved else 0.0,
+        "partial": passed / total if total else 0.0,
+        "solved": solved,
     }
     print(json.dumps(report, ensure_ascii=False))
     return 0

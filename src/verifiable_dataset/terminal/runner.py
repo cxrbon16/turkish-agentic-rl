@@ -95,8 +95,9 @@ TOOLS = [
 class Episode:
     task_id: str
     solved: bool
-    reward: float
+    reward: float      # ikili
     turns: int
+    partial: float = 0.0  # teshis icin
     commands: list[str] = field(default_factory=list)
     messages: list[dict] = field(default_factory=list)
     grade: dict = field(default_factory=dict)
@@ -107,6 +108,7 @@ class Episode:
             "task_id": self.task_id,
             "solved": self.solved,
             "reward": self.reward,
+            "partial": self.partial,
             "turns": self.turns,
             "commands": self.commands,
             "messages": self.messages,
@@ -148,6 +150,7 @@ def run_reference(task: Task, verbose: bool = True) -> Episode:
         solved=g.solved,
         reward=g.reward,
         turns=1,
+        partial=g.partial,
         commands=[task.reference_solution.strip()],
         grade=g.to_dict(),
     )
@@ -207,7 +210,8 @@ def run_model_text(task: Task, client, model: str, verbose: bool = True) -> Epis
 
     return Episode(
         task_id=task.id, solved=g.solved, reward=g.reward, turns=turns,
-        commands=commands, messages=messages, grade=g.to_dict(), error=error,
+        partial=g.partial, commands=commands, messages=messages,
+        grade=g.to_dict(), error=error,
     )
 
 
@@ -303,7 +307,8 @@ def run_model_native(task: Task, client, model: str, verbose: bool = True) -> Ep
 
     return Episode(
         task_id=task.id, solved=g.solved, reward=g.reward, turns=turns,
-        commands=commands, messages=messages, grade=g.to_dict(), error=error,
+        partial=g.partial, commands=commands, messages=messages,
+        grade=g.to_dict(), error=error,
     )
 
 
@@ -366,7 +371,9 @@ def main() -> int:
             continue
         episodes.append(ep)
         status = "SOLVED" if ep.solved else "FAILED"
-        print(f"{status}  reward={ep.reward:.2f}  ({ep.grade['passed']}/{ep.grade['total']})  turns={ep.turns}")
+        print(f"{status}  reward={ep.reward:.0f}  "
+              f"(check {ep.grade['passed']}/{ep.grade['total']}, kismi={ep.partial:.2f})  "
+              f"turns={ep.turns}")
         for check in ep.grade["checks"]:
             if not check["ok"]:
                 print(f"   x {check['name']}: {check['detail']}")

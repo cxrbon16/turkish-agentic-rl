@@ -47,7 +47,11 @@ def band_of(pass_rate: float, rollouts: int) -> str:
 
 def summarize(task_id: str, episodes: list[Episode], rollouts: int) -> dict:
     solved = sum(1 for e in episodes if e.solved)
-    rewards = [e.reward for e in episodes]
+    # Ikili odulun ortalamasi pass rate ile ayni sey oldugu icin ayrica
+    # tutulmuyor; kismi oran ise teshis degeri tasiyor: kimsenin
+    # cozemedigi ama herkesin yaklastigi bir task, kimsenin hicbir yere
+    # varamadigindan cok farkli bir seydir.
+    partials = [e.partial for e in episodes]
     turns = [e.turns for e in episodes if e.turns]
     errors = [e.error for e in episodes if e.error]
     pass_rate = solved / len(episodes) if episodes else 0.0
@@ -56,7 +60,7 @@ def summarize(task_id: str, episodes: list[Episode], rollouts: int) -> dict:
         "rollouts": len(episodes),
         "solved": solved,
         "pass_rate": pass_rate,
-        "mean_reward": statistics.mean(rewards) if rewards else 0.0,
+        "mean_partial": statistics.mean(partials) if partials else 0.0,
         "mean_turns": statistics.mean(turns) if turns else 0.0,
         "band": band_of(pass_rate, rollouts),
         "errors": errors,
@@ -116,7 +120,7 @@ def main() -> int:
         except Exception as e:  # noqa: BLE001 - a broken yaml must not stop the sweep
             print(f"{task_dir.name:32} YUKLENEMEDI  {type(e).__name__}: {str(e)[:80]}")
             rows.append({"task_id": task_dir.name, "rollouts": 0, "solved": 0,
-                         "pass_rate": 0.0, "mean_reward": 0.0, "mean_turns": 0.0,
+                         "pass_rate": 0.0, "mean_partial": 0.0, "mean_turns": 0.0,
                          "band": "BOZUK", "errors": [str(e)[:200]]})
             continue
 
@@ -139,7 +143,7 @@ def main() -> int:
         mark = "OK  " if row["pass_rate"] == 1.0 else ("FAIL" if row["pass_rate"] == 0 else "kismi")
         band = "" if args.reference else f"  [{row['band']}]"
         print(f"{task.id:32} {mark} {row['solved']}/{row['rollouts']}  "
-              f"reward={row['mean_reward']:.2f}  tur={row['mean_turns']:.1f}{band}")
+              f"kismi={row['mean_partial']:.2f}  tur={row['mean_turns']:.1f}{band}")
         for err in dict.fromkeys(row["errors"]):
             print(f"{'':34}! {err[:100]}")
 
@@ -153,10 +157,12 @@ def main() -> int:
             print(f"Referansi gecmeyen task'lar dataset'e giremez: {', '.join(bozuk)}")
         return 0 if not bozuk else 1
 
-    rewards = [r["mean_reward"] for r in rows]
+    partials = [r["mean_partial"] for r in rows]
     cozulen = sum(1 for r in rows if r["pass_rate"] == 1.0)
+    ortalama_pass = statistics.mean([r["pass_rate"] for r in rows])
     print(f"Cozulen         : {cozulen}/{len(rows)}")
-    print(f"Ortalama reward : {statistics.mean(rewards):.3f}")
+    print(f"Ortalama reward : {ortalama_pass:.3f}  (ikili odul)")
+    print(f"Ortalama kismi  : {statistics.mean(partials):.3f}  (teshis)")
     print(f"Ortalama tur    : {statistics.mean([r['mean_turns'] for r in rows]):.1f}")
 
     if args.rollouts < 4:
