@@ -336,9 +336,9 @@ def main() -> int:
     parser.add_argument("--denemeler", type=int, default=3,
                         help="bir aday icin en fazla kac onarim turu")
     parser.add_argument("--gecikme", type=float, default=1.0,
+                        help="adaylar arasi bekleme")
     parser.add_argument("--istek-araligi", type=float, default=0.0,
                         help="iki API istegi arasinda en az bu kadar saniye bekle")
-                        help="cagrilar arasi bekleme (rate limit icin)")
     args = parser.parse_args()
 
     ok, info = docker_available()
