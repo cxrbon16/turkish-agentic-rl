@@ -82,18 +82,20 @@ def gate_prompt_turkce(task: Task) -> GateResult:
 
 
 def gate_tool_conformance(task: Task, eksik_araclar: list[str]) -> GateResult:
-    """Seed'in araclarina dokunulmus mu, ve cagrilan her arac var mi.
+    """Seed'in araclarinin hepsi kullanilmis mi, ve cagrilan her arac var mi.
 
-    Iki ayri sey. Birincisi kapsam: seed `sed+tr` istediyse cozum bunlara
-    hic dokunmadan yazilmissa grid dolu gorunur ama cesitlilik sahtedir --
-    ozellikle her task'i tek satir python3 ile cozme egilimi boyle
-    yakalanir. Ama demetin HER aracini sart kosmak gereksiz katilik:
-    `mkdir+mv` seed'inde dizin zaten varsa mkdir'e ihtiyac yoktur, o yuzden
-    en az birinin kullanilmasi yetiyor.
+    Seed araclari zorunlu: ogretmek istedigimiz yetenek yuzeyini suren sey
+    bu. `sed+tr` istenmisse cozum ikisini de kullanmali, yoksa grid dolu
+    gorunur ama cesitlilik sahte olur.
 
-    Ikincisi varlik: imajda olmayan bir araci cagirmak her zaman hatadir.
-    Statik olarak aramak yanlis alarm uretirdi; bunun yerine kabugun kendi
-    "command not found" mesajina bakiyoruz -- `|| true` ile yutulmus olsa
+    Seed DISINDAKI araclari kullanmak serbest. Gercek bir cozum zaten
+    mkdir, cat, diff gibi araclara uzanir; bunlari cezalandirmak dogru
+    cozumleri eler. Zaten seed araclarinin hepsi sart kosuldugu icin
+    "her seyi tek satir python ile coz" kacamagi da kendiliginden kapali.
+
+    Olmayan bir araci cagirmak ise her zaman hata. Statik aramak yanlis
+    alarm uretirdi (degisken adi, heredoc icerigi), bu yuzden kabugun kendi
+    "command not found" mesajina bakiliyor -- `|| true` ile yutulmus olsa
     bile stderr'de duruyor.
     """
     sorun = []
@@ -103,12 +105,9 @@ def gate_tool_conformance(task: Task, eksik_araclar: list[str]) -> GateResult:
     seed = task.metadata.get("seed")
     if seed:
         istenen = seed.get("tools", [])
-        kullanilan = [t for t in istenen if uses_tool(task.reference_solution, t)]
-        if istenen and not kullanilan:
-            sorun.append(f"seed araclarindan hicbiri kullanilmamis: {istenen}")
-        if (uses_tool(task.reference_solution, "python3")
-                and "python3" not in istenen):
-            sorun.append("seed'de yokken python3'e kacilmis")
+        eksik = [t for t in istenen if not uses_tool(task.reference_solution, t)]
+        if eksik:
+            sorun.append(f"kullanilmayan seed araclari: {eksik}")
     elif not sorun:
         return GateResult("arac uygunlugu", True, skipped=True, detail="seed yok")
 
