@@ -59,7 +59,6 @@ Gorevi cozen bash komutlari. /workspace icinde calisir.
 Hedefin parcasi olan artefaktlar, YAML listesi:
 - path: <yol>
   kind: file | lines | json | dir | program
-  beklenen: <deger>   # referansin bu dosyada uretmesi gereken deger
   run: <komut>        # yalnizca kind: program icin
 
 KURALLAR (hepsi zorunlu):
@@ -76,11 +75,7 @@ KURALLAR (hepsi zorunlu):
    yol boyunca yazdigi ara betikleri (orn. analiz.py) LISTELEME -- onlar
    sart kosulursa tek satirda cozen dogru cozumler haksiz yere duser.
 8. Gorev baslangicta cozulmus olmamali: SETUP hedef ciktiyi olusturmasin.
-9. Her cikti icin `beklenen` yaz: referansin o dosyada uretmesi gereken
-   degeri sen hesapla ve bildir. Biz referansi calistirip gercekte ne
-   urettigine bakacagiz; ikisi uyusmazsa spec reddedilir. Bu senin
-   cozumunun dogrulugunu kontrol etmenin yolu -- tahmin etme, hesapla.
-10. Bildirdigin kind gercekle uyusmali. kind: json dediysen referansin
+9. Bildirdigin kind gercekle uyusmali. kind: json dediysen referansin
    urettigi dosya GECERLI JSON olmali -- elle string birlestirerek JSON
    uydurma, virguller ve parantezler dogru olsun. Emin degilsen kind: file
    kullan ve duz metin uret.
@@ -108,7 +103,6 @@ grep -c 'HATA' kayitlar.log > sonuc.txt
 ### OUTPUTS
 - path: sonuc.txt
   kind: file
-  beklenen: "3"
 """
 
 

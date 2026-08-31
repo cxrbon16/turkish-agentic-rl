@@ -133,21 +133,18 @@ def gate_discriminates(task: Task, rep) -> GateResult:
 
 
 def gate_output_kinds(task: Task, rep) -> GateResult:
-    """Bildirilen cikti, referansin gercekten urettigiyle tutarli olmali.
+    """Bildirilen cikti turu, referansin gercekten urettigiyle uyusmali.
 
-    Iki uyusmazligi birden yakalar. Biri tur: spec `kind: json` deyip
-    gecersiz JSON uretebiliyor, bu sessizce byte esitligine dusuyor ve task
-    tersine doner -- gecerli JSON yazan DOGRU cozum sifir alir, cunku
-    beklenen deger bozuk metnin kendisidir. Digeri deger: `beklenen` modelin
-    niyeti, turetilen ise referansin davranisi. Celisiyorlarsa biri
-    yanlistir; hangisi oldugunu bilmeden bile task'i reddetmek dogrudur.
+    Spec `kind: json` deyip gecersiz JSON uretebiliyor. Bu sessizce byte
+    esitligine dusuyor ve task tersine doner: gecerli JSON yazan DOGRU
+    cozum sifir alir, cunku beklenen deger bozuk metnin kendisidir.
     """
     if rep is None:
-        return GateResult("cikti tutarliligi", False, "turetme yapilamadi")
+        return GateResult("cikti turu", False, "turetme yapilamadi")
     if not task.outputs:
-        return GateResult("cikti tutarliligi", True, skipped=True,
+        return GateResult("cikti turu", True, skipped=True,
                           detail="outputs bildirilmemis")
-    return GateResult("cikti tutarliligi", not rep.sorunlar, "; ".join(rep.sorunlar[:3]))
+    return GateResult("cikti turu", not rep.sorunlar, "; ".join(rep.sorunlar[:3]))
 
 
 def ucuz_hile_betigi(checks: list[dict]) -> str:

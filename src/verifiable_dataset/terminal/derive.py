@@ -22,11 +22,9 @@ import sys
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
 
 import yaml
 
-from verifiable_dataset.terminal.checks import _json_close
 from verifiable_dataset.terminal.checks import report as checks_report
 from verifiable_dataset.terminal.checks import run_checks
 from verifiable_dataset.terminal.sandbox import DockerSandbox, docker_available
@@ -130,35 +128,6 @@ def infer_kind(rel: str, raw: bytes) -> str:
     return "file"
 
 
-def beklenen_uyusmazligi(rel: str, kind: str, actual: Any, beklenen: Any) -> str:
-    """Modelin bildirdigi degeri referansin gercekten urettigiyle karsilastir.
-
-    Turetme, referansin DAVRANISINI hakikat kabul eder; bu yuzden buggy bir
-    referans yanlis cevabi ground truth yapar ve her kapi memnun kalir.
-    ``beklenen`` modelin NIYETI: ikisi celisiyorsa biri yanlistir ve task
-    hazir degildir. Ayni yanitin icinde geldigi icin ek maliyeti yok.
-    """
-    if kind == "json":
-        hedef = beklenen
-        if isinstance(beklenen, str):
-            try:
-                hedef = json.loads(beklenen)
-            except json.JSONDecodeError:
-                return f"{rel}: beklenen gecerli JSON degil"
-        if _json_close(actual, hedef, 0.01, True):
-            return ""
-    elif kind in {"lines", "dir"}:
-        istenen = (beklenen if isinstance(beklenen, list)
-                   else [ln.strip() for ln in str(beklenen).splitlines() if ln.strip()])
-        if sorted(str(x).strip() for x in actual) == sorted(str(x).strip() for x in istenen):
-            return ""
-    elif str(actual).strip() == str(beklenen).strip():
-        return ""
-    return (f"{rel}: referansin urettigi deger, outputs'ta bildirilen beklenen "
-            f"degerle uyusmuyor -- beklenen {str(beklenen)[:80]!r}, "
-            f"uretilen {str(actual)[:80]!r}")
-
-
 def checks_for_file(rel: str, raw: bytes, override: dict | None,
                     sandbox: DockerSandbox | None,
                     ) -> tuple[list[dict], list[str], list[str]]:
@@ -170,16 +139,8 @@ def checks_for_file(rel: str, raw: bytes, override: dict | None,
     json_eq sayilara tolerans, file_lines_eq siraya duyarsizlik verir.
     """
     kind = (override or {}).get("kind") or infer_kind(rel, raw)
-    beklenen = (override or {}).get("beklenen")
     notes: list[str] = []
     sorunlar: list[str] = []
-
-    def bitir(check: dict | None, deger: Any) -> tuple[list[dict], list[str], list[str]]:
-        if beklenen is not None:
-            fark = beklenen_uyusmazligi(rel, kind, deger, beklenen)
-            if fark:
-                sorunlar.append(fark)
-        return ([check] if check else []), notes, sorunlar
 
     if kind == "program":
         # Referansin yazdigi her betik hedefin parcasi degil: cogu sadece
@@ -196,22 +157,22 @@ def checks_for_file(rel: str, raw: bytes, override: dict | None,
         if not run:
             notes.append(f"{rel}: outputs: icinde `run` bildirilirse betigin "
                          f"metni yerine ciktisi kontrol edilir")
-            return bitir({"op": "is_file", "path": rel}, "")
+            return [{"op": "is_file", "path": rel}], notes, sorunlar
         if sandbox is None:
-            return bitir({"op": "is_file", "path": rel}, "")
+            return [{"op": "is_file", "path": rel}], notes, sorunlar
         res = sandbox.exec(run)
         if res.exit_code != 0:
             sorunlar.append(f"{rel}: `{run}` referans dunyasinda exit={res.exit_code}")
-            return bitir({"op": "is_file", "path": rel}, "")
-        return bitir({"op": "run_stdout_eq", "cmd": run, "value": res.stdout.strip()},
-                     res.stdout.strip())
+            return [{"op": "is_file", "path": rel}], notes, sorunlar
+        return ([{"op": "run_stdout_eq", "cmd": run, "value": res.stdout.strip()}],
+                notes, sorunlar)
 
     if kind == "opaque":
         notes.append(f"{rel}: metin degil, sadece varligi kontrol ediliyor")
         return [{"op": "is_file", "path": rel}], notes, sorunlar
 
     if kind == "empty":
-        return bitir({"op": "is_file", "path": rel}, "")
+        return [{"op": "is_file", "path": rel}], notes, sorunlar
 
     text = raw.decode("utf-8", errors="replace")
 
@@ -223,14 +184,14 @@ def checks_for_file(rel: str, raw: bytes, override: dict | None,
                             f"dosya gecerli JSON degil ({e})")
             return [{"op": "file_content_eq", "path": rel, "value": text.strip()}], \
                 notes, sorunlar
-        return bitir({"op": "json_eq", "path": rel, "value": data}, data)
+        return [{"op": "json_eq", "path": rel, "value": data}], notes, sorunlar
 
     if kind == "lines":
         lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
-        return bitir({"op": "file_lines_eq", "path": rel, "value": lines}, lines)
+        return [{"op": "file_lines_eq", "path": rel, "value": lines}], notes, sorunlar
 
-    return bitir({"op": "file_content_eq", "path": rel, "value": text.strip()},
-                 text.strip())
+    return ([{"op": "file_content_eq", "path": rel, "value": text.strip()}],
+            notes, sorunlar)
 
 
 def build_checks(diff: TreeDiff, b_dirs: dict, b_files: dict,
