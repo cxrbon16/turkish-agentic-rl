@@ -1,0 +1,57 @@
+id: gen-s-0070-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  kargo.json dosyasındaki her bir JSON nesnesindeki ağırlık değerini kilogram cinsinden ve durumunu büyük harfle dönüştürerek cikti.json dosyasına yaz.
+
+setup: |
+  cat > kargo.json <<'JSON'
+  {"id":1,"urun":"elma","miktar":100,"agirlik":50.5,"durum":"beklemede"}
+  {"id":2,"urun":"armut","miktar":200,"agirlik":120.3,"durum":"yuklendi"}
+  {"id":3,"urun":"portakal","miktar":150,"agirlik":80.2,"durum":"teslim edildi"}
+  JSON
+
+goal_tr: >
+  kargo.json dosyasındaki her JSON nesnesini agirlik degerini kg cinsinden
+  ve durumunu buyuk harfle donusturup cikti.json'a yaz
+
+reference_solution: |
+  awk -F'[,"{}:]' '{printf "{\"id\":%s,\"urun\":\"%s\",\"miktar\":%s,\"agirlik\":%s,\"durum\":\"%s\"}\n", $3, $6, $9, $12, toupper($15)}' kargo.json > cikti.json
+
+outputs:
+  - {path: cikti.json, kind: json}
+
+checks:
+  - {op: file_content_eq, path: cikti.json, value: '{"id":id,"urun":"","miktar":,"agirlik":,"durum":"100"}
+
+    {"id":id,"urun":"","miktar":,"agirlik":,"durum":"200"}
+
+    {"id":id,"urun":"","miktar":,"agirlik":,"durum":"150"}'}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0070
+    bundle: awk
+    tools:
+    - awk
+    konu: kargo-takibi
+    hedef: donustur
+    girdi: json
+    kaynak: tek-dosya
+    cikti: json
+    kesif: dolayli-hedef
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: olcek
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

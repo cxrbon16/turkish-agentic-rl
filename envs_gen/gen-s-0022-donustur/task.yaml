@@ -1,0 +1,52 @@
+id: gen-s-0022-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Bugün depo stok sayımı yoğun geçti, akşam da son kontrollere başlayacağız. Kargo klasöründeki giris1.txt ve giris2.txt dosyalarında yer alan tüm ağırlık değerlerini toplayıp, sonucu sadece sayı olarak toplam.txt dosyasına yaz.
+
+setup: |
+  mkdir -p kargo
+  printf "URUN001,100,ISTANBUL\nURUN002,200,ANKARA\r\n" > kargo/giris1.txt
+  printf "URUN001,150,IZMIR\r\nURUN003,300,BURSA\n" > kargo/giris2.txt
+
+goal_tr: >
+  kargo klasorundeki giris1.txt ve giris2.txt dosyalarindaki tum agirlik
+  degerlerini toplayip toplam.txt'ye sadece sayi olarak yaz
+
+reference_solution: |
+  cat kargo/giris1.txt kargo/giris2.txt | tr -d '\r' | cut -d',' -f2 | tee agirliklar.txt | awk '{s+=$1} END {print s}' > toplam.txt
+
+outputs:
+  - {path: toplam.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: toplam.txt, value: '750'}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0022
+    bundle: dallandir
+    tools:
+    - tee
+    - cut
+    konu: kargo-takibi
+    hedef: donustur
+    girdi: duz-metin
+    kaynak: iki-dosya-capraz
+    cikti: tek-sayi
+    kesif: yok
+    uslup: baglam-gomulu
+    direnc: crlf
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

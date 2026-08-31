@@ -1,0 +1,63 @@
+id: gen-s-0096-dogrula
+split: single_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 8
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) yorumlar dizinindeki her dosyada bulunan her satırın ilk 5 karakterini ID olarak ayır.
+  2) Doğrulanmış ID'leri idler.txt dosyasına, her satırda bir tane olacak şekilde yaz.
+
+setup: |
+  mkdir -p yorumlar
+  cat > yorumlar/urun1.txt <<'EOF'
+  12345Pozitif: Cok guzel urun
+  67890Negatif: Kotu kalite
+  EOF
+  cat > yorumlar/urun2.txt <<'EOF'
+  11111Pozitif: Memnun kaldim
+  22222Negatif: Beklentimi karsilamadi
+  EOF
+  cat > yorumlar/urun3.txt <<'EOF'
+  33333Pozitif: Harika
+  44444Negatif: Cok pahali
+  EOF
+
+goal_tr: >
+  yorumlar dizinindeki her dosyada ilk 5 karakteri ID olarak ayir ve
+  dogrulanan ID'leri idler.txt'ye satir basi yaz
+
+reference_solution: |
+  find yorumlar -type f -exec cat {} \; | tr -d '\n' | sed 's/\(......\)/\1\n/g' | sed 's/^\(.....\).*/\1/' > idler.txt
+
+outputs:
+  - {path: idler.txt, kind: lines}
+
+checks:
+  - {op: file_lines_eq, path: idler.txt, value: ['33333', oziti, ': Har', ka444, 4Nega, 'if: C', k pah, li111, 1Pozi, 'if: M', mnun, aldim, 2222N, gatif, Bekl, ntimi, karsi, amadi, 2345P, zitif, Cok, uzel, run67, 90Neg, 'tif:', otu k, lite]}
+
+metadata:
+  domain: dogrula
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0096
+    bundle: metin-duzenle
+    tools:
+    - sed
+    - tr
+    konu: urun-yorumlari
+    hedef: dogrula
+    girdi: sabit-genislik
+    kaynak: cok-dosya
+    cikti: satir-listesi
+    kesif: yok
+    uslup: numarali-emir
+    direnc: baslik-yok
+    bukulme: yok
+    adim: 1
+    image: verifiable-dataset/base:latest
+    metadata: {}

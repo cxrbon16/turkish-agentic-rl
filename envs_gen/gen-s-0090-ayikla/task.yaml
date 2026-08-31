@@ -1,0 +1,65 @@
+id: gen-s-0090-ayikla
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  envanter1.csv ve envanter2.csv dosyalarındaki ortak category değerlerini cikti.json'a JSON arrayi olarak kaydet.
+
+setup: |
+  cat > envanter1.csv <<'CSV'
+  id,name,category,price
+  1,apple,food,1.20
+  2,banana,food,0.50
+  3,shirt,clothing,15.99
+  4,pants,clothing,24.99
+  5,hammer,tools,8.75
+  CSV
+  cat > envanter2.csv <<'CSV'
+  category,supplier,stock
+  food,marketA,100
+  clothing,storeB,50
+  tools,depotC,20
+  CSV
+
+goal_tr: >
+  envanter1.csv ve envanter2.csv dosyalarindaki ortak category degerlerini
+  JSON arrayi olarak cikti.json'a yaz
+
+reference_solution: |
+  cut -d',' -f3 envanter1.csv | tail -n +2 | rev | sort > /tmp/cat1.txt
+  cut -d',' -f1 envanter2.csv | tail -n +2 | rev | sort > /tmp/cat2.txt
+  comm -12 /tmp/cat1.txt /tmp/cat2.txt | rev | awk 'BEGIN{print "["} NR>1{printf ","} {printf "\"%s\"", $0} END{print "]"} ' > cikti.json
+
+outputs:
+  - {path: cikti.json, kind: json}
+
+checks:
+  - {op: json_eq, path: cikti.json, value: [food, clothing, tools]}
+
+metadata:
+  domain: ayikla
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0090
+    bundle: ters-cevir
+    tools:
+    - rev
+    - cut
+    konu: envanter
+    hedef: ayikla
+    girdi: csv
+    kaynak: iki-dosya-capraz
+    cikti: json
+    kesif: veriye-bak
+    uslup: terse
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

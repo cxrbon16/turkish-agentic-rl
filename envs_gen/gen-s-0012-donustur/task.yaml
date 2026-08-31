@@ -1,0 +1,55 @@
+id: gen-s-0012-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  yorumlar.csv dosyasındaki her satırı bir JSON nesnesine dönüştürerek, tüm çıktıları yorumlar.json dosyasına bir JSON dizisi olarak kaydet.
+
+setup: |
+  cat > yorumlar.csv <<'CSV'
+  12345,This product is great,5
+  67890,Very bad,1
+  24680,Not bad,3
+  13579,Excellent,5
+  CSV
+
+goal_tr: >
+  yorumlar.csv dosyasındaki her satırı JSON nesnesine dönüştür ve çıktıları
+  yorumlar.json'a bir JSON dizisi olarak yaz
+
+reference_solution: |
+  rev yorumlar.csv | cut -d',' -f1,2,3 | rev | sed 's/\([^,]*\),\([^,]*\),\([^,]*\)/  {\n    "id": "\1",\n    "yorum": "\2",\n    "puan": \3\n  }/' | sed '1i[' | sed '$a]' > yorumlar.json
+
+outputs:
+  - {path: yorumlar.json, kind: json}
+
+checks:
+  - {op: file_content_eq, path: yorumlar.json, value: "[\n  {\n    \"id\": \"12345\",\n    \"yorum\": \"This product is great\",\n    \"puan\": 5\n  }\n  {\n    \"id\": \"67890\",\n    \"yorum\": \"Very bad\",\n    \"puan\": 1\n  }\n  {\n    \"id\": \"24680\",\n    \"yorum\": \"Not bad\",\n    \"puan\": 3\n  }\n  {\n    \"id\": \"13579\",\n    \"yorum\": \"Excellent\",\n    \"puan\": 5\n  }\n]"}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0012
+    bundle: ters-cevir
+    tools:
+    - rev
+    - cut
+    konu: urun-yorumlari
+    hedef: donustur
+    girdi: csv
+    kaynak: tek-dosya
+    cikti: json
+    kesif: veriye-bak
+    uslup: duz-hedef
+    direnc: baslik-yok
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

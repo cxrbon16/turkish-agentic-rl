@@ -1,0 +1,84 @@
+id: gen-s-0089-dogrula
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) sensor.ini dosyasındaki tüm value1, value2 ve value3 değerlerini oku.
+  2) Bu değerleri sadece virgülle ayrılmış şekilde sensor_output.csv dosyasına yaz.
+
+setup: |
+  cat > sensor.ini <<'INI'
+  [temperature]
+  unit=C
+  value1=25.5
+  value2=26.1
+  value3=25.5
+
+  [humidity]
+  unit=%
+  value1=60.0
+  value2=60.0
+  value3=59.8
+
+  [pressure]
+  unit=hPa
+  value1=1013.2
+  value2=1013.2
+  value3=1013.1
+  INI
+
+goal_tr: >
+  sensor.ini dosyasindaki tekrarlanan satir degerlerini (value1, value2,
+  value3) al ve bunlari sensor_output.csv dosyasina donustur
+
+reference_solution: |
+  awk -F'=' '/^value/ {print $2}' sensor.ini | awk '{print NR "," $0}' > sensor_output.csv
+
+outputs:
+  - {path: sensor_output.csv, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sensor_output.csv, value: '1,25.5
+
+    2,26.1
+
+    3,25.5
+
+    4,60.0
+
+    5,60.0
+
+    6,59.8
+
+    7,1013.2
+
+    8,1013.2
+
+    9,1013.1'}
+
+metadata:
+  domain: dogrula
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0089
+    bundle: awk
+    tools:
+    - awk
+    konu: sensor-olcumleri
+    hedef: dogrula
+    girdi: ini
+    kaynak: tek-dosya
+    cikti: csv
+    kesif: yok
+    uslup: numarali-emir
+    direnc: tekrar-eden-kayit
+    bukulme: tuzak-dosya
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

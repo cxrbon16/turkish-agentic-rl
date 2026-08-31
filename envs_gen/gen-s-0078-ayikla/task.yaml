@@ -1,0 +1,64 @@
+id: gen-s-0078-ayikla
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) personel/vardiyalar.json dosyasındaki her satırdan sadece "ad" ve "vardiya" alanlarını ayıkla.
+  2) Ayıklanan bilgileri ad_vardiya.txt dosyasına her satırda bir tane olacak şekilde yaz.
+
+setup: |
+  mkdir -p personel
+  cat > personel/vardiyalar.json <<'JSON'
+  {"ad":"Ahmet","vardiya":"Sabah","giris":"08:00","cikis":"16:00"}
+  {"ad":"Mehmet","vardiya":"Aksam","giris":"16:00","cikis":"00:00"}
+  {"ad":"Ayse","vardiya":"Gece","giris":"00:00","cikis":"08:00"}
+  {"ad":"Fatma","vardiya":"Sabah","giris":"08:00","cikis":"16:00"}
+  JSON
+  touch personel/empty.txt
+
+goal_tr: >
+  personel/vardiyalar.json dosyasindaki her satirdan sadece ad ve vardiya
+  alanlarini ayiklayarak ad_vardiya.txt'ye yaz
+
+reference_solution: |
+  cut -d',' -f1,2 personel/vardiyalar.json | sed 's/[{}"]//g' | tee ad_vardiya.txt > /dev/null
+
+outputs:
+  - {path: ad_vardiya.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: ad_vardiya.txt, value: 'ad:Ahmet,vardiya:Sabah
+
+    ad:Mehmet,vardiya:Aksam
+
+    ad:Ayse,vardiya:Gece
+
+    ad:Fatma,vardiya:Sabah'}
+
+metadata:
+  domain: ayikla
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0078
+    bundle: dallandir
+    tools:
+    - tee
+    - cut
+    konu: personel-vardiyalari
+    hedef: ayikla
+    girdi: json
+    kaynak: tek-dosya
+    cikti: satir-listesi
+    kesif: dosyayi-bul
+    uslup: numarali-emir
+    direnc: bos-dosya
+    bukulme: tuzak-dosya
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

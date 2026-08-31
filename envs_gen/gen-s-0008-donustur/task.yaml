@@ -1,0 +1,67 @@
+id: gen-s-0008-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Bugün muhasebe ekibi yıl sonu raporlarını hazırlıyor ve tüm harcamaları tek bir yerde görmek istiyor. Hava da oldukça güzel, pencereden gelen ışık ekranı aydınlatıyor. *muhasebe* klasöründeki tüm CSV dosyalarını birleştirip, her kalem için toplam tutarları hesapla ve sonuçları *kalem-toplam.csv* dosyasına CSV formatında kaydet.
+
+setup: |
+  mkdir -p muhasebe
+  printf "id,kalem,tutar\n1,kagit,100\n2,kalem,50\n" > "muhasebe/2023-01.csv"
+  printf "id,kalem,tutar\n3,defter,200\n4,silgi,25\n" > "muhasebe/2023-02.csv"
+  printf "id,kalem,tutar\n5,kalem,75\n6,kagit,150\n" > "muhasebe/2023-03.csv"
+  touch "muhasebe/empty file.csv"
+  seq 1 5 > "muhasebe/tuzak.txt"
+
+goal_tr: >
+  muhasebe klasorundeki tum CSV dosyalarini birlestir ve butun kalemlerin
+  toplam tutarlarini kalem-toplam.csv'ye CSV formatinda yaz
+
+reference_solution: |
+  printf "kalem,tutar\n" > kalem-toplam.csv && \
+  find muhasebe -name "*.csv" -size +0 | \
+  xargs awk -F, 'NR>1{a[$2]+=$3} END{for(k in a) printf "%s,%d\n",k,a[k]}' | \
+  sort >> kalem-toplam.csv && \
+  seq 1 1 > /dev/null
+
+outputs:
+  - {path: kalem-toplam.csv, kind: csv}
+
+checks:
+  - {op: file_content_eq, path: kalem-toplam.csv, value: 'kalem,tutar
+
+    defter,200
+
+    kagit,250
+
+    kalem,125
+
+    silgi,25'}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0008
+    bundle: uret
+    tools:
+    - printf
+    - seq
+    konu: muhasebe-kalemleri
+    hedef: donustur
+    girdi: csv
+    kaynak: cok-dosya
+    cikti: csv
+    kesif: dosyayi-bul
+    uslup: baglam-gomulu
+    direnc: bosluklu-ad
+    bukulme: tuzak-dosya
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

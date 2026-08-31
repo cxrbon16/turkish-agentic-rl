@@ -1,0 +1,76 @@
+id: gen-s-0085-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) yorumlar.tsv dosyasındaki tekrar eden kayıtları kaldır.
+  2) Elde edilen veriyi CSV formatına dönüştür.
+  3) Sonucu cikti.csv dosyasına yaz.
+
+setup: |
+  mkdir -p /tmp/workspace
+  cat > /tmp/workspace/yorumlar.tsv <<'EOF'
+  id	urun	puan	yorum
+  1	telefon	5	harika
+  2	laptop	4	iyi
+  3	telefon	5	harika
+  4	klavye	3	orta
+  5	telefon	2	kotu
+  EOF
+  cp /tmp/workspace/yorumlar.tsv .
+
+goal_tr: >
+  yorumlar.tsv dosyasindaki tekrar eden kayitlari kaldirip CSV formatina
+  donusturup cikti.csvye yaz
+
+reference_solution: |
+  gzip -c yorumlar.tsv > yorumlar.tsv.gz
+  tar -cf yorumlar.tar yorumlar.tsv.gz
+  tar -xf yorumlar.tar
+  gunzip yorumlar.tsv.gz
+  sort yorumlar.tsv | uniq | sed 's/\t/,/g' > cikti.csv
+  rm -f yorumlar.tsv.gz yorumlar.tar
+
+outputs:
+  - {path: cikti.csv, kind: file}
+
+checks:
+  - {op: file_content_eq, path: cikti.csv, value: '1,telefon,5,harika
+
+    2,laptop,4,iyi
+
+    3,telefon,5,harika
+
+    4,klavye,3,orta
+
+    5,telefon,2,kotu
+
+    id,urun,puan,yorum'}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0085
+    bundle: arsiv
+    tools:
+    - tar
+    - gzip
+    konu: urun-yorumlari
+    hedef: donustur
+    girdi: tsv
+    kaynak: tek-dosya
+    cikti: csv
+    kesif: yok
+    uslup: numarali-emir
+    direnc: tekrar-eden-kayit
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

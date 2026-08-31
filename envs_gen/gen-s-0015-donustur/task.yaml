@@ -1,0 +1,61 @@
+id: gen-s-0015-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Bugün hava istasyonundaki verileri kontrol ederken, sensor1.ini ve sensor2.ini dosyalarındaki tüm sayısal değerlerin toplamını hesaplamak gerekti. Gün oldukça yoğun geçti, ama şimdi son bir adıma kaldı.
+
+  Lütfen sensor1.ini ve sensor2.ini dosyalarındaki tüm sayısal değerlerin toplamını sonuc.txt dosyasına sadece sayı olarak yaz.
+
+setup: |
+  cat > sensor1.ini <<'EOF'
+  temp=25.5
+  humidity=60.2
+  pressure=1013.25
+  EOF
+  cat > sensor2.ini <<'EOF'
+  temp=22.3
+  humidity=55.8
+  pressure=1012.75
+  EOF
+
+goal_tr: >
+  sensor1.ini ve sensor2.ini dosyalarındaki tüm sayısal değerlerin toplamını
+  sonuc.txt'ye sadece sayı olarak yaz
+
+reference_solution: |
+  cat sensor*.ini | tr -d '\n' | sed 's/[^0-9.]//g' | tr '.' '\n' | sed '/^$/d' | awk '{s+=$1} END {print s}' > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '105562'}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0015
+    bundle: metin-duzenle
+    tools:
+    - sed
+    - tr
+    konu: sensor-olcumleri
+    hedef: donustur
+    girdi: ini
+    kaynak: iki-dosya-capraz
+    cikti: tek-sayi
+    kesif: yok
+    uslup: baglam-gomulu
+    direnc: yok
+    bukulme: yok
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

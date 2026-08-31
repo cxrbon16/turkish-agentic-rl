@@ -1,0 +1,55 @@
+id: gen-s-0060-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) kitaplar klasöründeki tüm CSV dosyalarını oku ve her bir dosyada bulunan satır sayısını hesapla.
+  2) Tüm CSV dosyaları için bulunan satır sayılarını topla.
+  3) Toplam sonucunu sadece sayı olarak sayi.txt dosyasına yaz.
+
+setup: |
+  mkdir -p kitaplar
+  printf "1,Odyssia,1984\n2,Dune,1965\n3,1984,1949\n" > kitaplar/veri1.csv
+  printf "4,Brave New World,1932\n5,Fahrenheit 451,1953\n" > kitaplar/veri2.csv
+  printf "6,The Hobbit,1937\n" > kitaplar/veri3.csv
+
+goal_tr: >
+  kitaplar klasorundeki tum csv dosyalarindaki kitap sayisini toplamini
+  sayi.txt'ye sadece sayi olarak yaz
+
+reference_solution: |
+  cut -d',' -f1 kitaplar/*.csv | paste -d'\n' -s | wc -l > sayi.txt
+
+outputs:
+  - {path: sayi.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sayi.txt, value: '6'}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0060
+    bundle: sutun
+    tools:
+    - cut
+    - paste
+    konu: kutuphane-kayitlari
+    hedef: donustur
+    girdi: csv
+    kaynak: cok-dosya
+    cikti: tek-sayi
+    kesif: veriye-bak
+    uslup: numarali-emir
+    direnc: yok
+    bukulme: yok
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

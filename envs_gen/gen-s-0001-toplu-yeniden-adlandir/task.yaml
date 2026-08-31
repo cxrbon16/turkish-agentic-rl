@@ -1,0 +1,80 @@
+id: gen-s-0001-toplu-yeniden-adlandir
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) `öğrenci_notları` dizin ağacında yer alan tüm `notlar.txt` dosyalarını bul.
+  2) Bu dosyaları `yeni_notlar` dizini altında sınıf adlarına (A, B, C) göre yeniden adlandırarak taşı (`yeni_notlar/A_notlar.txt`, `yeni_notlar/B_notlar.txt`, `yeni_notlar/C_notlar.txt`).
+  3) Taşıma işleminden sonraki durumu `durum.json` dosyasına JSON formatında kaydet.
+
+setup: |
+  mkdir -p ogrenci_notlari/2023/{A,B,C}
+  printf "Ali 85\nVeli 92\nAyse 78\n" > ogrenci_notlari/2023/A/notlar.txt
+  printf "Fatma 88\nMehmet 95\n" > ogrenci_notlari/2023/B/notlar.txt
+  printf "Can 76\nZeynep 82\n" > ogrenci_notlari/2023/C/notlar.txt
+  touch ogrenci_notlari/2023/A/empty.txt
+  touch ogrenci_notlari/2023/B/empty.txt
+
+goal_tr: >
+  ogrenci_notlari dizin agacindaki tum notlar.txt dosyalarini bul, her
+  birini sinif adiyla (A, B, C) yeni bir dizine tasiyarak yeniden adlandir
+  ve son durumu JSON olarak kaydet
+
+reference_solution: |
+  mkdir -p yeni_notlar
+  for dir in ogrenci_notlari/2023/*/; do sinif=$(basename "$dir"); mv "$dir"/notlar.txt "yeni_notlar/${sinif}_notlar.txt"; done
+  printf '{"yeni_notlar": [' > durum.json
+  first=1
+  for f in yeni_notlar/*_notlar.txt; do [ -n "$first" ] && first="" || printf ','; printf '"%s"' "$(basename "$f")"; done
+  printf ']}' >> durum.json
+
+outputs:
+  - {path: yeni_notlar/A_notlar.txt, kind: file}
+  - {path: yeni_notlar/B_notlar.txt, kind: file}
+  - {path: yeni_notlar/C_notlar.txt, kind: file}
+  - {path: durum.json, kind: json}
+
+checks:
+  - {op: json_eq, path: durum.json, value: {yeni_notlar: []}}
+  - {op: file_content_eq, path: yeni_notlar/A_notlar.txt, value: 'Ali 85
+
+    Veli 92
+
+    Ayse 78'}
+  - {op: file_content_eq, path: yeni_notlar/B_notlar.txt, value: 'Fatma 88
+
+    Mehmet 95'}
+  - {op: file_content_eq, path: yeni_notlar/C_notlar.txt, value: 'Can 76
+
+    Zeynep 82'}
+  - {op: not_exists, path: ogrenci_notlari/2023/A/notlar.txt}
+  - {op: not_exists, path: ogrenci_notlari/2023/B/notlar.txt}
+  - {op: not_exists, path: ogrenci_notlari/2023/C/notlar.txt}
+
+metadata:
+  domain: toplu-yeniden-adlandir
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0001
+    bundle: dosya-duzen
+    tools:
+    - mkdir
+    - mv
+    konu: ogrenci-notlari
+    hedef: toplu-yeniden-adlandir
+    girdi: duz-metin
+    kaynak: dizin-agaci
+    cikti: json
+    kesif: yok
+    uslup: numarali-emir
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

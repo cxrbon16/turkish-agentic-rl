@@ -1,0 +1,61 @@
+id: gen-s-0093-ayikla
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  randevular.tsv dosyasındaki soyad ve tarih sütunlarını ayıkla ve soyad,tarih formatında randevular.csv dosyasına yaz.
+
+  Şu şartlar sağlanmalı:
+  - randevular.csv dosyası oluşturulmalı.
+  - Dosyanın her satırında soyad ve tarih aralarında virgül olacak şekilde yer almalı.
+  - Başlık satırı olmamalı.
+
+setup: |
+  cat > randevular.tsv <<'TSV'
+  ad	soyad	tarih	saat
+  Ahmet	Yilmaz	2023-10-15	14:30
+  Mehmet	Demir	2023-10-16	09:15
+  Ayse	Kaya	2023-10-17	11:45
+  Fatma	Sahin	2023-10-18	13:00
+  TSV
+
+goal_tr: >
+  randevular.tsv dosyasindaki soyad ve tarih sutunlarini ayiklayip
+  soyad,tarih formatinda randevular.csvye yaz
+
+reference_solution: |
+  cut -f2,3 randevular.tsv | rev | cut -d$'\t' -f2,1 | rev > randevular.csv
+
+outputs:
+  - {path: randevular.csv, kind: csv}
+
+checks:
+  - {op: file_content_eq, path: randevular.csv, value: "soyad\ttarih\nYilmaz\t2023-10-15\nDemir\t2023-10-16\nKaya\t2023-10-17\nSahin\t2023-10-18"}
+
+metadata:
+  domain: ayikla
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0093
+    bundle: ters-cevir
+    tools:
+    - rev
+    - cut
+    konu: hastane-randevulari
+    hedef: ayikla
+    girdi: tsv
+    kaynak: tek-dosya
+    cikti: csv
+    kesif: yok
+    uslup: kabul-kriteri
+    direnc: yok
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

@@ -1,0 +1,68 @@
+id: gen-s-0058-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  veriler dizinindeki TSV dosyalarının her birinden sadece "gün" ve "sıcaklık" sütunlarını al. Bu verileri sıcaklık değerlerine göre artan sırada birleştir ve ozet.csv dosyasına kaydet.
+
+  Su sartlar saglanmali:
+  - ozet.csv dosyası sadece "gün" ve "sıcaklık" sütunlarını içermeli.
+  - Sıcaklık değerleri artan sırada olmalı.
+  - Tüm veriler veriler dizinindeki TSV dosyalarından alınmalı.
+
+setup: |
+  mkdir -p veriler
+  cat > veriler/2023-01.tsv <<'EOF'
+  gun saati sicaklik nem
+  01 08 15 65
+  01 12 22 50
+  01 18 18 70
+  EOF
+  cat > veriler/2023-02.tsv <<'EOF'
+  gun saati sicaklik nem
+  02 08 12 70
+  02 12 20 45
+  02 18 15 60
+  EOF
+
+goal_tr: >
+  veriler dizinindeki tsv dosyalarindan gun ve sicaklik sutunlarini alip
+  sicaklik degerlerine gore artan sirada ozet.csv dosyasina birlestir
+
+reference_solution: |
+  {
+    for f in veriler/*.tsv; do
+      tail -n +2 "$f" | cut -f1,3
+    done | sort -k2,2n
+  } | join -t$'\t' - <(sort -k1,1 <(for f in veriler/*.tsv; do tail -n +2 "$f" | cut -f1,3; done | sort -k2,2n)) > ozet.csv
+
+outputs:
+  - {path: ozet.csv, kind: csv}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0058
+    bundle: birlestir
+    tools:
+    - join
+    - sort
+    konu: hava-durumu-kayitlari
+    hedef: ozetle
+    girdi: tsv
+    kaynak: cok-dosya
+    cikti: csv
+    kesif: yok
+    uslup: kabul-kriteri
+    direnc: son-newline-yok
+    bukulme: yok
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

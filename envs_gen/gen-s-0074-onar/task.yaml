@@ -1,0 +1,63 @@
+id: gen-s-0074-onar
+split: single_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 8
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Bugün hava durumu verilerini analiz ederken, aradaki boşluklardan ötürü bazı hata mesajlarıyla karşılaştım. Hemen sorunu çözmek gerekiyor. Lütfen hava_raporu_2.log dosyasındaki C birimindeki boşlukları kaldırıp, temizlenmiş hâlini hava_raporu_duzenli.log olarak kaydet.
+
+setup: |
+  cat > hava_raporu_1.log <<'EOF'
+  2023-01-01 Istanbul 15C bulutlu
+  2023-01-02 Ankara 5C kar
+  2023-01-03 Izmir 20C gunesli
+  EOF
+  cat > hava_raporu_2.log <<'EOF'
+  2023-01-01 Istanbul 15C bulutlu
+  2023-01-02 Ankara 5 C kar
+  2023-01-03 Izmir 20 C gunesli
+  EOF
+
+goal_tr: >
+  hava_raporu_2.log dosyasinda C birimindeki bosluklari kaldirarak dosyayi
+  hava_raporu_duzenli.log olarak kaydet
+
+reference_solution: |
+  sed 's/ C /C /g' hava_raporu_2.log | tr -s ' ' > hava_raporu_duzenli.log
+
+outputs:
+  - {path: hava_raporu_duzenli.log, kind: file}
+
+checks:
+  - {op: file_content_eq, path: hava_raporu_duzenli.log, value: '2023-01-01 Istanbul 15C bulutlu
+
+    2023-01-02 Ankara 5C kar
+
+    2023-01-03 Izmir 20C gunesli'}
+
+metadata:
+  domain: onar
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0074
+    bundle: metin-duzenle
+    tools:
+    - sed
+    - tr
+    konu: hava-durumu-kayitlari
+    hedef: onar
+    girdi: log-satiri
+    kaynak: iki-dosya-capraz
+    cikti: yeniden-adlandirilmis
+    kesif: yok
+    uslup: baglam-gomulu
+    direnc: bosluklu-ad
+    bukulme: yok
+    adim: 1
+    image: verifiable-dataset/base:latest
+    metadata: {}

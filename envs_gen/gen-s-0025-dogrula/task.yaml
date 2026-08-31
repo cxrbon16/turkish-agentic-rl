@@ -1,0 +1,58 @@
+id: gen-s-0025-dogrula
+split: single_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 8
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) kargo.log dosyasındaki "teslim edildi" ifadesi geçen kargo numaralarını say.
+
+  2) Bu sayıyı sonuc.txt dosyasına sadece sayı olarak yaz.
+
+setup: |
+  cat > kargo.log <<'LOG'
+  Kargo 12345 yola cikti
+  Kargo 67890 teslim edildi
+  Kargo 12345 depoya ugradi
+  Kargo 45678 yola cikti
+  Kargo 12345 teslim edildi
+  LOG
+
+goal_tr: >
+  kargo.log dosyasinda "teslim edildi" ifadesi gecen kargo numaralarinin
+  sayisini sonuc.txt'ye sadece sayi olarak yaz
+
+reference_solution: |
+  grep 'teslim edildi' kargo.log | sed 's/.*Kargo \([0-9]*\) .*/\1/' | tr -d '\n' | wc -c > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '10'}
+
+metadata:
+  domain: dogrula
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0025
+    bundle: metin-duzenle
+    tools:
+    - sed
+    - tr
+    konu: kargo-takibi
+    hedef: dogrula
+    girdi: log-satiri
+    kaynak: tek-dosya
+    cikti: tek-sayi
+    kesif: yok
+    uslup: numarali-emir
+    direnc: yok
+    bukulme: yok
+    adim: 1
+    image: verifiable-dataset/base:latest
+    metadata: {}

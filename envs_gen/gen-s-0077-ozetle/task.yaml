@@ -1,0 +1,82 @@
+id: gen-s-0077-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  `siparisler` dizinindeki tüm `.ini` dosyalarında bulunan yemek adlarını, `yemekler.txt` dosyasında tekrarsız ve alfabetik sırada listele. Her satırda bir yemek adı olsun.
+
+setup: |
+  mkdir -p siparisler
+  cat > siparisler/sabah.ini <<'EOF'
+  [Siparis1]
+  masa=5
+  yemek=kahvalti
+  adet=2
+
+  [Siparis2]
+  masa=3
+  yemek=omlet
+  adet=1
+
+  [Siparis3]
+  masa=5
+  yemek=omlet
+  adet=3
+  EOF
+  cat > siparisler/aksam.ini <<'EOF'
+  [Siparis1]
+  masa=2
+  yemek=lahmacun
+  adet=4
+
+  [Siparis2]
+  masa=5
+  yemek=lahmacun
+  adet=1
+
+  [Siparis3]
+  masa=2
+  yemek=omlet
+  adet=2
+  EOF
+
+goal_tr: >
+  siparisler dizinindeki tum ini dosyalarindan yemek adlarini tekrarsiz ve
+  sirali olarak listele
+
+reference_solution: |
+  find siparisler -name '*.ini' -exec grep -h '^yemek=' {} + | sed 's/yemek=//' | sort | uniq > yemekler.txt
+
+outputs:
+  - {path: yemekler.txt, kind: lines}
+
+checks:
+  - {op: file_lines_eq, path: yemekler.txt, value: [kahvalti, lahmacun, omlet]}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0077
+    bundle: sirala
+    tools:
+    - sort
+    - uniq
+    konu: restoran-siparisleri
+    hedef: ozetle
+    girdi: ini
+    kaynak: iki-dosya-capraz
+    cikti: satir-listesi
+    kesif: dosyayi-bul
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: yok
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

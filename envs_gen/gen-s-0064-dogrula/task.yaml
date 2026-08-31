@@ -1,0 +1,54 @@
+id: gen-s-0064-dogrula
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) restoran/siparisler dizin ağacında bulunan tüm TSV dosyalarında tekrar eden siparis_id sayısını belirt.
+  2) Sonucu sonuc.txt dosyasına sadece sayı olarak yaz.
+
+setup: |
+  mkdir -p restoran/siparisler/2023-10
+  mkdir -p restoran/siparisler/2023-11
+  printf "siparis_id\tmusteri_id\turun\tmiktar\tfiyat\n1001\t42\tsalata\t2\t5.50\n1002\t15\tpizza\t1\t12.00\n1003\t42\tsalata\t1\t5.50\n" > restoran/siparisler/2023-10/gun1.tsv
+  printf "siparis_id\tmusteri_id\turun\tmiktar\tfiyat\n1004\t7\tburrito\t3\t8.00\n1005\t42\tsalata\t2\t5.50\n1006\t15\tpizza\t2\t12.00\n" > restoran/siparisler/2023-10/gun2.tsv
+  printf "siparis_id\tmusteri_id\turun\tmiktar\tfiyat\n1007\t42\tsalata\t1\t5.50\n1008\t22\npasta\t1\t6.00\n" > restoran/siparisler/2023-11/gun1.tsv
+
+goal_tr: >
+  restoran/siparisler dizin agacinda butun TSV dosyalarinda tekrar eden
+  siparis_id sayisini sonuc.txt'ye sadece sayi olarak yaz
+
+reference_solution: |
+  find restoran -name '*.tsv' -exec cat {} + | awk -F'\t' 'NR>1{print $1}' | sort | uniq -d | wc -l > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '1'}
+
+metadata:
+  domain: dogrula
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0064
+    bundle: awk
+    tools:
+    - awk
+    konu: restoran-siparisleri
+    hedef: dogrula
+    girdi: tsv
+    kaynak: dizin-agaci
+    cikti: tek-sayi
+    kesif: dosyayi-bul
+    uslup: numarali-emir
+    direnc: tekrar-eden-kayit
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

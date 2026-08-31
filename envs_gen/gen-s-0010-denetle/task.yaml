@@ -1,0 +1,77 @@
+id: gen-s-0010-denetle
+split: single_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 8
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) sensor_data dizinindeki her JSON dosyasındaki value değerini config.json dosyasındaki threshold değerine göre kontrol et.
+  2) Aşım durumu ve ilgili dosya adını içeren denetim sonuçlarını denetim_raporu.json dosyasına JSON formatında kaydet.
+
+setup: |
+  mkdir -p sensor_data
+  cat > sensor_data/config.json <<'EOF'
+  {"sensor_id": "temp_01", "threshold": 25.0}
+  EOF
+  cat > sensor_data/2023-01-01.json <<'EOF'
+  {"timestamp": "08:00", "value": 22.5}
+  {"timestamp": "12:00", "value": 27.3}
+  {"timestamp": "16:00", "value": 21.8}
+  EOF
+  cat > sensor_data/2023-01-02.json <<'EOF'
+  {"timestamp": "09:00", "value": 30.1}
+  {"timestamp": "13:00", "value": 24.9}
+  EOF
+
+goal_tr: >
+  sensor_data dizinindeki her JSON dosyasinda value degerini config.json
+  dosyasindaki threshold ile karsilastirip asimi durumu ve dosya adini
+  iceren denetim sonuclari denetim_raporu.json dosyasina JSON formatinda
+  kaydet
+
+reference_solution: |
+  awk '
+  BEGIN { first=1; printf "[\n" }
+  FNR==1 && FILENAME ~ /config/ { threshold=$0; next }
+  {
+    if ($0 ~ /"value"/) { split($0, a, /[,:{}\"]+/); value=a[4] }
+    if ($0 ~ /"timestamp"/) { split($0, b, /[,:{}\"]+/); timestamp=b[4] }
+    if (value+0 > threshold+0) status="\"ASIM\""
+    else status="\"NORMAL\""
+    if (!first) printf ",\n"
+    printf "  {\n    \"file\": \"%s\",\n    \"timestamp\": \"%s\",\n    \"value\": %s,\n    \"status\": %s\n  }", FILENAME, timestamp, value, status
+    first=0
+  }
+  END { printf "\n]\n" }
+  ' sensor_data/config.json sensor_data/*.json > denetim_raporu.json
+
+outputs:
+  - {path: denetim_raporu.json, kind: json}
+
+checks:
+  - {op: file_content_eq, path: denetim_raporu.json, value: "[\n  {\n    \"file\": \"sensor_data/2023-01-01.json\",\n    \"timestamp\": \"08\",\n    \"value\": 08,\n    \"status\": \"ASIM\"\n  },\n  {\n    \"file\": \"sensor_data/2023-01-01.json\",\n    \"timestamp\": \"12\",\n    \"value\": 12,\n    \"status\": \"ASIM\"\n  },\n  {\n    \"file\": \"sensor_data/2023-01-01.json\",\n    \"timestamp\": \"16\",\n    \"value\": 16,\n    \"status\": \"ASIM\"\n  },\n  {\n    \"file\": \"sensor_data/2023-01-02.json\",\n    \"timestamp\": \"09\",\n    \"value\": 09,\n    \"status\": \"ASIM\"\n  },\n  {\n    \"file\": \"sensor_data/2023-01-02.json\",\n    \"timestamp\": \"13\",\n    \"value\": 13,\n    \"status\": \"ASIM\"\n  }\n]"}
+
+metadata:
+  domain: denetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0010
+    bundle: awk
+    tools:
+    - awk
+    konu: sensor-olcumleri
+    hedef: denetle
+    girdi: json
+    kaynak: dizin-agaci
+    cikti: json
+    kesif: yok
+    uslup: numarali-emir
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 1
+    image: verifiable-dataset/base:latest
+    metadata: {}

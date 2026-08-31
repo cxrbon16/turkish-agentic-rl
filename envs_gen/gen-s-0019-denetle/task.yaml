@@ -1,0 +1,66 @@
+id: gen-s-0019-denetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  gun1.tsv ve gun2.tsv dosyalarında tekrar eden hava durumu kayıtlarını satırlarıyla birlikte tekrar_edenler.txt dosyasında listesi, sadece sayılar ve metinler olsun.
+
+setup: |
+  cat > gun1.tsv <<'EOF'
+  istanbul	30	sunny
+  ankara	25	cloudy
+  izmir	32	sunny
+  istanbul	30	sunny
+  EOF
+  cat > gun2.tsv <<'EOF'
+  istanbul	28	cloudy
+  ankara	22	rainy
+  izmir	30	sunny
+  bursa	15	snowy
+  EOF
+
+goal_tr: >
+  gun1.tsv ve gun2.tsv dosyalarinda tekrar eden hava durumu kayitlarini
+  satirlariyle birlikte listesi
+
+reference_solution: |
+  grep -Ff <(grep -v '^$' gun1.tsv | sort | uniq -d) gun1.tsv > tekrar_edenler.txt
+  grep -Ff <(grep -v '^$' gun1.tsv | sort | uniq -d) gun2.tsv >> tekrar_edenler.txt
+  grep -Ff <(grep -v '^$' gun2.tsv | sort | uniq -d) gun1.tsv >> tekrar_edenler.txt
+  grep -Ff <(grep -v '^$' gun2.tsv | sort | uniq -d) gun2.tsv >> tekrar_edenler.txt
+  wc -l tekrar_edenler.txt | awk '{print $1}' > tekrar_eden_sayisi.txt
+  sort -u tekrar_edenler.txt -o tekrar_edenler.txt
+
+outputs:
+  - {path: tekrar_edenler.txt, kind: lines}
+
+checks:
+  - {op: file_lines_eq, path: tekrar_edenler.txt, value: ["istanbul\t30\tsunny"]}
+
+metadata:
+  domain: denetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0019
+    bundle: say
+    tools:
+    - grep
+    - wc
+    konu: hava-durumu-kayitlari
+    hedef: denetle
+    girdi: tsv
+    kaynak: iki-dosya-capraz
+    cikti: satir-listesi
+    kesif: yok
+    uslup: kisit-sakli
+    direnc: tekrar-eden-kayit
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

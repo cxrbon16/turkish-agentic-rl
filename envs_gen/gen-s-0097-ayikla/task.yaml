@@ -1,0 +1,62 @@
+id: gen-s-0097-ayikla
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Bugün depo düzenlemesi yapıldı ve her şey yerli yerine oturmuştu, ta ki yeni bir talebin gelmesine kadar.
+  Müşteri, ürün adlarını tersten okumakta ısrar edip, bunları kategorilerine göre alt dizinlerde saklamak istiyor.
+  Lütfen envanter dizinindeki ürünler.txt ve kategoriler.txt dosyalarını kullanarak her kategoriye ait ürün adlarını tersten yazıp, envanter/ailatnidya/asam, envanter/ailatnidya/palod, envanter/ailatnidya/kuotlk, envanter/ailatnidya/far ve envanter/ametnalidA/ambal dosyalarında sakla.
+
+setup: |
+  mkdir -p envanter
+  printf '12345;Masa;10\n67890;Koltuk;5\n12345;Dolap;3\n67890;Raf;7\n24680;Lamba;15\n' > envanter/urunler.txt
+  printf 'Dolap;Mobilya\nKoltuk;Mobilya\nLamba;Aydinlatma\nMasa;Mobilya\nRaf;Mobilya\n' > envanter/kategoriler.txt
+
+goal_tr: >
+  envanter dizinindeki urunler.txt ve kategoriler.txt dosyalarindaki
+  verileri kullanarak her kategorinin urun adlarini tersten yazip alt
+  dizinlerde sakla
+
+reference_solution: |
+  cd envanter && \
+  join -t';' -1 2 -2 1 <(sort urunler.txt) <(sort kategoriler.txt) | \
+  cut -d';' -f1,3 | \
+  while IFS=';' read -r urun kategori; do
+    mkdir -p "$(rev <<<"$kategori")"
+    rev <<<"$urun" > "$(rev <<<"$kategori")/$(rev <<<"$urun")"
+  done
+
+outputs:
+  - {path: envanter/ailatnidya/asam, kind: file}
+  - {path: envanter/ailatnidya/palod, kind: file}
+  - {path: envanter/ailatnidya/kuotlk, kind: file}
+  - {path: envanter/ailatnidya/far, kind: file}
+  - {path: envanter/ametnalidA/ambal, kind: file}
+
+metadata:
+  domain: ayikla
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0097
+    bundle: ters-cevir
+    tools:
+    - rev
+    - cut
+    konu: envanter
+    hedef: ayikla
+    girdi: duz-metin
+    kaynak: iki-dosya-capraz
+    cikti: dizin-yapisi
+    kesif: dolayli-hedef
+    uslup: baglam-gomulu
+    direnc: baslik-yok
+    bukulme: yok
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

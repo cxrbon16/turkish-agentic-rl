@@ -1,0 +1,56 @@
+id: gen-s-0014-denetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  kargo.tsv dosyasındaki her ürün için teslim edilen miktarların toplamını hesapla ve sonuçları ürün adına karşılık gelen dizin altında toplam.txt dosyasında kaydet, böylece cikti/elma/toplam.txt ve cikti/armut/toplam.txt dosyaları oluşsun.
+
+setup: |
+  cat > kargo.tsv <<'TSV'
+  id  urun    miktar  durum
+  1   elma    100     teslim
+  2   armut   50      beklemede
+  3   elma    75      teslim
+  4   muz     200     iptal
+  5   armut   30      teslim
+  TSV
+
+goal_tr: >
+  kargo.tsv'de her urun icin teslim edilen toplam miktari urun adiyle dizin
+  yapisinda kaydet
+
+reference_solution: |
+  mkdir -p cikti
+  grep 'teslim' kargo.tsv | awk -F'\t' '{sum[$2]+=$3} END {for (item in sum) {system("mkdir -p cikti/" item); print sum[item] > "cikti/" item "/toplam.txt"}}'
+
+outputs:
+  - {path: cikti/elma/toplam.txt, kind: file}
+  - {path: cikti/armut/toplam.txt, kind: file}
+
+metadata:
+  domain: denetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0014
+    bundle: say
+    tools:
+    - grep
+    - wc
+    konu: kargo-takibi
+    hedef: denetle
+    girdi: tsv
+    kaynak: tek-dosya
+    cikti: dizin-yapisi
+    kesif: veriye-bak
+    uslup: duz-hedef
+    direnc: bosluklu-ad
+    bukulme: yok
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

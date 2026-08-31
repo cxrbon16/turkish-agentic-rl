@@ -1,0 +1,56 @@
+id: gen-s-0003-karsilastir
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  muhasebe dizin ağacındaki tüm Q*/veri.csv dosyalarında ortaya çıkan ortak kalemlerin sayısını sonuc.txt dosyasına sadece sayı olarak yaz.
+
+setup: |
+  mkdir -p muhasebe/2023/{Q1,Q2,Q3,Q4}
+  printf "id,kalem,tutar\n1,gelir,1000\n2,gider,500\n3,gelir,1500\n" > muhasebe/2023/Q1/veri.csv
+  printf "id,kalem,tutar\n1,gelir,1200\n2,gider,600\n4,gelir,1800\n" > muhasebe/2023/Q2/veri.csv
+  printf "id,kalem,tutar\n1,gelir,900\n2,gider,400\n3,gelir,2000\n" > muhasebe/2023/Q3/veri.csv
+  printf "id,kalem,tutar\n1,gelir,1100\n2,gider,700\n5,gelir,2200\n" > muhasebe/2023/Q4/veri.csv
+
+goal_tr: >
+  muhasebe dizin agacinda tüm Q*/veri.csv dosyalarindaki ortak kalem
+  sayisini sonuc.txtye sadece sayi olarak yaz
+
+reference_solution: |
+  find muhasebe -name 'veri.csv' -exec cut -d, -f2 {} + | sort | uniq > /tmp/kalemler.txt
+  comm -12 <(sort /tmp/kalemler.txt | uniq) <(sort /tmp/kalemler.txt | uniq) | wc -l > sonuc.txt
+  diff <(comm -12 <(sort /tmp/kalemler.txt | uniq) <(sort /tmp/kalemler.txt | uniq) | wc -l) sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '3'}
+
+metadata:
+  domain: karsilastir
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0003
+    bundle: karsilastir
+    tools:
+    - diff
+    - comm
+    konu: muhasebe-kalemleri
+    hedef: karsilastir
+    girdi: csv
+    kaynak: dizin-agaci
+    cikti: tek-sayi
+    kesif: dolayli-hedef
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

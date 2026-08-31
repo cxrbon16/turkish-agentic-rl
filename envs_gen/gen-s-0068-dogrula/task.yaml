@@ -1,0 +1,71 @@
+id: gen-s-0068-dogrula
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  hastane dizin ağacındaki tüm JSON dosyalarında her satırın tam olarak bir hasta_id anahtarı içerdiğini doğrula ve geçersiz olan dosyaların sayısını sonuc.txt dosyasına yaz.
+
+setup: |
+  mkdir -p hastane/randevular
+  cat > hastane/randevular/2023-01.json <<'EOF'
+  {"hasta_id": "A101", "doktor": "Dr. Smith"}
+  {"hasta_id": "A102", "doktor": "Dr. Jones"}
+  EOF
+  cat > hastane/randevular/2023-02.json <<'EOF'
+  {"hasta_id": "A103", "doktor": "Dr. Smith"}
+  {"hasta_id": "A101", "doktor": "Dr. Brown"}
+  EOF
+  cat > hastane/randevular/2023-03.json <<'EOF'
+  {"hasta_id": "A104", "doktor": "Dr. Brown"}
+  EOF
+  cat > hastane/randevular/2023-04.json <<'EOF'
+  not a json line
+  {"hasta_id": "A105", "doktor": "Dr. Smith"}
+  EOF
+
+goal_tr: >
+  hastane dizin agacinda her JSON dosyasinin her satırında tam olarak bir
+  hasta_id anahtari bulundugunu dogrula ve gecersiz dosya sayisini
+  sonuc.txt'ye yaz
+
+reference_solution: |
+  find hastane -type f -name "*.json" -print0 | sort -z | while IFS= read -r -d '' f; do
+    grep -c '^{"hasta_id"' "$f" > /tmp/count.txt
+    wc -l < "$f" | tr -d ' ' > /tmp/lines.txt
+    diff /tmp/count.txt /tmp/lines.txt >/dev/null || echo "$f"
+  done | sort > /tmp/invalid.txt
+  comm -23 <(sort /tmp/invalid.txt) <(sort /dev/null) | wc -l > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '1'}
+
+metadata:
+  domain: dogrula
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0068
+    bundle: karsilastir
+    tools:
+    - diff
+    - comm
+    konu: hastane-randevulari
+    hedef: dogrula
+    girdi: json
+    kaynak: dizin-agaci
+    cikti: tek-sayi
+    kesif: yok
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

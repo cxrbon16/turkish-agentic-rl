@@ -1,0 +1,62 @@
+id: gen-s-0086-bol
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  kargo.log dosyasını boru işaretiyle ayrılmış sütunlarını CSV formatına dönüştür ve kargo.csv dosyasına kaydet.
+
+setup: |
+  cat > kargo.log <<'LOG'
+  2023-10-01 08:00:00|ANKARA|ISTANBUL|1000KG|YUKLENDI
+  2023-10-01 09:30:00|ISTANBUL|IZMIR|500KG|TESLIM_EDILDI
+  2023-10-01 10:15:00|IZMIR|ANKARA|750KG|YUKLENDI
+  2023-10-01 11:45:00|ANKARA|BURSA|300KG|TESLIM_EDILDI
+  LOG
+
+goal_tr: >
+  kargo.log dosyasını | ile bolunmus sutunlara ayırıp CSV formatında
+  kargo.csv'ye yaz
+
+reference_solution: |
+  cut -d'|' -f1-5 kargo.log | tee kargo_temp.csv | tr '|' ',' > kargo.csv
+  rm -f kargo_temp.csv
+
+outputs:
+  - {path: kargo.csv, kind: file}
+
+checks:
+  - {op: file_content_eq, path: kargo.csv, value: '2023-10-01 08:00:00,ANKARA,ISTANBUL,1000KG,YUKLENDI
+
+    2023-10-01 09:30:00,ISTANBUL,IZMIR,500KG,TESLIM_EDILDI
+
+    2023-10-01 10:15:00,IZMIR,ANKARA,750KG,YUKLENDI
+
+    2023-10-01 11:45:00,ANKARA,BURSA,300KG,TESLIM_EDILDI'}
+
+metadata:
+  domain: bol
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0086
+    bundle: dallandir
+    tools:
+    - tee
+    - cut
+    konu: kargo-takibi
+    hedef: bol
+    girdi: log-satiri
+    kaynak: tek-dosya
+    cikti: csv
+    kesif: yok
+    uslup: terse
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

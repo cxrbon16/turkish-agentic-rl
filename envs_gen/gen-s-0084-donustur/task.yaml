@@ -1,0 +1,56 @@
+id: gen-s-0084-donustur
+split: single_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 8
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) logs dizin ağacındaki tüm server.log ve server.log.gz dosyalarındaki ERROR satırlarını say.
+  2) Sonucun sadece sayısını sayac.txt dosyasına yaz.
+
+setup: |
+  mkdir -p logs/2023/{01,02,03}
+  echo "ERROR disk full" > logs/2023/01/server.log
+  echo "INFO user login" >> logs/2023/01/server.log
+  echo "ERROR connection timeout" > logs/2023/02/server.log
+  gzip -c logs/2023/01/server.log > logs/2023/03/server.log.gz
+  echo "ERROR disk full" > logs/2023/03/server.log
+
+goal_tr: >
+  logs dizin agacindaki tum server.log ve server.log.gz dosyalarindaki ERROR
+  satirlarini say ve sonucu sayac.txt'ye sadece sayi olarak yaz
+
+reference_solution: |
+  { find logs -name "server.log" -exec cat {} +; find logs -name "*.gz" -exec gzip -dc {} +; } | grep -c "ERROR" > sayac.txt
+
+outputs:
+  - {path: sayac.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sayac.txt, value: '4'}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0084
+    bundle: arsiv
+    tools:
+    - tar
+    - gzip
+    konu: sunucu-loglari
+    hedef: donustur
+    girdi: log-satiri
+    kaynak: dizin-agaci
+    cikti: tek-sayi
+    kesif: yok
+    uslup: numarali-emir
+    direnc: tekrar-eden-kayit
+    bukulme: yok
+    adim: 1
+    image: verifiable-dataset/base:latest
+    metadata: {}

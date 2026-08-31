@@ -1,0 +1,77 @@
+id: gen-s-0017-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  hastane/randevular dizinindeki tüm JSON dosyalarından hasta ve doktor alanlarını ayıklayarak ozet.csv dosyasına hasta,doktor formatında CSV olarak yaz.
+
+setup: |
+  mkdir -p hastane/randevular
+  cat > hastane/randevular/2023-01.json <<'EOF'
+  {"id":1,"hasta":"A","doktor":"X","tarih":"2023-01-15"}
+  {"id":2,"hasta":"B","doktor":"Y","tarih":"2023-01-16"}
+  {"id":3,"hasta":"C","doktor":"X","tarih":"2023-01-17"}
+  EOF
+  cat > hastane/randevular/2023-02.json <<'EOF'
+  {"id":4,"hasta":"D","doktor":"Z","tarih":"2023-02-01"}
+  {"id":5,"hasta":"E","doktor":"Y","tarih":"2023-02-02"}
+  EOF
+  cat > hastane/randevular/bozuk.json <<'EOF'
+  {"id":6,"hasta":"F"
+  EOF
+
+goal_tr: >
+  hastane/randevular dizinindeki tum JSON dosyalarindan hasta ve doktor
+  alanlarini ayiklayip ozet.csv dosyasina hasta,doktor formatinda CSV olarak
+  yaz
+
+reference_solution: |
+  head -n 1 hastane/randevular/*.json | tail -n +1 | sed 's/[{}]//g; s/","/\t/g; s/"//g' | awk -F'\t' '{print $2","$4}' > ozet.csv
+
+outputs:
+  - {path: ozet.csv, kind: file}
+
+checks:
+  - {op: file_content_eq, path: ozet.csv, value: ',
+
+    doktor:X,
+
+    ,
+
+    ,
+
+    doktor:Z,
+
+    ,
+
+    ,
+
+    ,'}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0017
+    bundle: satir-araligi
+    tools:
+    - head
+    - tail
+    konu: hastane-randevulari
+    hedef: ozetle
+    girdi: json
+    kaynak: dizin-agaci
+    cikti: csv
+    kesif: dolayli-hedef
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

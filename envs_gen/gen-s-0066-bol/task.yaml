@@ -1,0 +1,66 @@
+id: gen-s-0066-bol
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  log1.json ve log2.json dosyalarındaki son iki ve ilk iki kaydın birleştirilmesiyle oluşan yeni JSON listesini bol.json dosyasına yaz.
+
+  Şu koşullar sağlanmalı:
+  - bol.json dosyası oluşturulmalı
+  - İçerik geçersiz JSON olmamalı
+  - Sıralama: log1.json'un ilk iki kaydı, log2.json'un son iki kaydı, log1.json'un son iki kaydı, log2.json'un ilk iki kaydı olmalı
+
+setup: |
+  cat > log1.json <<'EOF'
+  {"id":1,"level":"INFO","message":"Server started"}
+  {"id":2,"level":"ERROR","message":"Disk full"}
+  {"id":3,"level":"INFO","message":"User login"}
+  {"id":4,"level":"ERROR","message":"Connection lost"}
+  EOF
+  cat > log2.json <<'EOF'
+  {"id":5,"level":"WARNING","message":"Low memory"}
+  {"id":6,"level":"ERROR","message":"Timeout"}
+  {"id":7,"level":"INFO","message":"Backup completed"}
+  {"id":8,"level":"ERROR","message":"Database down"}
+  EOF
+
+goal_tr: >
+  log1.json ve log2.json dosyalarindaki son iki ve ilk iki kaydin
+  birlestirilmesiyle olusan yeni JSON listesini bol.json'e yaz
+
+reference_solution: |
+  echo '[' > bol.json && head -n 2 log1.json | sed 's/^/  /' >> bol.json && tail -n 2 log2.json | sed 's/^/  /' >> bol.json && sed -i '$!s/$/,/' bol.json && echo ']' >> bol.json
+
+outputs:
+  - {path: bol.json, kind: json}
+
+checks:
+  - {op: file_content_eq, path: bol.json, value: "[,\n  {\"id\":1,\"level\":\"INFO\",\"message\":\"Server started\"},\n  {\"id\":2,\"level\":\"ERROR\",\"message\":\"Disk full\"},\n  {\"id\":7,\"level\":\"INFO\",\"message\":\"Backup completed\"},\n  {\"id\":8,\"level\":\"ERROR\",\"message\":\"Database down\"}\n]"}
+
+metadata:
+  domain: bol
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0066
+    bundle: satir-araligi
+    tools:
+    - head
+    - tail
+    konu: sunucu-loglari
+    hedef: bol
+    girdi: json
+    kaynak: iki-dosya-capraz
+    cikti: json
+    kesif: veriye-bak
+    uslup: kabul-kriteri
+    direnc: yok
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

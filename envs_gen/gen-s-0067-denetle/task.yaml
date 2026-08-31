@@ -1,0 +1,73 @@
+id: gen-s-0067-denetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  kargo klasöründeki tüm .log dosyalarını bul ve bunların adlarını, "gonderi_X.log -> kargo_X.log" formatında denetim_raporu.txt dosyasına yeniden adlandırma talimatı olarak her satırda bir tane olacak şekilde yaz.
+
+setup: |
+  mkdir -p kargo
+  for i in $(seq 1 10); do
+    echo "$(date -d "@$((i * 86400))" +%Y-%m-%d) kargo-$i gonderildi" > "kargo/gonderi_$i.log"
+  done
+  touch kargo/denetim_raporu.txt
+
+goal_tr: >
+  kargo klasöründeki tüm .log dosyalarını bul ve bunların adlarını
+  denetim_raporu.txt dosyasına "gonderi_X.log -> kargo_X.log" formatında
+  yeniden adlandırma talimatı olarak yaz
+
+reference_solution: |
+  find kargo -name '*.log' | sort | xargs -I {} basename {} | sed 's/gonderi_/kargo_/' | paste -d ' -> ' <(find kargo -name '*.log' | sort | xargs -I {} basename {}) - > kargo/denetim_raporu.txt
+
+outputs:
+  - {path: kargo/denetim_raporu.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: kargo/denetim_raporu.txt, value: 'gonderi_1.log kargo_1.log
+
+    gonderi_10.log kargo_10.log
+
+    gonderi_2.log kargo_2.log
+
+    gonderi_3.log kargo_3.log
+
+    gonderi_4.log kargo_4.log
+
+    gonderi_5.log kargo_5.log
+
+    gonderi_6.log kargo_6.log
+
+    gonderi_7.log kargo_7.log
+
+    gonderi_8.log kargo_8.log
+
+    gonderi_9.log kargo_9.log'}
+
+metadata:
+  domain: denetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0067
+    bundle: bul-tasi
+    tools:
+    - find
+    - xargs
+    konu: kargo-takibi
+    hedef: denetle
+    girdi: log-satiri
+    kaynak: cok-dosya
+    cikti: yeniden-adlandirilmis
+    kesif: yok
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

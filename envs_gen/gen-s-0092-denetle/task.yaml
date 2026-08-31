@@ -1,0 +1,68 @@
+id: gen-s-0092-denetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Bugün sunucularda sürekli tekrar eden hatalarla uğraşıyorduk ve bunların izini sürmek zaman alıyordu. Gün boyu gelen uyarıları incelemek yerini, benzersiz hataları bir araya getirip net bir rapor oluşturmak istiyorum.
+
+  sunucu_loglari.csv dosyasındaki tekrarlanan hata mesajlarını tespit ederek, sadece benzersiz olanları her satırda bir tane olacak şekilde hata_raporu.csv dosyasına yaz.
+
+setup: |
+  cat > sunucu_loglari.csv <<'CSV'
+  timestamp,level,message
+  2023-01-01T12:00:00,INFO,Sunucu basladi
+  2023-01-01T12:05:00,ERROR,Disk dolu
+  2023-01-01T12:10:00,INFO,Kullanici giris yapti
+  2023-01-01T12:15:00,ERROR,Baglanti koptu
+  2023-01-01T12:20:00,WARNING,Bellek az
+  2023-01-01T12:25:00,ERROR,Zaman asimi
+  2023-01-01T12:30:00,INFO,Sunucu durdu
+  2023-01-01T12:35:00,ERROR,Disk dolu
+  2023-01-01T12:40:00,INFO,Sunucu basladi
+  CSV
+
+goal_tr: >
+  sunucu_loglari.csv dosyasinda tekrarlanan hata mesajlarini bulun ve
+  benzersiz hatalari satir basina bir tane olacak sekilde hata_raporu.csv'ye
+  yaz
+
+reference_solution: |
+  grep 'ERROR' sunucu_loglari.csv | cut -d',' -f3 | sort | uniq > hata_raporu.csv
+
+outputs:
+  - {path: hata_raporu.csv, kind: file}
+
+checks:
+  - {op: file_content_eq, path: hata_raporu.csv, value: 'Baglanti koptu
+
+    Disk dolu
+
+    Zaman asimi'}
+
+metadata:
+  domain: denetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0092
+    bundle: sirala
+    tools:
+    - sort
+    - uniq
+    konu: sunucu-loglari
+    hedef: denetle
+    girdi: csv
+    kaynak: tek-dosya
+    cikti: csv
+    kesif: dosyayi-bul
+    uslup: baglam-gomulu
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

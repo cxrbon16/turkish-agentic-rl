@@ -1,0 +1,91 @@
+id: gen-s-0071-ayikla
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  reviews.csv dosyasındaki yorumları id, review ve text alanlarıyla JSON formatında ayıkla ve output.json’a kaydet.
+
+setup: |
+  printf "id,review,text\n1,good,This is great!\n2,bad,This is terrible.\n3,good,It is okay.\n4,neutral,No opinion.\n" > reviews.csv
+
+goal_tr: >
+  reviews.csv dosyasindaki yorumlari id, review ve text alanlari ile JSON
+  formatinda ayiklayip output.json'a yaz
+
+reference_solution: |
+  sed 's/\r$//' reviews.csv | head -n 1 > header.csv
+  sed '1d;s/\r$//' reviews.csv | tr '\n' ' ' | sed 's/ /,/g' | sed 's/,id,/[\n/g' | sed 's/$/\n]/' | sed 's/,/},\n{/g' | sed 's/}/&}/' | sed 's/id/"id": /g' | sed 's/review/"review": /g' | sed 's/text/"text": /g' | sed 's/^/\"/;s/$/\"/' | sed 's/ "/"/g' > output.json
+
+outputs:
+  - {path: output.json, kind: json}
+
+checks:
+  - {op: file_content_eq, path: output.json, value: '"1}},"
+
+    "{good}},"
+
+    "{This}},"
+
+    "{is}},"
+
+    "{great!}},"
+
+    "{2}},"
+
+    "{bad}},"
+
+    "{This}},"
+
+    "{is}},"
+
+    "{terrible.}},"
+
+    "{3}},"
+
+    "{good}},"
+
+    "{It}},"
+
+    "{is}},"
+
+    "{okay.}},"
+
+    "{4}},"
+
+    "{neutral}},"
+
+    "{No}},"
+
+    "{opinion.}},"
+
+    "{"
+
+    "]"'}
+
+metadata:
+  domain: ayikla
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0071
+    bundle: metin-duzenle
+    tools:
+    - sed
+    - tr
+    konu: urun-yorumlari
+    hedef: ayikla
+    girdi: csv
+    kaynak: tek-dosya
+    cikti: json
+    kesif: yok
+    uslup: terse
+    direnc: crlf
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

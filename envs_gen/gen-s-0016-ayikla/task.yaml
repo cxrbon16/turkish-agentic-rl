@@ -1,0 +1,56 @@
+id: gen-s-0016-ayikla
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  hastane dizinindeki tüm randevular.txt dosyalarından ilk ve son satırları al ve bunları sonuclar.txt dosyasına yaz.
+
+setup: |
+  mkdir -p hastane/{acil,poliklinik,lab}
+  printf "2023-01-01 08:00 Dr.Ayse\n2023-01-01 09:00 Dr.Mehmet\n2023-01-01 10:00 Dr.Fatma\n" > hastane/acil/randevular.txt
+  printf "2023-01-01 11:00 Dr.Kazim\n2023-01-01 12:00 Dr.Zeynep\n" > hastane/poliklinik/randevular.txt
+  printf "2023-01-01 13:00 Dr.Ali\n2023-01-01 14:00 Dr.Veli\n2023-01-01 15:00 Dr.Ayse\n" > hastane/lab/randevular.txt
+  printf "2023-01-01 16:00 Dr.Ayse\n# YANLIS KAYIT\n2023-01-01 17:00\n" > hastane/acil/ek.txt
+
+goal_tr: >
+  hastane dizinindeki tum randevular.txt dosyalarindan ilk ve son randevu
+  satirlarini al ve sonuclar.txt'ye yaz
+
+reference_solution: |
+  head -n 1 hastane/*/randevular.txt > sonuclar.txt
+  tail -n 1 hastane/*/randevular.txt >> sonuclar.txt
+  sort -u sonuclar.txt -o sonuclar.txt
+
+outputs:
+  - {path: sonuclar.txt, kind: lines}
+
+checks:
+  - {op: file_lines_eq, path: sonuclar.txt, value: ['2023-01-01 08:00 Dr.Ayse', '2023-01-01 10:00 Dr.Fatma', '2023-01-01 11:00 Dr.Kazim', '2023-01-01 12:00 Dr.Zeynep', '2023-01-01 13:00 Dr.Ali', '2023-01-01 15:00 Dr.Ayse', ==> hastane/acil/randevular.txt <==, ==> hastane/lab/randevular.txt <==, ==> hastane/poliklinik/randevular.txt <==]}
+
+metadata:
+  domain: ayikla
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0016
+    bundle: satir-araligi
+    tools:
+    - head
+    - tail
+    konu: hastane-randevulari
+    hedef: ayikla
+    girdi: duz-metin
+    kaynak: dizin-agaci
+    cikti: satir-listesi
+    kesif: yok
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

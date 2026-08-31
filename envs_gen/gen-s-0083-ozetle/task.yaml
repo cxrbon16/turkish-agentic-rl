@@ -1,0 +1,57 @@
+id: gen-s-0083-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  envanter.txt dosyasında "urunA" geçen satır sayısını sonuc.txt'ye sadece sayı olarak yaz.
+
+setup: |
+  cat > envanter.txt <<'EOF'
+  urunA 10
+  urunB 5
+  urunA 3
+  urunC 7
+  urunB 2
+  urunA 8
+  EOF
+
+goal_tr: >
+  envanter.txt dosyasinda urunA gecen satir sayisini sonuc.txt'ye sadece
+  sayi olarak yaz
+
+reference_solution: |
+  grep 'urunA' envanter.txt | wc -l > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '3'}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0083
+    bundle: say
+    tools:
+    - grep
+    - wc
+    konu: envanter
+    hedef: ozetle
+    girdi: duz-metin
+    kaynak: tek-dosya
+    cikti: tek-sayi
+    kesif: yok
+    uslup: terse
+    direnc: tekrar-eden-kayit
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

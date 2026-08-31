@@ -1,0 +1,76 @@
+id: gen-s-0002-denetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  sensor_data dizinindeki tüm dosyaları, içlerinde en az bir satır verisi bulunanlar valid dizinine, boş olanlar veya sadece başlık satırı içerenler invalid dizinine taşı.
+
+  Su sartlar saglanmali:
+  - valid ve invalid dizinleri oluşturulmalı
+  - temperature.csv, humidity.csv ve pressure.csv dosyaları valid dizinine taşınmalı
+  - empty.csv dosyası invalid dizinine taşınmalı
+
+setup: |
+  mkdir -p sensor_data
+  cat > sensor_data/temperature.csv <<'EOF'
+  timestamp,value,unit
+  2023-01-01T00:00:00,22.5,C
+  2023-01-01T01:00:00,21.8,C
+  EOF
+  cat > sensor_data/humidity.csv <<'EOF'
+  timestamp,value,unit
+  2023-01-01T00:00:00,45.2,%
+  EOF
+  touch sensor_data/empty.csv
+  cat > sensor_data/pressure.csv <<'EOF'
+  timestamp,value,unit
+  2023-01-01T00:00:00,1013.2,hPa
+  EOF
+
+goal_tr: >
+  sensor_data dizinindeki dosyalari icinde satiri olan ve olmayan seklinde
+  valid ve invalid alt dizinlerine tasinmis halde sun
+
+reference_solution: |
+  mkdir -p valid invalid
+  find sensor_data -type f -exec sh -c 'lines=$(wc -l < "$1"); [ "$lines" -gt 0 ] && mv "$1" valid/ || mv "$1" invalid/' _ {} \;
+
+outputs:
+  - {path: valid, kind: dir}
+  - {path: invalid, kind: dir}
+
+checks:
+  - {op: dir_entries_eq, path: invalid, value: [empty.csv]}
+  - {op: dir_entries_eq, path: valid, value: [humidity.csv, pressure.csv, temperature.csv]}
+  - {op: not_exists, path: sensor_data/empty.csv}
+  - {op: not_exists, path: sensor_data/humidity.csv}
+  - {op: not_exists, path: sensor_data/pressure.csv}
+  - {op: not_exists, path: sensor_data/temperature.csv}
+
+metadata:
+  domain: denetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0002
+    bundle: dizin-istatistik
+    tools:
+    - wc
+    - find
+    konu: sensor-olcumleri
+    hedef: denetle
+    girdi: csv
+    kaynak: cok-dosya
+    cikti: dizin-yapisi
+    kesif: yok
+    uslup: kabul-kriteri
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

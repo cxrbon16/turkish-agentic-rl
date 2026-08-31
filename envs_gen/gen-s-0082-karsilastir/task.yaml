@@ -1,0 +1,58 @@
+id: gen-s-0082-karsilastir
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Bugün ofiste siparişleri kontrol ederken, ortak kayıtları hızlıca bulabilmek için bir araca ihtiyaç duydum. Hava da oldukça güneşli, bu da işleri biraz kolaylaştırıyor. `siparisler` dizinindeki tüm CSV dosyalarında yer alan ortak satırları bulup bunları `sonuc.csv` dosyasına yaz.
+
+setup: |
+  mkdir -p siparisler
+  printf "1,2023-10-01,pizza,15.50\n2,2023-10-02,burger,12.00\n3,2023-10-01,pizza,15.50\n" > siparisler/musteri_A.csv
+  printf "1,2023-10-01,pizza,15.50\n3,2023-10-02,salad,8.75\n4,2023-10-01,burger,12.00\n" > siparisler/musteri_B.csv
+  printf "1,2023-10-01,pizza,15.50\n4,2023-10-02,burger,12.00\n5,2023-10-01,salad,8.75\n" > siparisler/musteri_C.csv
+
+goal_tr: >
+  siparisler dizinindeki tum CSV dosyalarinin ortak satırlarını sonuc.csv'ye
+  yaz
+
+reference_solution: |
+  sort siparisler/musteri_A.csv > a.sorted
+  sort siparisler/musteri_B.csv > b.sorted
+  comm -12 a.sorted b.sorted > ortak_ab.csv
+  sort siparisler/musteri_C.csv > c.sorted
+  comm -12 ortak_ab.csv c.sorted > sonuc.csv
+  diff sonuc.csv <(echo "1,2023-10-01,pizza,15.50") || true
+
+outputs:
+  - {path: sonuc.csv, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.csv, value: '1,2023-10-01,pizza,15.50'}
+
+metadata:
+  domain: karsilastir
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0082
+    bundle: karsilastir
+    tools:
+    - diff
+    - comm
+    konu: restoran-siparisleri
+    hedef: karsilastir
+    girdi: log-satiri
+    kaynak: cok-dosya
+    cikti: csv
+    kesif: yok
+    uslup: baglam-gomulu
+    direnc: yok
+    bukulme: yok
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

@@ -1,0 +1,52 @@
+id: gen-s-0009-birlestir
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  veriler dizinindeki tüm JSON dosyalarındaki sıcaklık değerlerini sicakliklar.txt dosyasında birleştir.
+
+setup: |
+  mkdir -p veriler
+  printf '{"sehir":"istanbul","sicaklik":22}\n{"sehir":"ankara","sicaklik":18}\n' > veriler/1.json
+  printf '{"sehir":"izmir","sicaklik":25}\n{"sehir":"antalya","sicaklik":28}\n' > veriler/2.json
+
+goal_tr: >
+  veriler dizinindeki tum JSON dosyalarindaki sicaklik degerlerini tek bir
+  dosyada birlestir
+
+reference_solution: |
+  cut -d: -f3 veriler/*.json | paste -sd, - > sicakliklar.txt
+
+outputs:
+  - {path: sicakliklar.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sicakliklar.txt, value: '22},18},25},28}'}
+
+metadata:
+  domain: birlestir
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0009
+    bundle: sutun
+    tools:
+    - cut
+    - paste
+    konu: hava-durumu-kayitlari
+    hedef: birlestir
+    girdi: json
+    kaynak: cok-dosya
+    cikti: birden-cok-dosya
+    kesif: yok
+    uslup: terse
+    direnc: crlf
+    bukulme: yok
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

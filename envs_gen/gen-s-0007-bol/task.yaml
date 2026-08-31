@@ -1,0 +1,83 @@
+id: gen-s-0007-bol
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Bugün ofiste dosya yönetimine dair bir sorunu çözmeye çalışıyordum ve bir de bakmışım, kalemler.tar dosyasını incelemek gerekiyor. Görevimiz, bu arşivdeki .ini ve .ini.gz dosyalarını ayıklayarak her birini ayrı dosya olarak cikti klasöründe oluşturmak. Özellikle cikti/kalemler.ini ve cikti/tuzak.ini dosyalarını istiyoruz.
+
+setup: |
+  cat > kalemler.ini <<'INI'
+  [Gelir]
+  miktar=1000
+  tarih=2023-01-01
+  [Gider]
+  miktar=500
+  tarih=2023-01-02
+  [Vergi]
+  miktar=200
+  tarih=2023-01-03
+  INI
+  touch tuzak.ini
+  gzip -c kalemler.ini > kalemler.ini.gz
+  tar -cf kalemler.tar kalemler.ini.gz tuzak.ini
+
+goal_tr: >
+  kalemler.tar dosyasindaki .ini.gz ve .ini dosyalarini ayikla ve her birini
+  ayri dosya olarak cikti klasorunde olustur
+
+reference_solution: |
+  mkdir -p cikti
+  tar -xf kalemler.tar -C cikti
+  gzip -d cikti/kalemler.ini.gz
+
+outputs:
+  - {path: cikti/kalemler.ini, kind: file}
+  - {path: cikti/tuzak.ini, kind: file}
+
+checks:
+  - {op: file_content_eq, path: cikti/kalemler.ini, value: '[Gelir]
+
+    miktar=1000
+
+    tarih=2023-01-01
+
+    [Gider]
+
+    miktar=500
+
+    tarih=2023-01-02
+
+    [Vergi]
+
+    miktar=200
+
+    tarih=2023-01-03'}
+  - {op: file_content_eq, path: cikti/tuzak.ini, value: ''}
+
+metadata:
+  domain: bol
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0007
+    bundle: arsiv
+    tools:
+    - tar
+    - gzip
+    konu: muhasebe-kalemleri
+    hedef: bol
+    girdi: ini
+    kaynak: tek-dosya
+    cikti: birden-cok-dosya
+    kesif: dosyayi-bul
+    uslup: baglam-gomulu
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

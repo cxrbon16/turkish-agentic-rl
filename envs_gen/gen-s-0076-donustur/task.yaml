@@ -1,0 +1,67 @@
+id: gen-s-0076-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) siparisler dizinindeki tüm JSON dosyalarından id, yemek ve fiyat alanlarını oku.
+  2) Bu alanları CSV formatında siparisler.csv dosyasına yaz.
+
+setup: |
+  mkdir -p siparisler
+  cat > siparisler/siparis1.json <<'EOF'
+  {"id":1,"musteri":"Ahmet","yemek":"Pide","fiyat":50}
+  EOF
+  cat > siparisler/siparis2.json <<'EOF'
+  {"id":2,"musteri":"Mehmet","yemek":"Kebap","fiyat":75}
+  EOF
+  cat > siparisler/siparis3.json <<'EOF'
+  {"id":3,"musteri":"Ayse","yemek":"Corba","fiyat":25}
+  EOF
+  touch siparisler/.hidden_tuzak
+
+goal_tr: >
+  siparisler dizinindeki tum JSON dosyalarindan id,yemek,fiyat alanlarini
+  CSV formatinda siparisler.csvye yaz
+
+reference_solution: |
+  find siparisler -type f -name '*.json' -print0 | sort -z | xargs -0 cat | rev | cut -d'"' -f2,4,6 | rev | sed 's/[{}"]//g' | sed 's/:/,/g' | sed '1i id,yemek,fiyat' > siparisler.csv
+
+outputs:
+  - {path: siparisler.csv, kind: file}
+
+checks:
+  - {op: file_content_eq, path: siparisler.csv, value: 'id,yemek,fiyat
+
+    yemekPidefiyat
+
+    yemekKebapfiyat
+
+    yemekCorbafiyat'}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0076
+    bundle: ters-cevir
+    tools:
+    - rev
+    - cut
+    konu: restoran-siparisleri
+    hedef: donustur
+    girdi: json
+    kaynak: cok-dosya
+    cikti: csv
+    kesif: yok
+    uslup: numarali-emir
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

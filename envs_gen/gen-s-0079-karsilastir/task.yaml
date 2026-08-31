@@ -1,0 +1,72 @@
+id: gen-s-0079-karsilastir
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  notlar/sinifA.txt ve notlar/sinifB.txt dosyalarındaki ortak öğrencilerin isimlerini sıralı olarak notlar/ortak_ogrenciler.txt'ye yaz.
+
+setup: |
+  mkdir -p notlar
+  cat > notlar/sinifA.txt <<'EOF'
+  Ali 85
+  Ayse 90
+  Mehmet 78
+  EOF
+  cat > notlar/sinifB.txt <<'EOF'
+  Ali 92
+  Ayse 88
+  Mehmet 75
+  EOF
+  cat > notlar/tuzak.txt <<'EOF'
+  Hakan 100
+  EOF
+  touch notlar/empty_file.txt
+
+goal_tr: >
+  sinifA.txt ve sinifB.txt dosyalarındaki ortak öğrenci isimlerini sıralı
+  olarak ortak_ogrenciler.txt'ye yaz
+
+reference_solution: |
+  sort notlar/sinifA.txt > notlar/sinifA_sorted.txt
+  sort notlar/sinifB.txt > notlar/sinifB_sorted.txt
+  cut -d' ' -f1 notlar/sinifA_sorted.txt > notlar/sinifA_isimler.txt
+  cut -d' ' -f1 notlar/sinifB_sorted.txt > notlar/sinifB_isimler.txt
+  comm -12 notlar/sinifA_isimler.txt notlar/sinifB_isimler.txt > notlar/ortak_ogrenciler.txt
+
+outputs:
+  - {path: notlar/ortak_ogrenciler.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: notlar/ortak_ogrenciler.txt, value: 'Ali
+
+    Ayse
+
+    Mehmet'}
+
+metadata:
+  domain: karsilastir
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0079
+    bundle: kume-farki
+    tools:
+    - comm
+    - sort
+    konu: ogrenci-notlari
+    hedef: karsilastir
+    girdi: ini
+    kaynak: dizin-agaci
+    cikti: birden-cok-dosya
+    kesif: yok
+    uslup: terse
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

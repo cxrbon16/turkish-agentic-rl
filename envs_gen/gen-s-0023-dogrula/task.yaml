@@ -1,0 +1,61 @@
+id: gen-s-0023-dogrula
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Bugün sunucularda bir sorun tespit ettik ve log kayıtlarını incelemek gerekiyor. Hava da oldukça sıcak, odada klimanın sesi bile duymuyorum artık. "log 1.txt" ve "log 2.txt" dosyalarında ortak olan satırları bulup, bunları "dogrula.txt" dosyasına kaydet.
+
+setup: |
+  cat > 'log 1.txt' <<'EOF'
+  2024-01-01 INFO Service started
+  2024-01-01 ERROR Disk full
+  2024-01-02 INFO User login
+  2024-01-02 ERROR Connection lost
+  EOF
+  cat > 'log 2.txt' <<'EOF'
+  2024-01-01 INFO Service started
+  2024-01-01 ERROR Disk full
+  2024-01-02 ERROR Timeout
+  2024-01-02 WARNING Memory low
+  EOF
+
+goal_tr: >
+  log 1.txt ve log 2.txt dosyalarında ortak olan satırları dogrula.txt'ye
+  yaz
+
+reference_solution: |
+  sed 's/^[^ ]* //' 'log 1.txt' | tr ' ' '_' | sort > temp1 && sed 's/^[^ ]* //' 'log 2.txt' | tr ' ' '_' | sort > temp2 && comm -12 temp1 temp2 | tr '_' ' ' > dogrula.txt && rm temp1 temp2
+
+outputs:
+  - {path: dogrula.txt, kind: lines}
+
+checks:
+  - {op: file_lines_eq, path: dogrula.txt, value: [ERROR Disk full, INFO Service started]}
+
+metadata:
+  domain: dogrula
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0023
+    bundle: metin-duzenle
+    tools:
+    - sed
+    - tr
+    konu: sunucu-loglari
+    hedef: dogrula
+    girdi: log-satiri
+    kaynak: iki-dosya-capraz
+    cikti: satir-listesi
+    kesif: yok
+    uslup: baglam-gomulu
+    direnc: bosluklu-ad
+    bukulme: tuzak-dosya
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

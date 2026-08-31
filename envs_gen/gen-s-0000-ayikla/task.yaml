@@ -1,0 +1,83 @@
+id: gen-s-0000-ayikla
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  kargo klasöründeki tüm CSV dosyalarında 1. sütunu ters çevirip 2. sütununu alarak kargo.json adlı bir JSON dizisi oluştur.
+
+  Su sartlar saglanmali:
+  - kargo.json dosyası oluşturulmalı.
+  - Her bir CSV dosyasındaki satırlar işlenmeli.
+  - 1. sütun ters çevrilmeli.
+  - 2. sütun olduğu gibi alınmalı.
+  - Sonuç, bir JSON dizisi olmalı.
+
+setup: |
+  mkdir -p kargo
+  cat > kargo/1.csv <<'EOF'
+  TR123,100,ankara
+  TR456,200,izmir
+  TR789,150,antalya
+  EOF
+  cat > kargo/2.csv <<'EOF'
+  TR222,50,istanbul
+  TR333,75,ursfa
+  TR555,120,bursa
+  EOF
+  touch kargo/.hidden_empty
+
+goal_tr: >
+  kargo klasöründeki tüm CSV dosyalarında 1. sütunu ters çevirip 2. sütunu
+  alarak JSON dizisi oluştur
+
+reference_solution: |
+  {
+    echo '['
+    first=true
+    find kargo -type f -name '*.csv' | xargs cat | while IFS=, read -r col1 col2 _; do
+      key=$(echo "$col1" | rev | cut -d',' -f1)
+      value=$(echo "$col2" | cut -d',' -f1)
+      if [ "$first" = true ]; then
+        first=false
+      else
+        echo ','
+      fi
+      printf '  {"%s": %s}' "$key" "$value"
+    done
+    echo ''
+    echo ']'
+  } > kargo.json
+
+outputs:
+  - {path: kargo.json, kind: json}
+
+checks:
+  - {op: json_eq, path: kargo.json, value: [{321RT: 100}, {654RT: 200}, {987RT: 150}, {222RT: 50}, {333RT: 75}, {555RT: 120}]}
+
+metadata:
+  domain: ayikla
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0000
+    bundle: ters-cevir
+    tools:
+    - rev
+    - cut
+    konu: kargo-takibi
+    hedef: ayikla
+    girdi: csv
+    kaynak: cok-dosya
+    cikti: json
+    kesif: yok
+    uslup: kabul-kriteri
+    direnc: baslik-yok
+    bukulme: tuzak-dosya
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

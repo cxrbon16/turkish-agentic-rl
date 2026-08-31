@@ -1,0 +1,71 @@
+id: gen-s-0018-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  siparisler.log dosyasındaki her satırın alanlarını tersten sırala ve sonuçları output/ters_siparisler.txt ve output/ters_urunler.txt dosyalarına her satırda bir tane olacak şekilde kaydet.
+
+setup: |
+  cat > siparisler.log <<'LOG'
+  2023-10-01,12:30:45,1001,musteriA,margherita
+  2023-10-01,12:35:22,1002,musteriB,pepperoni
+  2023-10-02,19:15:10,1003,musteriC,vegetariana
+  2023-10-02,20:45:30,1004,musteriA,margherita
+  LOG
+
+goal_tr: >
+  siparisler.log dosyasindaki her satirin alanlarini tersten sirala ve her
+  satiri ayri bir dosyaya kaydet
+
+reference_solution: |
+  mkdir -p output
+  rev siparisler.log | cut -d, -f1 --complement > output/ters_siparisler.txt
+  rev siparisler.log | cut -d, -f1 > output/ters_urunler.txt
+
+outputs:
+  - {path: output/ters_siparisler.txt, kind: file}
+  - {path: output/ters_urunler.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: output/ters_siparisler.txt, value: 'Airetsum,1001,54:03:21,10-01-3202
+
+    Biretsum,2001,22:53:21,10-01-3202
+
+    Ciretsum,3001,01:51:91,20-01-3202
+
+    Airetsum,4001,03:54:02,20-01-3202'}
+  - {op: file_content_eq, path: output/ters_urunler.txt, value: 'atirehgram
+
+    inoreppep
+
+    anairategev
+
+    atirehgram'}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0018
+    bundle: ters-cevir
+    tools:
+    - rev
+    - cut
+    konu: restoran-siparisleri
+    hedef: donustur
+    girdi: log-satiri
+    kaynak: tek-dosya
+    cikti: dizin-yapisi
+    kesif: dosyayi-bul
+    uslup: terse
+    direnc: yok
+    bukulme: yok
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

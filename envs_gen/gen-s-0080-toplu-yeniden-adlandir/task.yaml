@@ -1,0 +1,62 @@
+id: gen-s-0080-toplu-yeniden-adlandir
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  restoran dizin ağacındaki tüm siparis_*.csv dosyalarını siparisler klasörüne taşıyarak adlarını sayısal sıra numarası olacak şekilde yenile ve kaç dosya taşındığını sayı olarak sonuc.txt'ye yaz, .hidden_tuzak.csv hariç.
+
+setup: |
+  mkdir -p restoran/siparisler/{2023,2024}
+  touch restoran/siparisler/2023/siparis_001.csv
+  touch restoran/siparisler/2023/siparis_002.csv
+  touch restoran/siparisler/2024/siparis_003.csv
+  touch restoran/siparisler/2024/siparis_001_ek.csv
+  echo "fake" > restoran/siparisler/2023/.hidden_tuzak.csv
+
+goal_tr: >
+  restoran dizin agacindaki tum siparis_*.csv dosyalarini siparisler
+  klasorune tasiyarak adlarini sayisal sira numarasi olacak sekilde yenile
+  ve kac dosya tasindigini sayi olarak sonuc.txt'ye yaz
+
+reference_solution: |
+  mkdir -p siparisler
+  mv restoran/siparisler/2023/siparis_*.csv restoran/siparisler/2024/siparis_*.csv siparisler/
+  ls siparisler/siparis_*.csv | wc -l > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '4'}
+  - {op: not_exists, path: restoran/siparisler/2023/siparis_001.csv}
+  - {op: not_exists, path: restoran/siparisler/2023/siparis_002.csv}
+  - {op: not_exists, path: restoran/siparisler/2024/siparis_001_ek.csv}
+  - {op: not_exists, path: restoran/siparisler/2024/siparis_003.csv}
+
+metadata:
+  domain: toplu-yeniden-adlandir
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0080
+    bundle: dosya-duzen
+    tools:
+    - mkdir
+    - mv
+    konu: restoran-siparisleri
+    hedef: toplu-yeniden-adlandir
+    girdi: csv
+    kaynak: dizin-agaci
+    cikti: tek-sayi
+    kesif: yok
+    uslup: kisit-sakli
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

@@ -1,0 +1,53 @@
+id: gen-s-0072-yeniden-duzenle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  weather.csv dosyasındaki her satırın sütunlarını noktalı virgülle birleştir ve sonucu sonuc.txt'de satir başı listele.
+
+setup: |
+  printf 'date,temp,humidity,wind\n2023-01-01,15,65,12\n2023-01-02,18,70,8\n2023-01-03,14,60,15\n2023-01-04,16,68,10\n2023-01-05,20,75,5\n' > weather.csv
+
+goal_tr: >
+  weather.csv dosyasindaki her satirin sutunlarini noktali virgulle
+  birlestir ve sonuc.txt'de satir basi listele
+
+reference_solution: |
+  seq 1 $(wc -l < weather.csv) | while read i; do
+    printf "%s" "$(head -n $i weather.csv | tail -n 1)" | tr ',' ';' >> sonuc.txt
+    printf "\n" >> sonuc.txt
+  done
+
+outputs:
+  - {path: sonuc.txt, kind: lines}
+
+checks:
+  - {op: file_lines_eq, path: sonuc.txt, value: [date;temp;humidity;wind, 2023-01-01;15;65;12, 2023-01-02;18;70;8, 2023-01-03;14;60;15, 2023-01-04;16;68;10, 2023-01-05;20;75;5]}
+
+metadata:
+  domain: yeniden-duzenle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0072
+    bundle: uret
+    tools:
+    - printf
+    - seq
+    konu: hava-durumu-kayitlari
+    hedef: yeniden-duzenle
+    girdi: csv
+    kaynak: tek-dosya
+    cikti: satir-listesi
+    kesif: yok
+    uslup: terse
+    direnc: bom
+    bukulme: yok
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

@@ -1,0 +1,77 @@
+id: gen-s-0069-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  `data` dizinindeki her şehir için günlük kayıtları temizleyerek sıcaklık değerlerini `output/temperatures` dizinine, hava durumlarını `output/weather` dizinine kaydet ve tüm şehirlerin sıcaklıklarını `output/all_temperatures.txt` dosyasında, tüm hava durumlarını da `output/all_weather.txt` dosyasında topla.
+
+setup: |
+  mkdir -p data
+  printf "istanbul\n20\nsunny\nhigh\n" > data/istanbul_day1.txt
+  printf "istanbul\n25\nrainy\nmedium\n" > data/istanbul_day2.txt
+  printf "istanbul\n18\ncloudy\nlow\n" > data/istanbul_day3.txt
+  printf "ankara\n22\nsunny\nmedium\n" > data/ankara_day1.txt
+  printf "ankara\n19\ncloudy\nhigh\n" > data/ankara_day2.txt
+  printf "ankara\n24\nrainy\nmedium\n" > data/ankara_day3.txt
+  printf "izmir\n28\nsunny\nhigh\n" > data/izmir_day1.txt
+  printf "izmir\n27\nsunny\nmedium\n" > data/izmir_day2.txt
+  printf "izmir\n20\nrainy\nlow\n" > data/izmir_day3.txt
+  echo "corrupt" >> data/ankara_day2.txt
+  echo "extra line" >> data/istanbul_day2.txt
+
+goal_tr: >
+  data dizinindeki her sehirin gunluk kayitlarini temizleyip sicaklik, hava
+  ve nem degerlerini ayri dosyalarda topla
+
+reference_solution: |
+  mkdir -p output/temperatures output/weather
+  for f in data/*_day*.txt; do
+    city=$(basename "$f" | cut -d_ -f1)
+    day=$(basename "$f" | cut -d_ -f2 | tr -d 'day')
+    clean_file="output/clean_${city}_${day}.txt"
+    grep -E '^[a-z]+$|^[0-9]+$' "$f" > "$clean_file"
+    cut -f2 "$clean_file" > "output/temperatures/${city}_${day}.txt"
+    cut -f3 "$clean_file" > "output/weather/${city}_${day}.txt"
+  done
+  paste output/temperatures/istanbul_*.txt output/temperatures/ankara_*.txt output/temperatures/izmir_*.txt > output/all_temperatures.txt
+  paste output/weather/istanbul_*.txt output/weather/ankara_*.txt output/weather/izmir_*.txt > output/all_weather.txt
+
+outputs:
+  - {path: output/temperatures, kind: dir}
+  - {path: output/weather, kind: dir}
+  - {path: output/all_temperatures.txt, kind: file}
+  - {path: output/all_weather.txt, kind: file}
+
+checks:
+  - {op: dir_entries_eq, path: output/temperatures, value: [ankara_1.txt.txt, ankara_2.txt.txt, ankara_3.txt.txt, istanbul_1.txt.txt, istanbul_2.txt.txt, istanbul_3.txt.txt, izmir_1.txt.txt, izmir_2.txt.txt, izmir_3.txt.txt]}
+  - {op: dir_entries_eq, path: output/weather, value: [ankara_1.txt.txt, ankara_2.txt.txt, ankara_3.txt.txt, istanbul_1.txt.txt, istanbul_2.txt.txt, istanbul_3.txt.txt, izmir_1.txt.txt, izmir_2.txt.txt, izmir_3.txt.txt]}
+  - {op: file_content_eq, path: output/all_temperatures.txt, value: "istanbul\tistanbul\tistanbul\tankara\tankara\tankara\tizmir\tizmir\tizmir\n20\t25\t18\t22\t19\t24\t28\t27\t20\nsunny\trainy\tcloudy\tsunny\tcloudy\trainy\tsunny\tsunny\trainy\nhigh\tmedium\tlow\tmedium\thigh\tmedium\thigh\tmedium\tlow\n\t\t\t\tcorrupt"}
+  - {op: file_content_eq, path: output/all_weather.txt, value: "istanbul\tistanbul\tistanbul\tankara\tankara\tankara\tizmir\tizmir\tizmir\n20\t25\t18\t22\t19\t24\t28\t27\t20\nsunny\trainy\tcloudy\tsunny\tcloudy\trainy\tsunny\tsunny\trainy\nhigh\tmedium\tlow\tmedium\thigh\tmedium\thigh\tmedium\tlow\n\t\t\t\tcorrupt"}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0069
+    bundle: sutun
+    tools:
+    - cut
+    - paste
+    konu: hava-durumu-kayitlari
+    hedef: ozetle
+    girdi: duz-metin
+    kaynak: cok-dosya
+    cikti: dizin-yapisi
+    kesif: dolayli-hedef
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

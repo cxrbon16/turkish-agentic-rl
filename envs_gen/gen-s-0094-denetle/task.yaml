@@ -1,0 +1,67 @@
+id: gen-s-0094-denetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  kutuphane dizinindeki okunabilir dosyaların sayısını ve bu dosyaların toplam satır sayısını denetim/rapor.txt dosyasına satır satır yaz.
+
+  Şu koşullar sağlanmalı:
+  - denetim/rapor.txt dosyası oluşturulmalı.
+  - Dosyanın ilk satırında okunabilir dosyaların sayısı yer almalı.
+  - Dosyanın ikinci satırında okunabilir dosyaların toplam satır sayısı yer almalı.
+  - Sadece sayılar yazılmalı, başka metin olmamalı.
+
+setup: |
+  mkdir -p kutuphane
+  for i in {1..5}; do
+    touch kutuphane/kitap_$i.txt
+    echo "Yazar$i" > kutuphane/kitap_$i.txt
+  done
+  touch kutuphane/bozuk_dosya
+  touch kutuphane/okunmayan_dosya
+  chmod 000 kutuphane/okunmayan_dosya
+
+goal_tr: >
+  kutuphane dizinindeki okunabilir dosyaların sayısını ve toplam satır
+  sayısını denetim/rapor.txt dosyasına satır satır yaz
+
+reference_solution: |
+  mkdir -p denetim
+  find kutuphane -type f -readable | wc -l > denetim/rapor.txt
+  find kutuphane -type f -readable -exec cat {} + | wc -l >> denetim/rapor.txt
+
+outputs:
+  - {path: denetim/rapor.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: denetim/rapor.txt, value: '7
+
+    5'}
+
+metadata:
+  domain: denetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0094
+    bundle: dizin-istatistik
+    tools:
+    - wc
+    - find
+    konu: kutuphane-kayitlari
+    hedef: denetle
+    girdi: duz-metin
+    kaynak: cok-dosya
+    cikti: dizin-yapisi
+    kesif: yok
+    uslup: kabul-kriteri
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

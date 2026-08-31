@@ -1,0 +1,70 @@
+id: gen-s-0088-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  randevular.csv dosyasındaki sütunları tersten sıralayarak cikti.csv dosyasına kaydet.
+
+  Şu şartlar sağlanmalı:
+  - cikti.csv dosyası oluşturulmalı.
+  - Sütun sırası tam olarak tersten olmalı.
+
+setup: |
+  cat > randevular.csv <<'CSV'
+  id,hasta_adi,soyadi,doctor,tarih,saat
+  1,Ahmet,Yilmaz,Dr.Smith,2023-10-01,09:00
+  2,Mehmet,Demir,Dr.Johnson,2023-10-01,10:00
+  3,Ayse,Kaya,Dr.Smith,2023-10-01,11:00
+  4,Fatma,Ozturk,Dr.Johnson,2023-10-02,09:00
+  5,Can,Balci,Dr.Smith,2023-10-02,10:00
+  CSV
+
+goal_tr: >
+  randevular.csv dosyasinda sutunlari tersten sirala ve cikti.csv'ye kaydet
+
+reference_solution: |
+  rev randevular.csv | cut -d',' -f1- | rev > cikti.csv
+
+outputs:
+  - {path: cikti.csv, kind: file}
+
+checks:
+  - {op: file_content_eq, path: cikti.csv, value: 'id,hasta_adi,soyadi,doctor,tarih,saat
+
+    1,Ahmet,Yilmaz,Dr.Smith,2023-10-01,09:00
+
+    2,Mehmet,Demir,Dr.Johnson,2023-10-01,10:00
+
+    3,Ayse,Kaya,Dr.Smith,2023-10-01,11:00
+
+    4,Fatma,Ozturk,Dr.Johnson,2023-10-02,09:00
+
+    5,Can,Balci,Dr.Smith,2023-10-02,10:00'}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0088
+    bundle: ters-cevir
+    tools:
+    - rev
+    - cut
+    konu: hastane-randevulari
+    hedef: donustur
+    girdi: csv
+    kaynak: tek-dosya
+    cikti: csv
+    kesif: dosyayi-bul
+    uslup: kabul-kriteri
+    direnc: yok
+    bukulme: yok
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

@@ -1,0 +1,62 @@
+id: gen-s-0081-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) veriler dizinindeki tüm JSON dosyalarını oku.
+
+  2) Her JSON dosyasındaki "category" alanını kullanarak ürünleri kategorilerine göre grupla.
+
+  3) Her kategori için ürün sayısını, toplu fiyatını ve ürünlerin adlarını liste halinde hazırla.
+
+  4) Her kategori için hazırladığın bilgileri içeren ayrıntılı rapor dosyalarını raporlar dizininde oluştur.
+
+setup: |
+  mkdir -p veriler
+  printf '{"id":1,"name":"kalem","price":5,"category":"ofis"}\n' > veriler/1.json
+  printf '{"id":2,"name":"silgi","price":3,"category":"ofis"}\n' > veriler/2.json
+  printf '{"id":3,"name":"defter","price":10,"category":"kirtasiye"}\n' > veriler/3.json
+  printf '{"id":4,"name":"kalem","price":7,"category":"kirtasiye"}\n' > veriler/4.json
+  touch veriler/5.json
+  mkdir -p raporlar
+
+goal_tr: >
+  veriler dizinindeki JSON dosyalarini kategori bazinda ozetleyerek her
+  kategori icin ayrintili rapor dosyasi olustur
+
+reference_solution: |
+  find veriler -name '*.json' -type f | xargs grep -l 'category' | xargs -I {} sh -c 'cat {} | grep -oP '"'"'\"category\":\"\K[^\"]+'"'"' | sort | uniq -c | awk '"'"'{print $2, $1}'"'"' > raporlar/$(grep -oP '"'"'\"category\":\"\K[^\"]+'"'"' {} | head -n1).txt'
+
+outputs:
+  - {path: raporlar, kind: dir}
+
+checks:
+  - {op: dir_entries_eq, path: raporlar, value: [kirtasiye.txt, ofis.txt]}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0081
+    bundle: cok-dosya-ara
+    tools:
+    - xargs
+    - grep
+    konu: muhasebe-kalemleri
+    hedef: ozetle
+    girdi: json
+    kaynak: cok-dosya
+    cikti: dizin-yapisi
+    kesif: yok
+    uslup: numarali-emir
+    direnc: bos-dosya
+    bukulme: yok
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

@@ -1,0 +1,68 @@
+id: gen-s-0059-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  randevular1.csv ve randevular2.csv dosyalarındaki ortak benzersiz satırları bul ve sayısını sonuc.txt dosyasına sadece sayı olarak yaz.
+
+setup: |
+  cat > randevular1.csv <<'CSV'
+  HastaID,DoktorID,Tarih
+  101,201,2023-10-01
+  102,202,2023-10-01
+  101,201,2023-10-02
+  103,203,2023-10-02
+  102,202,2023-10-03
+  CSV
+  cat > randevular2.csv <<'CSV'
+  HastaID,DoktorID,Tarih
+  101,201,2023-10-01
+  103,202,2023-10-02
+  104,204,2023-10-03
+  101,201,2023-10-04
+  102,202,2023-10-01
+  CSV
+
+goal_tr: >
+  iki randevu dosyasinda ortak olan benzersiz satirlari bul ve sayisini
+  sonuc.txt'ye sadece sayi olarak yaz
+
+reference_solution: |
+  sort randevular1.csv | uniq > s1.csv
+  sort randevular2.csv | uniq > s2.csv
+  comm -12 s1.csv s2.csv | wc -l > sonuc.txt
+  rm s1.csv s2.csv
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '3'}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0059
+    bundle: sirala
+    tools:
+    - sort
+    - uniq
+    konu: hastane-randevulari
+    hedef: donustur
+    girdi: csv
+    kaynak: iki-dosya-capraz
+    cikti: tek-sayi
+    kesif: veriye-bak
+    uslup: kisit-sakli
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

@@ -1,0 +1,71 @@
+id: gen-s-0065-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Bugün depo stok takibini güncelleme zamanı geldi, ancak eldeki veriler dağınık duruyor. kargo dizinindeki tüm dosyalardan ürün adlarını ve toplam miktarlarını toplayıp, bunları urun ve toplam_miktar sütunları olarak ozet.csv dosyasına CSV formatında yazman gerekiyor.
+
+setup: |
+  mkdir -p kargo/{gelen,ciro,depo}
+  cat > kargo/gelen/2024-01-01.txt <<'EOF'
+  URUN1 100
+  URUN2 200
+  URUN1 50
+  URUN3 75
+  EOF
+  cat > kargo/ciro/2024-01-01.txt <<'EOF'
+  URUN2 150
+  URUN3 100
+  URUN1 75
+  EOF
+  cat > kargo/depo/2024-01-01.txt <<'EOF'
+  URUN1 25
+  URUN2 100
+  URUN3 50
+  EOF
+
+goal_tr: >
+  kargo dizinindeki tum dosyalardan urun adini ve toplam miktarini
+  urun,toplam_miktar sutunlari olarak ozet.csv'ye CSV formatinda yaz
+
+reference_solution: |
+  find kargo -type f -exec cat {} + | awk '{sum[$1]+=$2} END {print "urun,toplam_miktar"; for (i in sum) print i "," sum[i]}' | sort > ozet.csv
+
+outputs:
+  - {path: ozet.csv, kind: csv}
+
+checks:
+  - {op: file_content_eq, path: ozet.csv, value: 'URUN1,250
+
+    URUN2,450
+
+    URUN3,225
+
+    urun,toplam_miktar'}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0065
+    bundle: awk
+    tools:
+    - awk
+    konu: kargo-takibi
+    hedef: ozetle
+    girdi: duz-metin
+    kaynak: dizin-agaci
+    cikti: csv
+    kesif: yok
+    uslup: baglam-gomulu
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

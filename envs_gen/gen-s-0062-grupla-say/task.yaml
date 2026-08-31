@@ -1,0 +1,71 @@
+id: gen-s-0062-grupla-say
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: ""
+
+setup: |
+  mkdir -p veriler
+  cat > veriler/kalemler1.tsv <<'EOF'
+  kalem_id	kalem_adi	kategori
+  1	Kursun Kalem	Kirtasiye
+  2	Tukenmez Kalem	Kirtasiye
+  3	Mavi Kalem	Kirtasiye
+  4	Siyah Kalem	Kirtasiye
+  5	Kirmizi Kalem	Kirtasiye
+  EOF
+  cat > veriler/kalemler2.tsv <<'EOF'
+  kalem_id	kalem_adi	kategori
+  3	Mavi Kalem	Ofis
+  6	Yesil Kalem	Ofis
+  1	Kursun Kalem	Ofis
+  7	Mor Kalem	Ofis
+  EOF
+
+goal_tr: >
+  veriler dizinindeki tum tsv dosyalarindaki kalem_adi sutununu okuyarak her
+  kalem adinin kac kez gectigini say ve sonuclari kategoriler dizini altinda
+  her kalem adi icin ayri bir dosyada sakla
+
+reference_solution: |
+  mkdir -p kategoriler
+  find veriler -name '*.tsv' -exec cat {} + | awk -F'\t' 'NR>1{print $2}' | sort | uniq -c | awk '{print $2 " " $1}' | while read kalem sayi; do
+    printf "%s" "$sayi" > "kategoriler/${kalem}.txt"
+  done
+
+outputs:
+  - {path: kategoriler/Kursun Kalem.txt, kind: file}
+  - {path: kategoriler/Tukenmez Kalem.txt, kind: file}
+  - {path: kategoriler/Mavi Kalem.txt, kind: file}
+  - {path: kategoriler/Siyah Kalem.txt, kind: file}
+  - {path: kategoriler/Kirmizi Kalem.txt, kind: file}
+  - {path: kategoriler/Yesil Kalem.txt, kind: file}
+  - {path: kategoriler/Mor Kalem.txt, kind: file}
+
+metadata:
+  domain: grupla-say
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0062
+    bundle: dizin-istatistik
+    tools:
+    - wc
+    - find
+    konu: muhasebe-kalemleri
+    hedef: grupla-say
+    girdi: tsv
+    kaynak: iki-dosya-capraz
+    cikti: dizin-yapisi
+    kesif: yok
+    uslup: numarali-emir
+    direnc: bom
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

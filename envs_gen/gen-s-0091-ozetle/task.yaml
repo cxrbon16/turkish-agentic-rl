@@ -1,0 +1,70 @@
+id: gen-s-0091-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  envanter klasöründeki her dosyada yer alan ürün kodlarını (1-8. karakterler) al, her dosya için tek sütun halinde listele ve bu listeleri kodlar.txt dosyasında son satırda newline olmadan birleştir.
+
+setup: |
+  mkdir -p envanter
+  cat > envanter/urun1.txt <<'EOF'
+  101A4567KitchenTable       25000
+  202B3210Chair             1200
+  303C9876Lamp              800
+  EOF
+  cat > envanter/urun2.txt <<'EOF'
+  101A4567KitchenTable       25000
+  404D1111Sofa              45000
+  505E2222Mirror            3000
+  EOF
+  cat > envanter/urun3.txt <<'EOF'
+  303C9876Lamp              800
+  606F3333Bookshelf        18000
+  707G4444Cupboard         15000
+  EOF
+
+goal_tr: >
+  envanter klasöründeki dosyalarda sabit genişlikteki ürün kodlarını (1-8.
+  karakterler) al ve her dosya için tek sütun halinde listele, son satırda
+  newline olmadan birleştir
+
+reference_solution: |
+  cut -c 1-8 envanter/*.txt | paste -d '' - - - | sed 's/\t//g' > kodlar.txt
+
+outputs:
+  - {path: kodlar.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: kodlar.txt, value: '101A4567202B3210303C9876
+
+    101A4567404D1111505E2222
+
+    303C9876606F3333707G4444'}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0091
+    bundle: sutun
+    tools:
+    - cut
+    - paste
+    konu: envanter
+    hedef: ozetle
+    girdi: sabit-genislik
+    kaynak: cok-dosya
+    cikti: satir-listesi
+    kesif: dosyayi-bul
+    uslup: kisit-sakli
+    direnc: son-newline-yok
+    bukulme: yok
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

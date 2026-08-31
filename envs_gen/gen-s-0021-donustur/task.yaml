@@ -1,0 +1,58 @@
+id: gen-s-0021-donustur
+split: single_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 8
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) sensors dizinindeki her .ini dosyasının ilk ve ikinci kolonlarını al.
+  2) Bu verileri sensors/out dizinine, aynı isimle .csv uzantılı dosyaya virgülle birleştirilmiş olarak yaz.
+
+setup: |
+  mkdir -p sensors
+  printf "sensor_1\t42\t750\nsensor_2\t17\t320\nsensor_3\t89\t112\n" > sensors/sensor_1.ini
+  printf "sensor_4\t53\t404\nsensor_5\t31\t888\n" > sensors/sensor_2.ini
+
+goal_tr: >
+  sensors dizinindeki her .ini dosyasindaki ilk ve ikinci kolonlari alip
+  sensors/out/ dizinine ayni isimle .csv uzantili dosyaya virgulle
+  birlestirilmis olarak yaz
+
+reference_solution: |
+  mkdir -p sensors/out
+  for f in sensors/*.ini; do
+    cut -f1,2 "$f" | tr '\t' ',' > sensors/out/$(basename "$f" .ini).csv
+  done
+  paste sensors/out/*.csv > sensors/out/combined.csv
+
+outputs:
+  - {path: sensors/out, kind: dir}
+
+checks:
+  - {op: dir_entries_eq, path: sensors/out, value: [combined.csv, sensor_1.csv, sensor_2.csv]}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0021
+    bundle: sutun
+    tools:
+    - cut
+    - paste
+    konu: sensor-olcumleri
+    hedef: donustur
+    girdi: ini
+    kaynak: cok-dosya
+    cikti: dizin-yapisi
+    kesif: yok
+    uslup: numarali-emir
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 1
+    image: verifiable-dataset/base:latest
+    metadata: {}

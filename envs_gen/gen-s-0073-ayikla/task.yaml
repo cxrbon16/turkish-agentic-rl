@@ -1,0 +1,58 @@
+id: gen-s-0073-ayikla
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) muhasebe dizin ağacındaki kalemler.json dosyasındaki her kalem adını tersten yaz.
+  2) Bosluk içeren kalem adlarını ayıkla.
+  3) Elde edilen adları adlar.json dosyasına kaydet.
+
+setup: |
+  mkdir -p muhasebe/2023
+  cat > muhasebe/2023/kalemler.json <<'EOF'
+  {"items": [{"name": "pencil", "price": 1.5, "category": "stationery"}, {"name": "notebook", "price": 3.2, "category": "stationery"}, {"name": "calculator", "price": 12.0, "category": "electronics"}, {"name": "pen blue", "price": 2.0, "category": "stationery"}, {"name": "pen red", "price": 2.0, "category": "stationery"}]}
+  EOF
+  touch muhasebe/2023/bozuk_dosya.txt
+
+goal_tr: >
+  muhasebe dizin agacinda JSON dosyalarindaki kalem adlarini tersten ve
+  bosluklu adlari ayiklayip adlar.json'a kaydet
+
+reference_solution: |
+  find muhasebe -type f -name "*.json" | xargs cat | grep -o '"name": *"[^"]*"' | cut -d'"' -f4 | rev | sort -u > adlar.json
+  sed -i 's/^/"/;s/$/"/' adlar.json
+  echo '[' > temp.json && paste -sd, temp.json adlar.json > temp2.json && echo ']' >> temp2.json && mv temp2.json adlar.json
+
+outputs:
+  - {path: adlar.json, kind: json}
+
+checks:
+  - {op: json_eq, path: adlar.json, value: [der nep, eulb nep, koobeton, licnep, rotaluclac]}
+
+metadata:
+  domain: ayikla
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0073
+    bundle: ters-cevir
+    tools:
+    - rev
+    - cut
+    konu: muhasebe-kalemleri
+    hedef: ayikla
+    girdi: json
+    kaynak: dizin-agaci
+    cikti: json
+    kesif: yok
+    uslup: numarali-emir
+    direnc: bosluklu-ad
+    bukulme: tuzak-dosya
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

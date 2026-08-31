@@ -1,0 +1,67 @@
+id: gen-s-0087-yeniden-duzenle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  envanter/urunler dizinindeki tüm JSON dosyalarını tek bir tar arşivine paketle, ardından bu arşivden çıkarılan dosyaların içeriklerini CSV formatında envanter.csv dosyasına yaz ve envanter.csv'de sadece sayılar ve metinler olsun.
+
+setup: |
+  mkdir -p envanter/urunler
+  cat > envanter/urunler/001.json <<'EOF'
+  {"id": 1, "ad": "laptop x1", "stok": 15, "fiyat": 999.99}
+  EOF
+  cat > envanter/urunler/002.json <<'EOF'
+  {"id": 2, "ad": "monitor y2", "stok": 8, "fiyat": 249.99}
+  EOF
+  cat > envanter/urunler/003.json <<'EOF'
+  {"id": 3, "ad": "klavye z3", "stok": 25, "fiyat": 49.99}
+  EOF
+  cat > envanter/urunler/004.json <<'EOF'
+  {"id": 4, "ad": "fare a4", "stok": 30, "fiyat": 19.99}
+  EOF
+
+goal_tr: >
+  envanter/urunler dizinindeki tum JSON dosyalarini bir tar arsivine Paketle
+  ve bu arsivden cikarilan dosyaların icerigini CSV formatında
+  envanter.csv'ye yaz
+
+reference_solution: |
+  tar -cf envanter.tar -C envanter urunler && \
+  tar -xf envanter.tar && \
+  find urunler -type f -name '*.json' -exec cat {} + | \
+  awk -F'[":,]' 'NR==1{print "id,ad,stok,fiyat"} NR>1{print $2","$4","$6","$8}' > envanter.csv && \
+  rm -rf urunler envanter.tar
+
+outputs:
+  - {path: envanter.csv, kind: file}
+
+checks:
+  - {op: file_content_eq, path: envanter.csv, value: "id,ad,stok,fiyat\nid, 1,ad, \nid, 3,ad, \nid, 4,ad,"}
+
+metadata:
+  domain: yeniden-duzenle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0087
+    bundle: secerek-arsivle
+    tools:
+    - tar
+    - find
+    konu: envanter
+    hedef: yeniden-duzenle
+    girdi: json
+    kaynak: cok-dosya
+    cikti: csv
+    kesif: yok
+    uslup: kisit-sakli
+    direnc: bosluklu-ad
+    bukulme: olcek
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}
