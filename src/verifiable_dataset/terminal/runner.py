@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from verifiable_dataset.terminal.llm import make_client
 from verifiable_dataset.terminal.sandbox import DockerSandbox, docker_available
 from verifiable_dataset.terminal.task import GradeResult, Task, grade, run_script
 
@@ -324,7 +325,8 @@ def main() -> int:
     parser.add_argument("--reference", action="store_true", help="model yerine referans cozumu calistir")
     parser.add_argument("--model", default=os.environ.get("MODEL", ""))
     parser.add_argument("--base-url", default=os.environ.get("OPENAI_BASE_URL", ""))
-    parser.add_argument("--api-key", default=os.environ.get("OPENAI_API_KEY", "dummy"))
+    parser.add_argument("--api-key", default="",
+                        help="bos birakilirsa .env okunur")
     parser.add_argument("--protocol", choices=["auto", "native", "text"], default="auto",
                         help="native: OpenAI tool calling; text: <komut> etiketleri (Gemma vb.)")
     parser.add_argument("--rollouts", type=int, default=1, help="pass@N icin deneme sayisi")
@@ -345,14 +347,7 @@ def main() -> int:
         if not args.model:
             print("--model verilmedi (ya da MODEL env degiskeni bos)")
             return 2
-        from openai import OpenAI
-        base_url = args.base_url.rstrip("/") if args.base_url else ""
-        if base_url and not base_url.endswith("/v1"):
-            # vLLM'in OpenAI uyumlu API'si /v1 altinda; tunel URL'lerine
-            # eklemeyi unutmak 404 uretiyor.
-            base_url += "/v1"
-            print(f"base-url'e /v1 eklendi: {base_url}")
-        client = OpenAI(base_url=base_url or None, api_key=args.api_key)
+        client = make_client(args.base_url, args.api_key)
 
     episodes: list[Episode] = []
     for i in range(args.rollouts):

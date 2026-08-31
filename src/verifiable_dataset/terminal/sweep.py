@@ -19,6 +19,7 @@ import statistics
 import sys
 from pathlib import Path
 
+from verifiable_dataset.terminal.llm import make_client
 from verifiable_dataset.terminal.runner import Episode, run_model, run_reference
 from verifiable_dataset.terminal.sandbox import docker_available
 from verifiable_dataset.terminal.task import Task
@@ -79,7 +80,8 @@ def main() -> int:
                         help="model yerine referans cozumleri calistir (saglik kontrolu)")
     parser.add_argument("--model", default="")
     parser.add_argument("--base-url", default="")
-    parser.add_argument("--api-key", default="dummy")
+    parser.add_argument("--api-key", default="",
+                        help="bos birakilirsa .env okunur")
     parser.add_argument("--protocol", choices=["auto", "native", "text"], default="auto")
     parser.add_argument("--rollouts", type=int, default=1)
     parser.add_argument("--only", default="", help="sadece adinda bu gecen task'lari calistir")
@@ -103,11 +105,7 @@ def main() -> int:
         if not args.model:
             print("--model verilmedi (ya da --reference kullan)")
             return 2
-        from openai import OpenAI
-        base_url = args.base_url.rstrip("/") if args.base_url else ""
-        if base_url and not base_url.endswith("/v1"):
-            base_url += "/v1"
-        client = OpenAI(base_url=base_url or None, api_key=args.api_key)
+        client = make_client(args.base_url, args.api_key)
 
     mode = "referans" if args.reference else f"{args.model} x{args.rollouts}"
     print(f"{len(task_dirs)} task | mod: {mode} | docker {info}\n")

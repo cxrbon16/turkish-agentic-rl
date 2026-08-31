@@ -24,6 +24,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from verifiable_dataset.terminal.llm import make_client
 from verifiable_dataset.terminal.task import Task
 
 TURKCE_HARFLER = set("çğıöşüÇĞİÖŞÜ")
@@ -199,22 +200,6 @@ def yaz_bir(client, model: str, task: Task, max_deneme: int = 3,
     return sonuc
 
 
-def _anahtar(explicit: str) -> str:
-    if explicit:
-        return explicit
-    for isim in ("MISTRAL_API_KEY", "OPENAI_API_KEY"):
-        if os.environ.get(isim):
-            return os.environ[isim]
-    env = pathlib.Path(".env")
-    if env.exists():
-        for satir in env.read_text(encoding="utf-8").splitlines():
-            satir = satir.strip()
-            for isim in ("MISTRAL_API_KEY", "OPENAI_API_KEY"):
-                if satir.startswith(f"{isim}="):
-                    return satir.split("=", 1)[1].strip().strip('"').strip("'")
-    return "dummy"
-
-
 def main() -> int:
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
@@ -260,11 +245,7 @@ def main() -> int:
         print("prompt bekleyen task yok")
         return 0
 
-    from openai import OpenAI
-    base_url = args.base_url.rstrip("/")
-    if not base_url.endswith("/v1"):
-        base_url += "/v1"
-    client = OpenAI(base_url=base_url, api_key=_anahtar(args.api_key))
+    client = make_client(args.base_url, args.api_key)
 
     print(f"model={args.model}  {len(bekleyen)} task prompt bekliyor\n")
 
