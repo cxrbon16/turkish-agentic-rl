@@ -32,6 +32,26 @@ outputs:
   - {path: topla.py, kind: program, run: "python3 topla.py"}
   - {path: toplam.txt, kind: file}
 
+# Referanstan farkli ama ayni derecede dogru cozumler. Turetilen check'ler
+# bunlarin hepsinde de gecmeli: gecmiyorsa check'ler bicime takiliyor,
+# yani gereginden siki demektir.
+alt_solutions:
+  - name: "dongulu betik, ayni cikti"
+    script: |
+      cat > topla.py <<'PY'
+      total = 0
+      for line in open("sayilar.txt"):
+          line = line.strip()
+          if line:
+              total += int(line)
+      print(total)
+      PY
+      python3 topla.py > toplam.txt
+  - name: "betigi printf ile yaz, ciktiyi tee ile kaydet"
+    script: |
+      printf '%s\n' 'nums = [int(x) for x in open("sayilar.txt").read().split()]' 'print(sum(nums))' > topla.py
+      python3 topla.py | tee toplam.txt
+
 checks:
   - {op: is_file, path: topla.py}
   - {op: file_content_eq, path: toplam.txt, value: "114"}

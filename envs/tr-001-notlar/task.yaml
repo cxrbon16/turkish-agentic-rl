@@ -21,6 +21,25 @@ reference_solution: |
   mkdir -p notlar
   printf 'sunum hazirla\nrapor gonder\ntoplanti ayarla\n' > notlar/yapilacaklar.txt
 
+# Referanstan farkli ama ayni derecede dogru cozumler. Turetilen check'ler
+# bunlarin hepsinde de gecmeli: gecmiyorsa check'ler bicime takiliyor,
+# yani gereginden siki demektir.
+alt_solutions:
+  - name: "uc ayri echo ile ekleyerek"
+    script: |
+      mkdir notlar
+      echo 'sunum hazirla' >> notlar/yapilacaklar.txt
+      echo 'rapor gonder' >> notlar/yapilacaklar.txt
+      echo 'toplanti ayarla' >> notlar/yapilacaklar.txt
+  - name: "heredoc ile tek seferde"
+    script: |
+      install -d notlar
+      cat > notlar/yapilacaklar.txt <<'EOT'
+      sunum hazirla
+      rapor gonder
+      toplanti ayarla
+      EOT
+
 checks:
   - {op: is_dir, path: notlar}
   - {op: is_file, path: notlar/yapilacaklar.txt}

@@ -29,6 +29,23 @@ reference_solution: |
   mkdir -p yedek
   cp proje/*.txt yedek/
 
+# Referanstan farkli ama ayni derecede dogru cozumler. Turetilen check'ler
+# bunlarin hepsinde de gecmeli: gecmiyorsa check'ler bicime takiliyor,
+# yani gereginden siki demektir.
+alt_solutions:
+  - name: "find -delete ve find -exec cp"
+    script: |
+      find proje -maxdepth 1 -name '*.tmp' -delete
+      install -d yedek
+      find proje -maxdepth 1 -name '*.txt' -exec cp {} yedek/ \;
+  - name: "tek tek silip cat ile kopyala"
+    script: |
+      rm proje/onbellek1.tmp proje/onbellek2.tmp
+      mkdir yedek
+      for f in proje/*.txt; do
+        cat "$f" > "yedek/$(basename "$f")"
+      done
+
 checks:
   - {op: not_exists, path: proje/onbellek1.tmp}
   - {op: not_exists, path: proje/onbellek2.tmp}

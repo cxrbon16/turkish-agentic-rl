@@ -29,6 +29,27 @@ reference_solution: |
   mv kisiler.csv stok.csv csv/
   mv sistem.log log/
 
+# Referanstan farkli ama ayni derecede dogru cozumler. Turetilen check'ler
+# bunlarin hepsinde de gecmeli: gecmiyorsa check'ler bicime takiliyor,
+# yani gereginden siki demektir.
+alt_solutions:
+  - name: "uzantilar uzerinde dongu"
+    script: |
+      cd dosyalar
+      for ext in txt csv log; do
+        mkdir -p "$ext"
+        for f in *."$ext"; do
+          [ -e "$f" ] && mv "$f" "$ext"/
+        done
+      done
+  - name: "find -exec ile"
+    script: |
+      cd dosyalar
+      mkdir txt csv log
+      find . -maxdepth 1 -name '*.txt' -exec mv {} txt/ \;
+      find . -maxdepth 1 -name '*.csv' -exec mv {} csv/ \;
+      find . -maxdepth 1 -name '*.log' -exec mv {} log/ \;
+
 checks:
   - {op: dir_entries_eq, path: dosyalar, value: [txt, csv, log]}
   - {op: dir_entries_eq, path: dosyalar/txt, value: [notlar.txt, ozet.txt]}

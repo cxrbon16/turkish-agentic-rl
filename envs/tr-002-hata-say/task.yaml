@@ -32,6 +32,17 @@ prompt: |
 reference_solution: |
   grep -c 'HATA' kayitlar.log > sonuc.txt
 
+# Referanstan farkli ama ayni derecede dogru cozumler. Turetilen check'ler
+# bunlarin hepsinde de gecmeli: gecmiyorsa check'ler bicime takiliyor,
+# yani gereginden siki demektir.
+alt_solutions:
+  - name: "grep + wc -l"
+    script: |
+      grep 'HATA' kayitlar.log | wc -l > sonuc.txt
+  - name: "awk ile say"
+    script: |
+      awk '/HATA/ {n++} END {print n+0}' kayitlar.log > sonuc.txt
+
 checks:
   - {op: is_file, path: sonuc.txt}
   - {op: file_content_eq, path: sonuc.txt, value: "4"}

@@ -20,6 +20,20 @@ reference_solution: |
   mkdir -p /workspace/cosmos /workspace/yavuz
   printf 'yavuz123' > /workspace/cosmos/yavuz.txt
 
+# Referanstan farkli ama ayni derecede dogru cozumler. Turetilen check'ler
+# bunlarin hepsinde de gecmeli: gecmiyorsa check'ler bicime takiliyor,
+# yani gereginden siki demektir.
+alt_solutions:
+  - name: "echo ve install ile (sondaki newline farki)"
+    script: |
+      install -d /workspace/cosmos /workspace/yavuz
+      echo yavuz123 > /workspace/cosmos/yavuz.txt
+  - name: "dosyayi python ile yaz"
+    script: |
+      cd /workspace
+      mkdir cosmos yavuz
+      python3 -c "open('cosmos/yavuz.txt','w').write('yavuz123')"
+
 metadata:
   domain: fs
   language: tr

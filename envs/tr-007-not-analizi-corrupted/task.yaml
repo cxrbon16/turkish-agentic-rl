@@ -176,6 +176,49 @@ reference_solution: |
   PY
   python3 analiz.py
 
+# Referanstan farkli ama ayni derecede dogru cozumler. Turetilen check'ler
+# bunlarin hepsinde de gecmeli: gecmiyorsa check'ler bicime takiliyor,
+# yani gereginden siki demektir.
+alt_solutions:
+  - name: "ara betik yok: inline python3, isdigit yerine try/except"
+    script: |
+      python3 - <<'PY'
+      import csv, json, statistics
+      rows = list(csv.DictReader(open("notlar.csv", newline="")))
+
+      gecerli, hatali = [], 0
+      for no, r in enumerate(rows, start=1):
+          try:
+              gecerli.append((no, r["isim"], int((r["not"] or "").strip())))
+          except ValueError:
+              hatali += 1
+
+      puan = [p for _, _, p in gecerli]
+      s = sorted(puan)
+      n = len(s)
+
+      def q(p):
+          h = (n - 1) * p
+          lo = int(h)
+          hi = min(lo + 1, n - 1)
+          return s[lo] + (h - lo) * (s[hi] - s[lo])
+
+      q1, q3 = q(0.25), q(0.75)
+      iqr = q3 - q1
+      dip, tavan = q1 - 1.5 * iqr, q3 + 1.5 * iqr
+
+      out = {
+          "hatali_satir_sayisi": hatali,
+          "kirkbes_alti": [ad for _, ad, p in gecerli if p < 45],
+          "en_dusuk_isim": min(gecerli, key=lambda t: t[2])[1],
+          "en_yuksek_isim": max(gecerli, key=lambda t: t[2])[1],
+          "aykiri_indeksler": [no for no, _, p in gecerli if p < dip or p > tavan],
+          "medyan": round(statistics.median(puan), 2),
+          "ortalama": round(sum(puan) / len(puan), 2),
+      }
+      open("analiz.json", "w").write(json.dumps(out, indent=4, sort_keys=True))
+      PY
+
 checks:
   - {op: is_file, path: analiz.json}
   - {op: json_field_eq, path: analiz.json, field: ortalama, value: 60.15, tol: 0.01}
