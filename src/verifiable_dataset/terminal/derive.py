@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import tempfile
 from dataclasses import dataclass, field
@@ -35,6 +36,10 @@ from verifiable_dataset.terminal.task import Task, run_script
 MAX_LINE_CHECKS = 8
 
 PROGRAM_SUFFIXES = {".py", ".sh", ".bash"}
+
+# Imajda olmayan bir araci statik olarak yakalamak zor: degisken, fonksiyon
+# ve heredoc icerigi yanlis alarm uretir. Kabugun kendi mesaji ise kesin.
+EKSIK_ARAC_RE = re.compile(r"([\w.+-]+): command not found")
 
 
 # -- snapshot tarama --------------------------------------------------
@@ -258,6 +263,8 @@ class DeriveReport:
     # Bildirilen cikti turu ile gercegin uyusmadigi yerler: not degil,
     # task'i reddettiren sert uyusmazliklar.
     sorunlar: list[str] = field(default_factory=list)
+    # Referansin cagirdigi ama imajda bulunmayan araclar.
+    eksik_araclar: list[str] = field(default_factory=list)
 
     @property
     def sound(self) -> bool:
@@ -279,10 +286,12 @@ def derive(task: Task) -> DeriveReport:
             a = scan(snap_a)
 
             result = run_script(sandbox, task.reference_solution, timeout=60)
+            eksik = sorted(set(EKSIK_ARAC_RE.findall(result.stderr)))
             if result.exit_code != 0:
                 return DeriveReport(
                     task.id, [], [], 0, 0, 0,
-                    f"referans exit={result.exit_code}: {result.stderr.strip()[:200]}")
+                    f"referans exit={result.exit_code}: {result.stderr.strip()[:200]}",
+                    eksik_araclar=eksik)
 
             snap_b = sandbox.snapshot(Path(tmp) / "b")
             b = scan(snap_b)
@@ -301,7 +310,7 @@ def derive(task: Task) -> DeriveReport:
 
     return DeriveReport(task.id, checks, notes,
                         ref["passed"], init["passed"], len(checks),
-                        sorunlar=sorunlar)
+                        sorunlar=sorunlar, eksik_araclar=eksik)
 
 
 # -- elle yazilanla karsilastirma -------------------------------------

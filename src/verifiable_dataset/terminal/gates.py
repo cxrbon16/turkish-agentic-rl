@@ -81,47 +81,63 @@ def gate_prompt_turkce(task: Task) -> GateResult:
                       "prompt'ta hic Turkce karakter yok -- ASCII'lestirilmis olabilir")
 
 
-def gate_tool_conformance(task: Task) -> GateResult:
-    """Seed'deki araclar referansta gercekten kullanilmis mi.
+def gate_tool_conformance(task: Task, eksik_araclar: list[str]) -> GateResult:
+    """Seed'in araclarina dokunulmus mu, ve cagrilan her arac var mi.
 
-    Bu kapi olmazsa model her task'i tek satir python3 ile cozer: grid dolu
-    gorunur, cesitlilik sahte olur.
+    Iki ayri sey. Birincisi kapsam: seed `sed+tr` istediyse cozum bunlara
+    hic dokunmadan yazilmissa grid dolu gorunur ama cesitlilik sahtedir --
+    ozellikle her task'i tek satir python3 ile cozme egilimi boyle
+    yakalanir. Ama demetin HER aracini sart kosmak gereksiz katilik:
+    `mkdir+mv` seed'inde dizin zaten varsa mkdir'e ihtiyac yoktur, o yuzden
+    en az birinin kullanilmasi yetiyor.
+
+    Ikincisi varlik: imajda olmayan bir araci cagirmak her zaman hatadir.
+    Statik olarak aramak yanlis alarm uretirdi; bunun yerine kabugun kendi
+    "command not found" mesajina bakiyoruz -- `|| true` ile yutulmus olsa
+    bile stderr'de duruyor.
     """
-    seed = task.metadata.get("seed")
-    if not seed:
-        return GateResult("arac uygunlugu", True, skipped=True, detail="seed yok")
-    istenen = seed.get("tools", [])
-    eksik = [t for t in istenen if not uses_tool(task.reference_solution, t)]
-    kacak = (uses_tool(task.reference_solution, "python3")
-             and "python3" not in istenen)
     sorun = []
-    if eksik:
-        sorun.append(f"kullanilmayan seed araclari: {eksik}")
-    if kacak:
-        sorun.append("seed'de yokken python3'e kacilmis")
+    if eksik_araclar:
+        sorun.append(f"imajda olmayan arac cagrildi: {eksik_araclar}")
+
+    seed = task.metadata.get("seed")
+    if seed:
+        istenen = seed.get("tools", [])
+        kullanilan = [t for t in istenen if uses_tool(task.reference_solution, t)]
+        if istenen and not kullanilan:
+            sorun.append(f"seed araclarindan hicbiri kullanilmamis: {istenen}")
+        if (uses_tool(task.reference_solution, "python3")
+                and "python3" not in istenen):
+            sorun.append("seed'de yokken python3'e kacilmis")
+    elif not sorun:
+        return GateResult("arac uygunlugu", True, skipped=True, detail="seed yok")
+
     return GateResult("arac uygunlugu", not sorun, "; ".join(sorun))
 
 
-def gate_determinism(task: Task) -> tuple[GateResult, "object | None"]:
+def gate_determinism(task: Task) -> tuple[GateResult, "object | None", list[str]]:
     """Ayni referans iki temiz dunyada ayni check'leri uretmeli.
 
     Timestamp, $RANDOM, hash sirasi ve locale farklari burada yakalanir --
     uretilmis task'larda elle yazilanlardan cok daha sik sizarlar.
     """
     first = derive(task)
+    eksik = list(first.eksik_araclar)
     if first.error:
-        return GateResult("determinizm", False, f"turetme basarisiz: {first.error}"), None
+        return (GateResult("determinizm", False,
+                           f"turetme basarisiz: {first.error}"), None, eksik)
     second = derive(task)
     if second.error:
-        return GateResult("determinizm", False, f"ikinci kosu: {second.error}"), None
+        return (GateResult("determinizm", False,
+                           f"ikinci kosu: {second.error}"), None, eksik)
     if _norm(first.checks) != _norm(second.checks):
         a = {json.dumps(c, sort_keys=True, ensure_ascii=False) for c in first.checks}
         b = {json.dumps(c, sort_keys=True, ensure_ascii=False) for c in second.checks}
         fark = sorted(a ^ b)[:3]
-        return GateResult("determinizm", False,
-                          f"iki kosu farkli check uretti: {fark}"), None
-    return GateResult("determinizm", True,
-                      f"iki kosuda ayni {first.total} check"), first
+        return (GateResult("determinizm", False,
+                           f"iki kosu farkli check uretti: {fark}"), None, eksik)
+    return (GateResult("determinizm", True,
+                       f"iki kosuda ayni {first.total} check"), first, eksik)
 
 
 def gate_discriminates(task: Task, rep) -> GateResult:
@@ -208,11 +224,13 @@ def run_gauntlet(task: Task, spec_only: bool = False) -> list[GateResult]:
     results = [
         gate_spec_complete(task, spec_only),
         gate_data_ascii(task),
-        gate_tool_conformance(task),
     ]
     if not spec_only:
-        results.insert(2, gate_prompt_turkce(task))
-    det, rep = gate_determinism(task)
+        results.append(gate_prompt_turkce(task))
+    # Arac uygunlugu artik referansin stderr'ine de bakiyor, o yuzden
+    # turetmeden sonra calisiyor.
+    det, rep, eksik_araclar = gate_determinism(task)
+    results.append(gate_tool_conformance(task, eksik_araclar))
     results.append(det)
     results.append(gate_discriminates(task, rep))
     results.append(gate_output_kinds(task, rep))
