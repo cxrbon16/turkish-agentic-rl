@@ -313,7 +313,8 @@ def uses_tool(script: str, tool: str) -> bool:
     kelime araci kullanmak sayilmaz. Komut basi, boru, ; ve `-exec` ile
     `xargs` sonrasi konumlar araniyor.
     """
-    pattern = (rf"(?:^|[\n;|&(`]|\$\(|\bxargs\s+|-exec\s+|\bthen\s+|\bdo\s+)"
+    pattern = (rf"(?:^|[\n;|&(`{{!]|\$\(|\bxargs\s+|-exec\s+"
+               rf"|\b(?:then|do|else|elif|until|while)\s+)"
                rf"\s*{re.escape(tool)}\b")
     return re.search(pattern, script, re.MULTILINE) is not None
 
