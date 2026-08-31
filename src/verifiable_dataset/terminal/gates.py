@@ -48,14 +48,15 @@ def _norm(checks: list[dict]) -> str:
 
 # -- kapilar ----------------------------------------------------------
 
-def gate_spec_complete(task: Task) -> GateResult:
+def gate_spec_complete(task: Task, spec_only: bool = False) -> GateResult:
     eksik = []
     if not task.reference_solution.strip():
         eksik.append("reference_solution")
-    if not task.prompt.strip():
-        eksik.append("prompt")
     if not task.goal_tr.strip():
         eksik.append("goal_tr")
+    # spec asamasinda prompt heniz yazilmadi; creative writing ayri asama.
+    if not spec_only and not task.prompt.strip():
+        eksik.append("prompt")
     return GateResult("spec butunlugu", not eksik,
                       f"eksik alanlar: {', '.join(eksik)}" if eksik else "")
 
@@ -145,13 +146,15 @@ def gate_equivalence(task: Task, checks: list[dict] | None) -> GateResult:
                       f"alternatif geciyor" + (f"; dusen: {dusen}" if dusen else ""))
 
 
-def run_gauntlet(task: Task) -> list[GateResult]:
+def run_gauntlet(task: Task, spec_only: bool = False) -> list[GateResult]:
+    """spec_only: prompt heniz yazilmamis adaylar icin prompt kapilarini atla."""
     results = [
-        gate_spec_complete(task),
+        gate_spec_complete(task, spec_only),
         gate_data_ascii(task),
-        gate_prompt_turkce(task),
         gate_tool_conformance(task),
     ]
+    if not spec_only:
+        results.insert(2, gate_prompt_turkce(task))
     det, rep = gate_determinism(task)
     results.append(det)
     results.append(gate_discriminates(task, rep))
