@@ -22,6 +22,14 @@ prompt: |
   İşin bittiğinde "dosyalar" klasörünün altında sadece bu üç alt klasör
   kalmalı, taşınmamış dosya kalmamalı.
 
+# Susuz, kesin amac ifadesi. Prompt'un ham hali: creative writing asamasi
+# bunu Turkce anlatiya cevirir, rakip cozum ise YALNIZCA bunu gorup gorevi
+# sifirdan cozer -- iki bagimsiz uygulama ayni cevaba varmiyorsa amac
+# yeterince kesin degil demektir.
+goal_tr: >
+  dosyalar dizini icinde txt, csv ve log alt dizinlerini olustur ve her
+  dosyayi uzantisina uyan alt dizine tasi; tasinmamis dosya kalmasin
+
 reference_solution: |
   cd dosyalar
   mkdir -p txt csv log

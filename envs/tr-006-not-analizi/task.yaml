@@ -135,6 +135,16 @@ prompt: |
 
   İşin bittiğinde kısaca ne yaptığını özetle.
 
+# Susuz, kesin amac ifadesi. Prompt'un ham hali: creative writing asamasi
+# bunu Turkce anlatiya cevirir, rakip cozum ise YALNIZCA bunu gorup gorevi
+# sifirdan cozer -- iki bagimsiz uygulama ayni cevaba varmiyorsa amac
+# yeterince kesin degil demektir.
+goal_tr: >
+  notlar.csv'deki 100 ogrencinin notlarindan ortalama, medyan, IQR kuralina
+  gore aykiri satir numaralari, en yuksek ve en dusuk notu alan ogrencilerin
+  adlari ve notu 45'in altinda olanlarin adlarini hesaplayip analiz.json'a
+  yaz
+
 reference_solution: |
   cat > analiz.py <<'PY'
   import csv, json, statistics

@@ -5,17 +5,25 @@ workdir: /workspace
 max_turns: 8
 
 prompt: |
-  Bir Linux terminalindesin ve calisma dizinin /workspace.
+  Bir Linux terminalindesin ve çalışma dizinin /workspace.
 
-  Sunlari yap:
-  1) /workspace altinda "cosmos" ve "yavuz" adinda iki klasor olustur.
-  2) "cosmos" klasorunun icine "yavuz.txt" adinda bir dosya olustur ve
-     iceriginde yalnizca yavuz123 yazsin.
+  Şunları yap:
+  1) /workspace altında "cosmos" ve "yavuz" adında iki klasör oluştur.
+  2) "cosmos" klasörünün içine "yavuz.txt" adında bir dosya oluştur ve
+     içeriğinde yalnızca yavuz123 yazsın.
 
-  Isin bittiginde kisaca ne yaptigini ozetle.
+  İşin bittiğinde kısaca ne yaptığını özetle.
 
 # Referans cozum: gorevin gercekten cozulebilir oldugunu ve checker'in
 # dogru calistigini modelsiz dogrulamak icin kullanilir.
+# Susuz, kesin amac ifadesi. Prompt'un ham hali: creative writing asamasi
+# bunu Turkce anlatiya cevirir, rakip cozum ise YALNIZCA bunu gorup gorevi
+# sifirdan cozer -- iki bagimsiz uygulama ayni cevaba varmiyorsa amac
+# yeterince kesin degil demektir.
+goal_tr: >
+  /workspace altinda cosmos ve yavuz dizinlerini olustur, cosmos/yavuz.txt
+  dosyasina yalnizca yavuz123 yaz
+
 reference_solution: |
   mkdir -p /workspace/cosmos /workspace/yavuz
   printf 'yavuz123' > /workspace/cosmos/yavuz.txt

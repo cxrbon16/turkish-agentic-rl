@@ -17,6 +17,15 @@ prompt: |
 
   İşin bittiğinde kısaca ne yaptığını özetle.
 
+# Susuz, kesin amac ifadesi. Prompt'un ham hali: creative writing asamasi
+# bunu Turkce anlatiya cevirir, rakip cozum ise YALNIZCA bunu gorup gorevi
+# sifirdan cozer -- iki bagimsiz uygulama ayni cevaba varmiyorsa amac
+# yeterince kesin degil demektir.
+goal_tr: >
+  notlar dizini olustur ve icine her satirda bir madde olacak sekilde 'sunum
+  hazirla', 'rapor gonder', 'toplanti ayarla' satirlarini iceren
+  yapilacaklar.txt dosyasini yaz
+
 reference_solution: |
   mkdir -p notlar
   printf 'sunum hazirla\nrapor gonder\ntoplanti ayarla\n' > notlar/yapilacaklar.txt

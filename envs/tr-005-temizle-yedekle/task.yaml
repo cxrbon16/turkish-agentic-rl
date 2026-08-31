@@ -24,6 +24,15 @@ prompt: |
 
   İşin bittiğinde kısaca ne yaptığını özetle.
 
+# Susuz, kesin amac ifadesi. Prompt'un ham hali: creative writing asamasi
+# bunu Turkce anlatiya cevirir, rakip cozum ise YALNIZCA bunu gorup gorevi
+# sifirdan cozer -- iki bagimsiz uygulama ayni cevaba varmiyorsa amac
+# yeterince kesin degil demektir.
+goal_tr: >
+  proje dizinindeki .tmp uzantili dosyalari sil, yedek dizinini olustur ve
+  proje'de kalan .txt dosyalarini yedek'e kopyala; kopyalar proje icinde de
+  kalmali
+
 reference_solution: |
   rm -f proje/*.tmp
   mkdir -p yedek

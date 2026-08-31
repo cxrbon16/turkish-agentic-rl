@@ -29,6 +29,14 @@ prompt: |
 
   İşin bittiğinde kısaca ne yaptığını özetle.
 
+# Susuz, kesin amac ifadesi. Prompt'un ham hali: creative writing asamasi
+# bunu Turkce anlatiya cevirir, rakip cozum ise YALNIZCA bunu gorup gorevi
+# sifirdan cozer -- iki bagimsiz uygulama ayni cevaba varmiyorsa amac
+# yeterince kesin degil demektir.
+goal_tr: >
+  kayitlar.log dosyasinda HATA gecen satir sayisini sonuc.txt'ye sadece sayi
+  olarak yaz
+
 reference_solution: |
   grep -c 'HATA' kayitlar.log > sonuc.txt
 

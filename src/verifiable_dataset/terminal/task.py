@@ -26,6 +26,7 @@ class Task:
     workdir: str = "/workspace"
     max_turns: int = 8
     setup: str = ""
+    goal_tr: str = ""
     reference_solution: str = ""
     checks: list[dict] = field(default_factory=list)
     outputs: list[dict] = field(default_factory=list)
@@ -45,6 +46,7 @@ class Task:
             workdir=spec.get("workdir", "/workspace"),
             max_turns=spec.get("max_turns", 8),
             setup=spec.get("setup", ""),
+            goal_tr=spec.get("goal_tr", ""),
             reference_solution=spec.get("reference_solution", ""),
             checks=spec.get("checks", []),
             outputs=spec.get("outputs", []),

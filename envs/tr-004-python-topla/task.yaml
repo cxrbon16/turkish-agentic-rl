@@ -18,6 +18,14 @@ prompt: |
 
   İşin bittiğinde kısaca ne yaptığını özetle.
 
+# Susuz, kesin amac ifadesi. Prompt'un ham hali: creative writing asamasi
+# bunu Turkce anlatiya cevirir, rakip cozum ise YALNIZCA bunu gorup gorevi
+# sifirdan cozer -- iki bagimsiz uygulama ayni cevaba varmiyorsa amac
+# yeterince kesin degil demektir.
+goal_tr: >
+  sayilar.txt'deki tam sayilarin toplamini ekrana yazan topla.py betigini
+  yaz ve betigin ciktisini toplam.txt'ye kaydet
+
 reference_solution: |
   cat > topla.py <<'PY'
   with open("sayilar.txt") as f:
