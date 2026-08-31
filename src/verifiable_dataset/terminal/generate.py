@@ -27,6 +27,7 @@ from pathlib import Path
 
 import yaml
 
+from verifiable_dataset.terminal.derive import checks_yaz
 from verifiable_dataset.terminal.gates import run_gauntlet
 from verifiable_dataset.terminal.sandbox import docker_available
 from verifiable_dataset.terminal.seeds import Seed, sample, tools_of_image
@@ -279,7 +280,7 @@ def generate_one(client, model: str, seed: Seed, out_dir: Path,
             return aday
 
         try:
-            sonuclar = run_gauntlet(task, spec_only=True)
+            sonuclar, rep = run_gauntlet(task, spec_only=True)
         except Exception as e:  # noqa: BLE001 - bir aday kosuyu bitirmemeli
             hata = f"{type(e).__name__}: {e}"
             aday.dusen_kapilar = ["gauntlet coktu"]
@@ -295,6 +296,10 @@ def generate_one(client, model: str, seed: Seed, out_dir: Path,
             continue
         dusen = [r for r in sonuclar if not r.ok]
         if not dusen:
+            # Check'ler dosyaya yazilmazsa runner ve sweep onlari goremez;
+            # gauntlet kendi turettigi icin sorun fark edilmeden gecerdi.
+            if rep is not None and rep.checks:
+                checks_yaz(task_dir, rep.checks)
             aday.kabul = True
             aday.dusen_kapilar = []
             return aday

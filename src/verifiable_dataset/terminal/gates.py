@@ -57,8 +57,11 @@ def gate_spec_complete(task: Task, spec_only: bool = False) -> GateResult:
     if not task.goal_tr.strip():
         eksik.append("goal_tr")
     # spec asamasinda prompt heniz yazilmadi; creative writing ayri asama.
-    if not spec_only and not task.prompt.strip():
-        eksik.append("prompt")
+    if not spec_only:
+        if not task.prompt.strip():
+            eksik.append("prompt")
+        if not task.checks and not task.checker.exists():
+            eksik.append("checks (derive --write ile yazilir)")
     return GateResult("spec butunlugu", not eksik,
                       f"eksik alanlar: {', '.join(eksik)}" if eksik else "")
 
@@ -234,7 +237,8 @@ def gate_equivalence(task: Task, checks: list[dict] | None) -> GateResult:
                       f"alternatif geciyor" + (f"; dusen: {dusen}" if dusen else ""))
 
 
-def run_gauntlet(task: Task, spec_only: bool = False) -> list[GateResult]:
+def run_gauntlet(task: Task, spec_only: bool = False
+                 ) -> tuple[list[GateResult], "object | None"]:
     """spec_only: prompt heniz yazilmamis adaylar icin prompt kapilarini atla."""
     results = [
         gate_spec_complete(task, spec_only),
@@ -252,7 +256,7 @@ def run_gauntlet(task: Task, spec_only: bool = False) -> list[GateResult]:
     results.append(gate_output_kinds(task, rep))
     results.append(gate_cheap_hack(task, rep))
     results.append(gate_equivalence(task, rep.checks if rep else None))
-    return results
+    return results, rep
 
 
 def main() -> int:
@@ -287,7 +291,7 @@ def main() -> int:
     for task_dir in task_dirs:
         task = Task.load(task_dir)
         print(task.id)
-        results = run_gauntlet(task, spec_only=args.spec_only)
+        results, _ = run_gauntlet(task, spec_only=args.spec_only)
         for r in results:
             # Detay yalnizca aciklayici oldugu yerde: gecen bir kapinin
             # hata mesajini basmak raporu okunmaz hale getiriyordu.

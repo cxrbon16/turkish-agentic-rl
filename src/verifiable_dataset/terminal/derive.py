@@ -358,6 +358,42 @@ def compare(derived: list[dict], handwritten: list[dict]) -> tuple[list, list, l
     return sorted(d & h), covered, missed, sorted(d - h)
 
 
+def checks_yaz(task_dir: Path, checks: list[dict]) -> bool:
+    """Turetilen check'leri task.yaml'a kalici olarak yaz.
+
+    Turetme calisma aninda yapiliyor diye dosyaya yazmayi atlamak sessiz
+    bir tuzak kuruyordu: gauntlet check'leri kendi hesapladigi icin
+    geciyordu, ama runner ve sweep dosyadaki ``checks`` alanina bakiyor ve
+    bos bulunca eski tarz checker betigini ariyordu.
+    """
+    yol = task_dir / "task.yaml"
+    satirlar = yol.read_text(encoding="utf-8").splitlines(keepends=True)
+
+    bas = son = None
+    for i, satir in enumerate(satirlar):
+        if satir.startswith("checks:"):
+            bas = i
+            son = len(satirlar)
+            for j in range(i + 1, len(satirlar)):
+                s = satirlar[j]
+                if s.strip() and not s[0].isspace():
+                    son = j
+                    break
+            break
+
+    blok = "checks:\n" + dump_checks(checks) + "\n\n"
+    if bas is None:
+        # metadata'dan once, yoksa sona ekle.
+        yer = next((i for i, s in enumerate(satirlar) if s.startswith("metadata:")),
+                   len(satirlar))
+        satirlar.insert(yer, blok)
+    else:
+        satirlar[bas:son] = [blok]
+
+    yol.write_text("".join(satirlar), encoding="utf-8")
+    return True
+
+
 def dump_checks(checks: list[dict]) -> str:
     lines = []
     for c in checks:
@@ -378,6 +414,8 @@ def main() -> int:
     parser.add_argument("--all", action="store_true", help="envs/ altindaki her task")
     parser.add_argument("--envs", default="envs")
     parser.add_argument("--yaml", action="store_true", help="turetilen check'leri YAML bas")
+    parser.add_argument("--write", action="store_true",
+                        help="turetilen check'leri task.yaml'a yaz")
     args = parser.parse_args()
 
     ok, info = docker_available()
@@ -436,6 +474,12 @@ def main() -> int:
         if args.yaml:
             print("\nchecks:")
             print(dump_checks(rep.checks))
+        if args.write:
+            if rep.sound and rep.checks:
+                checks_yaz(task_dir, rep.checks)
+                print(f"  -> {rep.total} check task.yaml'a yazildi")
+            else:
+                print("  -> yazilmadi: check seti saglam degil")
         print()
 
     print(f"OZET: {n_sound}/{len(task_dirs)} task'ta turetilen check seti saglam, "
