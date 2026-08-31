@@ -25,6 +25,13 @@ reference_solution: |
   PY
   python3 topla.py > toplam.txt
 
+# Hedefin parcasi olan artefaktlar. Bildirilmeyen her sey ara dosya sayilir
+# ve check uretilmez -- topla.py burada bildirildigi icin "gercekten calisan
+# bir betik" sarti korunuyor, analiz.py gibi ara betikler ise serbest kalir.
+outputs:
+  - {path: topla.py, kind: program, run: "python3 topla.py"}
+  - {path: toplam.txt, kind: file}
+
 checks:
   - {op: is_file, path: topla.py}
   - {op: file_content_eq, path: toplam.txt, value: "114"}

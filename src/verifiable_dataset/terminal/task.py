@@ -28,6 +28,7 @@ class Task:
     setup: str = ""
     reference_solution: str = ""
     checks: list[dict] = field(default_factory=list)
+    outputs: list[dict] = field(default_factory=list)
     metadata: dict = field(default_factory=dict)
 
     @classmethod
@@ -45,6 +46,7 @@ class Task:
             setup=spec.get("setup", ""),
             reference_solution=spec.get("reference_solution", ""),
             checks=spec.get("checks", []),
+            outputs=spec.get("outputs", []),
             metadata=spec.get("metadata", {}),
         )
 
