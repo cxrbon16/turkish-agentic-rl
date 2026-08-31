@@ -131,6 +131,21 @@ def gate_discriminates(task: Task, rep) -> GateResult:
                       f"B {rep.ref_passed}/{rep.total}, A {rep.init_passed}/{rep.total}")
 
 
+def gate_output_kinds(task: Task, rep) -> GateResult:
+    """Bildirilen cikti turu gercekle uyusmali.
+
+    Uretilen bir spec `kind: json` diyip gecersiz JSON uretebiliyor. Bu
+    sessizce byte esitligine dusuyor ve task tersine doner: gecerli JSON
+    yazan DOGRU cozum sifir alir, cunku beklenen deger bozuk metnin
+    kendisidir. Turetici bu uyusmazliklari isaretliyor, kapi reddediyor.
+    """
+    if rep is None:
+        return GateResult("cikti turu", False, "turetme yapilamadi")
+    if not task.outputs:
+        return GateResult("cikti turu", True, skipped=True, detail="outputs bildirilmemis")
+    return GateResult("cikti turu", not rep.sorunlar, "; ".join(rep.sorunlar[:3]))
+
+
 def gate_equivalence(task: Task, checks: list[dict] | None) -> GateResult:
     if not task.alt_solutions:
         return GateResult("denklik", True, skipped=True, detail="alt_solutions yok")
@@ -158,6 +173,7 @@ def run_gauntlet(task: Task, spec_only: bool = False) -> list[GateResult]:
     det, rep = gate_determinism(task)
     results.append(det)
     results.append(gate_discriminates(task, rep))
+    results.append(gate_output_kinds(task, rep))
     results.append(gate_equivalence(task, rep.checks if rep else None))
     return results
 

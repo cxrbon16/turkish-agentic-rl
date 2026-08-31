@@ -166,6 +166,38 @@ def op_json_field_eq(root: Path, spec: dict) -> CheckResult:
                        f"'{field}': beklenen {e_s!r}, bulunan {a_s!r}")
 
 
+def _json_set_key(items: list) -> list[str]:
+    return sorted(json.dumps(x, sort_keys=True, ensure_ascii=False) for x in items)
+
+
+def op_json_eq(root: Path, spec: dict) -> CheckResult:
+    """Compare a whole JSON document structurally.
+
+    Needed when the output's top level is not an object -- a list or a
+    scalar -- so there are no fields to compare one by one. Parsing before
+    comparing means indentation, key order and ensure_ascii do not decide
+    the reward, which byte equality would.
+    """
+    p = _resolve(root, spec["path"])
+    if not p.is_file():
+        return CheckResult("json_eq", False, f"{spec['path']} yok")
+    try:
+        actual = json.loads(_read(root, spec["path"]))
+    except json.JSONDecodeError as e:
+        return CheckResult("json_eq", False, f"{spec['path']} gecerli JSON degil: {e}")
+
+    expected = spec["value"]
+    if spec.get("as_set") and isinstance(actual, list) and isinstance(expected, list):
+        ok = _json_set_key(actual) == _json_set_key(expected)
+    else:
+        ok = actual == expected
+    return CheckResult(
+        "json_eq", ok,
+        f"{spec['path']}: beklenen {json.dumps(expected, ensure_ascii=False)[:160]}, "
+        f"bulunan {json.dumps(actual, ensure_ascii=False)[:160]}",
+    )
+
+
 # -- execution op -----------------------------------------------------
 
 def op_run_stdout_eq(root: Path, spec: dict) -> CheckResult:
@@ -214,6 +246,7 @@ OPS: dict[str, Callable[[Path, dict], CheckResult]] = {
     "file_line_count_eq": op_file_line_count_eq,
     "dir_entries_eq": op_dir_entries_eq,
     "json_field_eq": op_json_field_eq,
+    "json_eq": op_json_eq,
     "run_stdout_eq": op_run_stdout_eq,
 }
 

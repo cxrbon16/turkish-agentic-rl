@@ -191,6 +191,20 @@ IMAGE_TIERS: list[tuple[str, set[str]]] = [
 ALL_TOOLS = sorted({t for _, s in IMAGE_TIERS for t in s})
 
 
+def tools_of_image(image: str) -> list[str]:
+    """Bir imajda kurulu araclarin tamami (kumulatif katmanlar).
+
+    Spec yazan modele veriliyor: yoksa imajda olmayan araclara uzaniyor
+    (jshon, jq gibi) ve aday bosuna bir onarim turu harciyor.
+    """
+    available: set[str] = set()
+    for name, tier in IMAGE_TIERS:
+        available |= tier
+        if name == image:
+            return sorted(available)
+    return sorted(available)
+
+
 def image_for(tools: list[str]) -> str:
     """Istenen araclarin hepsini barindiran en dusuk katmani sec."""
     available: set[str] = set()

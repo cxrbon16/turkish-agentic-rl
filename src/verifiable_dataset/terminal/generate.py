@@ -29,7 +29,7 @@ import yaml
 
 from verifiable_dataset.terminal.gates import run_gauntlet
 from verifiable_dataset.terminal.sandbox import docker_available
-from verifiable_dataset.terminal.seeds import Seed, sample
+from verifiable_dataset.terminal.seeds import Seed, sample, tools_of_image
 from verifiable_dataset.terminal.task import Task
 
 PIPELINE_VERSION = "spec-1"
@@ -75,6 +75,10 @@ KURALLAR (hepsi zorunlu):
    yol boyunca yazdigi ara betikleri (orn. analiz.py) LISTELEME -- onlar
    sart kosulursa tek satirda cozen dogru cozumler haksiz yere duser.
 8. Gorev baslangicta cozulmus olmamali: SETUP hedef ciktiyi olusturmasin.
+9. Bildirdigin kind gercekle uyusmali. kind: json dediysen referansin
+   urettigi dosya GECERLI JSON olmali -- elle string birlestirerek JSON
+   uydurma, virguller ve parantezler dogru olsun. Emin degilsen kind: file
+   kullan ve duz metin uret.
 
 ORNEK (seed: araclar=[grep], konu=sunucu-loglari, hedef=ozetle,
 kaynak=tek-dosya, cikti=tek-sayi):
@@ -103,7 +107,12 @@ grep -c 'HATA' kayitlar.log > sonuc.txt
 
 
 def seed_brief(seed: Seed) -> str:
+    kurulu = ", ".join(tools_of_image(seed.image))
     return f"""\
+Imajda kurulu araclar (BASKASINI CAGIRMA -- jq, jshon, gawk, git, sqlite3,
+zip gibi araclar YOK):
+{kurulu}
+
 Seed:
   araclar   : {', '.join(seed.tools)}   (hepsi referansta kullanilmali)
   konu      : {seed.konu}
@@ -268,7 +277,21 @@ def generate_one(client, model: str, seed: Seed, out_dir: Path,
             aday.hata = f"uretilen task.yaml yuklenemedi: {e}"
             return aday
 
-        sonuclar = run_gauntlet(task, spec_only=True)
+        try:
+            sonuclar = run_gauntlet(task, spec_only=True)
+        except Exception as e:  # noqa: BLE001 - bir aday kosuyu bitirmemeli
+            hata = f"{type(e).__name__}: {e}"
+            aday.dusen_kapilar = ["gauntlet coktu"]
+            if verbose:
+                print(f"    deneme {deneme}: gauntlet coktu -- {hata[:160]}")
+            if deneme == max_deneme:
+                aday.hata = f"gauntlet coktu: {hata}"
+                return aday
+            mesajlar += [{"role": "assistant", "content": ham},
+                         {"role": "user", "content":
+                          f"Spec degerlendirilirken hata olustu: {hata}. "
+                          f"Daha basit ve saglam bir spec yaz."}]
+            continue
         dusen = [r for r in sonuclar if not r.ok]
         if not dusen:
             aday.kabul = True

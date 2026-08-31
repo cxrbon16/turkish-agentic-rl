@@ -115,10 +115,13 @@ def infer_kind(rel: str, raw: bytes) -> str:
         return "empty"
     if suffix == ".json" or stripped[0] in "{[":
         try:
-            if isinstance(json.loads(stripped), dict):
-                return "json"
+            json.loads(stripped)
         except json.JSONDecodeError:
             pass
+        else:
+            # Sozluk olmak sart degil: ust duzeyi liste olan bir cikti da
+            # JSON gibi kontrol edilmeli, satir satir metin gibi degil.
+            return "json"
     lines = [ln for ln in text.splitlines() if ln.strip()]
     if 1 < len(lines) <= MAX_LINE_CHECKS:
         return "lines"
@@ -133,7 +136,13 @@ def json_field_checks(rel: str, text: str) -> tuple[list[dict], list[str]]:
     """
     checks: list[dict] = []
     skipped: list[str] = []
-    for key, value in json.loads(text).items():
+    data = json.loads(text)
+    if not isinstance(data, dict):
+        # Ust duzey sozluk degilse karsilastirilacak alan yok; belgenin
+        # tamami yapisal olarak karsilastirilir. Sirayi anlamli sayiyoruz --
+        # gereginden siki cikarsa denklik kapisi soyleyecek.
+        return [{"op": "json_eq", "path": rel, "value": data}], []
+    for key, value in data.items():
         if isinstance(value, list):
             checks.append({"op": "json_field_eq", "path": rel, "field": key,
                            "value": value, "as_set": True})
@@ -150,9 +159,11 @@ def json_field_checks(rel: str, text: str) -> tuple[list[dict], list[str]]:
 
 
 def checks_for_file(rel: str, raw: bytes, override: dict | None,
-                    sandbox: DockerSandbox | None) -> tuple[list[dict], list[str]]:
+                    sandbox: DockerSandbox | None,
+                    ) -> tuple[list[dict], list[str], list[str]]:
     kind = (override or {}).get("kind") or infer_kind(rel, raw)
     notes: list[str] = []
+    sorunlar: list[str] = []
 
     if kind == "program":
         # Referansin yazdigi her betik hedefin parcasi degil: cogu sadece
@@ -163,7 +174,7 @@ def checks_for_file(rel: str, raw: bytes, override: dict | None,
         if override is None:
             notes.append(f"{rel}: ara dosya sayilip atlandi; hedefin parcasiysa "
                          f"outputs: icinde bildir")
-            return [], notes
+            return [], notes, sorunlar
         # Bir programin dogrulugu diskteki metninde degil, calisinca ne
         # urettiginde. Diff bunu goremez, `run` bildirimi sart.
         out = [{"op": "is_file", "path": rel}]
@@ -178,14 +189,14 @@ def checks_for_file(rel: str, raw: bytes, override: dict | None,
                             "value": res.stdout.strip()})
             else:
                 notes.append(f"{rel}: `{run}` referans dunyasinda exit={res.exit_code}")
-        return out, notes
+        return out, notes, sorunlar
 
     if kind == "opaque":
         notes.append(f"{rel}: metin degil, sadece varligi kontrol ediliyor")
-        return [{"op": "is_file", "path": rel}], notes
+        return [{"op": "is_file", "path": rel}], notes, sorunlar
 
     if kind == "empty":
-        return [{"op": "is_file", "path": rel}], notes
+        return [{"op": "is_file", "path": rel}], notes, sorunlar
 
     text = raw.decode("utf-8", errors="replace")
 
@@ -193,29 +204,34 @@ def checks_for_file(rel: str, raw: bytes, override: dict | None,
         try:
             field_checks, skipped = json_field_checks(rel, text)
         except json.JSONDecodeError as e:
-            notes.append(f"{rel}: JSON cozulemedi ({e}), icerik esitligine dusuldu")
+            sorunlar.append(f"{rel}: kind=json bildirildi ama referansin urettigi "
+                            f"dosya gecerli JSON degil ({e})")
             return ([{"op": "is_file", "path": rel},
-                     {"op": "file_content_eq", "path": rel, "value": text.strip()}], notes)
+                     {"op": "file_content_eq", "path": rel, "value": text.strip()}],
+                    notes, sorunlar)
         if skipped:
             notes.append(f"{rel}: kontrol edilemeyen alanlar: {', '.join(skipped)}")
-        return [{"op": "is_file", "path": rel}] + field_checks, notes
+        return [{"op": "is_file", "path": rel}] + field_checks, notes, sorunlar
 
     if kind == "lines":
         lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
         out = [{"op": "is_file", "path": rel},
                {"op": "file_line_count_eq", "path": rel, "value": len(lines)}]
         out += [{"op": "file_contains", "path": rel, "value": ln} for ln in lines]
-        return out, notes
+        return out, notes, sorunlar
 
     return ([{"op": "is_file", "path": rel},
-             {"op": "file_content_eq", "path": rel, "value": text.strip()}], notes)
+             {"op": "file_content_eq", "path": rel, "value": text.strip()}],
+            notes, sorunlar)
 
 
 def build_checks(diff: TreeDiff, b_dirs: dict, b_files: dict,
                  overrides: dict[str, dict],
-                 sandbox: DockerSandbox | None) -> tuple[list[dict], list[str]]:
+                 sandbox: DockerSandbox | None,
+                 ) -> tuple[list[dict], list[str], list[str]]:
     checks: list[dict] = []
     notes: list[str] = []
+    sorunlar: list[str] = []
 
     for rel in diff.created_dirs:
         checks.append({"op": "is_dir", "path": rel})
@@ -224,19 +240,22 @@ def build_checks(diff: TreeDiff, b_dirs: dict, b_files: dict,
         checks.append({"op": "dir_entries_eq", "path": rel, "value": sorted(b_dirs[rel])})
 
     for rel in diff.created_files + diff.modified_files:
-        file_checks, file_notes = checks_for_file(
+        file_checks, file_notes, file_sorunlar = checks_for_file(
             rel, b_files[rel], overrides.get(rel), sandbox)
         checks.extend(file_checks)
         notes.extend(file_notes)
+        sorunlar.extend(file_sorunlar)
 
     for rel in diff.deleted:
         checks.append({"op": "not_exists", "path": rel})
 
     for rel in overrides:
         if rel not in b_files and rel not in b_dirs:
-            notes.append(f"{rel}: outputs: icinde bildirilmis ama referans uretmiyor")
+            sorunlar.append(f"{rel}: outputs: icinde bildirilmis ama referans uretmiyor")
+        elif overrides[rel].get("kind") == "dir" and rel not in b_dirs:
+            sorunlar.append(f"{rel}: kind=dir bildirildi ama dizin degil")
 
-    return checks, notes
+    return checks, notes, sorunlar
 
 
 # -- surus ------------------------------------------------------------
@@ -250,6 +269,9 @@ class DeriveReport:
     init_passed: int     # ... A fotografinda (hepsi gecerse task anlamsiz)
     total: int
     error: str | None = None
+    # Bildirilen cikti turu ile gercegin uyusmadigi yerler: not degil,
+    # task'i reddettiren sert uyusmazliklar.
+    sorunlar: list[str] = field(default_factory=list)
 
     @property
     def sound(self) -> bool:
@@ -283,7 +305,7 @@ def derive(task: Task) -> DeriveReport:
             if d.is_empty():
                 return DeriveReport(task.id, [], [], 0, 0, 0,
                                     "referans cozum dunyayi degistirmiyor")
-            checks, notes = build_checks(d, b[0], b[1], overrides, sandbox)
+            checks, notes, sorunlar = build_checks(d, b[0], b[1], overrides, sandbox)
 
         # Turetilen check'ler iki fotografta da olculur: B'de hepsi gecmeli
         # (yoksa turetici kendi kendiyle celisiyor), A'da hepsi gecmemeli
@@ -292,7 +314,8 @@ def derive(task: Task) -> DeriveReport:
         init = checks_report(run_checks(snap_a, checks, task.image))
 
     return DeriveReport(task.id, checks, notes,
-                        ref["passed"], init["passed"], len(checks))
+                        ref["passed"], init["passed"], len(checks),
+                        sorunlar=sorunlar)
 
 
 # -- elle yazilanla karsilastirma -------------------------------------
@@ -306,7 +329,7 @@ def signature(check: dict) -> tuple:
 # eksik degil; rapor ikisini karistirmamali.
 SUBSUMED_BY: dict[str, set[str]] = {
     "is_file": {"file_content_eq", "file_line_count_eq", "file_contains",
-                "file_matches", "json_field_eq", "run_stdout_eq"},
+                "file_matches", "json_field_eq", "json_eq", "run_stdout_eq"},
     "is_dir": {"dir_entries_eq"},
     "file_contains": {"file_content_eq"},
     "file_matches": {"file_content_eq"},
@@ -404,6 +427,8 @@ def main() -> int:
         else:
             print("  elle yazilanla : (bu task eski tarz check.py kullaniyor)")
 
+        for sorun in rep.sorunlar:
+            print(f"  X {sorun}")
         for note in rep.notes:
             print(f"  ! {note}")
         if args.yaml:
