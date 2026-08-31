@@ -54,6 +54,38 @@ _TAG_RE = re.compile(r"<komut>\s*(.*?)\s*</komut>", re.DOTALL | re.IGNORECASE)
 _FENCE_RE = re.compile(r"```(?:bash|sh|shell)?\s*\n(.*?)```", re.DOTALL)
 
 
+def _yaz(etiket: str, metin: str, max_satir: int = 14, genislik: int = 130) -> None:
+    """Etiketli, girintili ve kisaltilmis bir blok bas.
+
+    Tek task izlerken asil merak edilen modelin ne dusundugu ve komutun ne
+    dondurdugu; eskiden yalnizca cikis kodu basiliyordu ve episode'u
+    okumak icin JSONL'e bakmak gerekiyordu.
+    """
+    metin = (metin or "").strip()
+    if not metin:
+        return
+    satirlar = metin.splitlines()
+    if etiket:
+        print(f"  {etiket}")
+    for satir in satirlar[:max_satir]:
+        print(f"    {satir[:genislik]}")
+    if len(satirlar) > max_satir:
+        print(f"    ... ({len(satirlar) - max_satir} satir daha)")
+
+
+def _dusunce(msg) -> str:
+    """Sunucu ayri bir alanda dondurduyse dusunce zincirini al.
+
+    vLLM, Qwen gibi reasoning modellerinde bunu reasoning_content olarak
+    veriyor; olmayan sunucularda alan hic bulunmuyor.
+    """
+    for alan in ("reasoning_content", "reasoning"):
+        deger = getattr(msg, alan, None)
+        if isinstance(deger, str) and deger.strip():
+            return deger
+    return ""
+
+
 def extract_commands(content: str) -> list[str]:
     """Pull shell commands out of a plain-text assistant reply.
 
@@ -184,23 +216,26 @@ def run_model_text(task: Task, client, model: str, verbose: bool = True) -> Epis
                 error = f"model cagrisi basarisiz: {e}"
                 break
 
-            content = response.choices[0].message.content or ""
+            msg = response.choices[0].message
+            content = msg.content or ""
             messages.append({"role": "assistant", "content": content})
 
             found = extract_commands(content)
+            if verbose:
+                print(f"\n--- tur {turns} ---")
+                _yaz("[dusunce]", _dusunce(msg), max_satir=10)
+                # Komutlar ayrica basildigi icin metinden cikariliyor.
+                _yaz("[model]", _TAG_RE.sub("", content).strip())
             if not found:
-                if verbose:
-                    print(f"[model] {content.strip()[:300]}")
                 break
 
             observations = []
             for command in found:
                 commands.append(command)
-                if verbose:
-                    print(f"[turn {turns}] $ {command}")
                 result = sandbox.exec(command)
                 if verbose:
-                    print(f"           exit={result.exit_code}")
+                    print(f"  $ {command}")
+                    _yaz("", result.to_observation(max_chars=1200))
                 observations.append(f"$ {command}\n{result.to_observation()}")
             messages.append({
                 "role": "user",
@@ -275,6 +310,11 @@ def run_model_native(task: Task, client, model: str, verbose: bool = True) -> Ep
                 ] or None,
             })
 
+            if verbose:
+                print(f"\n--- tur {turns} ---")
+                _yaz("[dusunce]", _dusunce(msg), max_satir=10)
+                _yaz("[model]", msg.content or "")
+
             if not tool_calls:
                 # Model arac cagirdi ama sunucu parse edemediyse, cagri ham
                 # metin olarak content'te kalir ve episode sessizce biter.
@@ -283,8 +323,6 @@ def run_model_native(task: Task, client, model: str, verbose: bool = True) -> Ep
                     error = ("sunucu tool call'u parse edemedi -- vLLM'de "
                              "--tool-call-parser yanlis ya da eksik olabilir")
                     print(f"[uyari] {error}")
-                elif verbose and msg.content:
-                    print(f"[model] {msg.content.strip()[:300]}")
                 break
 
             for tc in tool_calls:
@@ -293,13 +331,14 @@ def run_model_native(task: Task, client, model: str, verbose: bool = True) -> Ep
                     command = args["command"]
                 except (json.JSONDecodeError, KeyError) as e:
                     observation = f"gecersiz arac argumani: {e}"
+                    if verbose:
+                        print(f"  ! {observation}")
                 else:
                     commands.append(command)
-                    if verbose:
-                        print(f"[turn {turns}] $ {command}")
                     observation = sandbox.exec(command).to_observation()
                     if verbose:
-                        print(f"           {observation.splitlines()[0]}")
+                        print(f"  $ {command}")
+                        _yaz("", observation[:1200])
                 messages.append({
                     "role": "tool", "tool_call_id": tc.id, "content": observation,
                 })
