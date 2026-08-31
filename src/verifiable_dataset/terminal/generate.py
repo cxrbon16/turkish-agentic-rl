@@ -314,6 +314,11 @@ def generate_one(client, model: str, seed: Seed, out_dir: Path,
 
 
 def _anahtar(explicit: str) -> str:
+    """API anahtarini bul; kendi sunucun icin gerekmez.
+
+    vLLM gibi OpenAI uyumlu yerel sunucular anahtari yok sayar, ama istemci
+    bos birakilmasina izin vermiyor -- o yuzden bulunamazsa "dummy" doner.
+    """
     if explicit:
         return explicit
     for isim in ("MISTRAL_API_KEY", "OPENAI_API_KEY"):
@@ -326,7 +331,7 @@ def _anahtar(explicit: str) -> str:
             for isim in ("MISTRAL_API_KEY", "OPENAI_API_KEY"):
                 if satir.startswith(f"{isim}="):
                     return satir.split("=", 1)[1].strip().strip('"').strip("'")
-    return ""
+    return "dummy"
 
 
 def main() -> int:
@@ -339,7 +344,8 @@ def main() -> int:
     parser.add_argument("--n", type=int, default=5, help="uretilecek aday sayisi")
     parser.add_argument("--model", required=True)
     parser.add_argument("--base-url", default="https://api.mistral.ai/v1")
-    parser.add_argument("--api-key", default="", help="bos birakilirsa .env okunur")
+    parser.add_argument("--api-key", default="",
+                        help="bos birakilirsa .env okunur; kendi sunucun icin gereksiz")
     parser.add_argument("--out", default="envs_gen")
     parser.add_argument("--rng", type=int, default=0)
     parser.add_argument("--denemeler", type=int, default=3,
@@ -355,9 +361,6 @@ def main() -> int:
         return 1
 
     key = _anahtar(args.api_key)
-    if not key:
-        print("API anahtari bulunamadi (--api-key, MISTRAL_API_KEY ya da .env)")
-        return 2
 
     from openai import OpenAI
     base_url = args.base_url.rstrip("/")
