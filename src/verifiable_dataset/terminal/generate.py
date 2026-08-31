@@ -336,6 +336,8 @@ def main() -> int:
     parser.add_argument("--denemeler", type=int, default=3,
                         help="bir aday icin en fazla kac onarim turu")
     parser.add_argument("--gecikme", type=float, default=1.0,
+    parser.add_argument("--istek-araligi", type=float, default=0.0,
+                        help="iki API istegi arasinda en az bu kadar saniye bekle")
                         help="cagrilar arasi bekleme (rate limit icin)")
     args = parser.parse_args()
 
@@ -345,7 +347,7 @@ def main() -> int:
         print("Docker Desktop'i baslatip tekrar dene.")
         return 1
 
-    client = make_client(args.base_url, args.api_key)
+    client = make_client(args.base_url, args.api_key, args.istek_araligi)
 
     out_dir = Path(args.out)
     rng = random.Random(args.rng)

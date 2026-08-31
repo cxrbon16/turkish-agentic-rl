@@ -215,6 +215,8 @@ def main() -> int:
     parser.add_argument("--api-key", default="")
     parser.add_argument("--denemeler", type=int, default=3)
     parser.add_argument("--gecikme", type=float, default=0.5)
+    parser.add_argument("--istek-araligi", type=float, default=0.0,
+                        help="iki API istegi arasinda en az bu kadar saniye bekle")
     parser.add_argument("--limit", type=int, default=0,
                         help="en fazla kac task islensin (0 = hepsi)")
     args = parser.parse_args()
@@ -245,7 +247,7 @@ def main() -> int:
         print("prompt bekleyen task yok")
         return 0
 
-    client = make_client(args.base_url, args.api_key)
+    client = make_client(args.base_url, args.api_key, args.istek_araligi)
 
     print(f"model={args.model}  {len(bekleyen)} task prompt bekliyor\n")
 

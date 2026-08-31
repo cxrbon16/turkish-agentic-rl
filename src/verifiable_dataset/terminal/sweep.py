@@ -86,6 +86,8 @@ def main() -> int:
     parser.add_argument("--rollouts", type=int, default=1)
     parser.add_argument("--only", default="", help="sadece adinda bu gecen task'lari calistir")
     parser.add_argument("--out", default="", help="episode kayitlarini bu JSONL'e yaz")
+    parser.add_argument("--istek-araligi", type=float, default=0.0,
+                        help="iki API istegi arasinda en az bu kadar saniye bekle")
     args = parser.parse_args()
 
     ok, info = docker_available()
@@ -105,7 +107,7 @@ def main() -> int:
         if not args.model:
             print("--model verilmedi (ya da --reference kullan)")
             return 2
-        client = make_client(args.base_url, args.api_key)
+        client = make_client(args.base_url, args.api_key, args.istek_araligi)
 
     mode = "referans" if args.reference else f"{args.model} x{args.rollouts}"
     print(f"{len(task_dirs)} task | mod: {mode} | docker {info}\n")

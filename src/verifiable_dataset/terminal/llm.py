@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import os
 import pathlib
+import time
 
 MISTRAL_URL = "https://api.mistral.ai/v1"
 
@@ -49,16 +50,60 @@ def resolve_base_url(base_url: str, kaynak: str) -> str:
     return ""
 
 
-def make_client(base_url: str = "", api_key: str = "", verbose: bool = True):
-    """OpenAI uyumlu istemciyi kur ve nereye baglandigini soyle."""
+class _Completions:
+    """Istekler arasinda en az `aralik` saniye birakan ince sarmalayici."""
+
+    def __init__(self, inner, aralik: float):
+        self._inner = inner
+        self._aralik = aralik
+        self._son = 0.0
+
+    def create(self, **kwargs):
+        bekle = self._aralik - (time.monotonic() - self._son)
+        if bekle > 0:
+            time.sleep(bekle)
+        try:
+            return self._inner.create(**kwargs)
+        finally:
+            # Sayac cagri BITISINDEN itibaren isliyor: yavas bir sunucuda
+            # istekler zaten seyrek, ustune bir de beklemeye gerek yok.
+            self._son = time.monotonic()
+
+
+class _Chat:
+    def __init__(self, completions):
+        self.completions = completions
+
+
+class ThrottledClient:
+    """Yalnizca chat.completions.create yolunu kisitlar, gerisi aynen gecer."""
+
+    def __init__(self, inner, aralik: float):
+        self._inner = inner
+        self.chat = _Chat(_Completions(inner.chat.completions, aralik))
+
+    def __getattr__(self, name):
+        return getattr(self._inner, name)
+
+
+def make_client(base_url: str = "", api_key: str = "", istek_araligi: float = 0.0,
+                verbose: bool = True):
+    """OpenAI uyumlu istemciyi kur ve nereye baglandigini soyle.
+
+    ``istek_araligi`` iki istek arasindaki en kisa sureyi saniye cinsinden
+    verir. Bir episode her turda bir istek attigi icin kisitin episode
+    basina degil istek basina olmasi gerekiyor.
+    """
     from openai import OpenAI
 
     key, kaynak = resolve_key(api_key)
     url = resolve_base_url(base_url, kaynak)
     if verbose:
         nereye = url or "https://api.openai.com/v1 (varsayilan)"
-        print(f"uc: {nereye}   anahtar: {kaynak}")
+        kisit = f"   istek araligi: {istek_araligi}sn" if istek_araligi else ""
+        print(f"uc: {nereye}   anahtar: {kaynak}{kisit}")
         if not url and kaynak == "yok":
             print("uyari: --base-url verilmedi ve anahtar bulunamadi; "
                   "kendi sunucun icin --base-url ver")
-    return OpenAI(base_url=url or None, api_key=key)
+    client = OpenAI(base_url=url or None, api_key=key)
+    return ThrottledClient(client, istek_araligi) if istek_araligi > 0 else client
