@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shlex
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -132,18 +133,62 @@ def gate_discriminates(task: Task, rep) -> GateResult:
 
 
 def gate_output_kinds(task: Task, rep) -> GateResult:
-    """Bildirilen cikti turu gercekle uyusmali.
+    """Bildirilen cikti, referansin gercekten urettigiyle tutarli olmali.
 
-    Uretilen bir spec `kind: json` diyip gecersiz JSON uretebiliyor. Bu
-    sessizce byte esitligine dusuyor ve task tersine doner: gecerli JSON
-    yazan DOGRU cozum sifir alir, cunku beklenen deger bozuk metnin
-    kendisidir. Turetici bu uyusmazliklari isaretliyor, kapi reddediyor.
+    Iki uyusmazligi birden yakalar. Biri tur: spec `kind: json` deyip
+    gecersiz JSON uretebiliyor, bu sessizce byte esitligine dusuyor ve task
+    tersine doner -- gecerli JSON yazan DOGRU cozum sifir alir, cunku
+    beklenen deger bozuk metnin kendisidir. Digeri deger: `beklenen` modelin
+    niyeti, turetilen ise referansin davranisi. Celisiyorlarsa biri
+    yanlistir; hangisi oldugunu bilmeden bile task'i reddetmek dogrudur.
     """
     if rep is None:
-        return GateResult("cikti turu", False, "turetme yapilamadi")
+        return GateResult("cikti tutarliligi", False, "turetme yapilamadi")
     if not task.outputs:
-        return GateResult("cikti turu", True, skipped=True, detail="outputs bildirilmemis")
-    return GateResult("cikti turu", not rep.sorunlar, "; ".join(rep.sorunlar[:3]))
+        return GateResult("cikti tutarliligi", True, skipped=True,
+                          detail="outputs bildirilmemis")
+    return GateResult("cikti tutarliligi", not rep.sorunlar, "; ".join(rep.sorunlar[:3]))
+
+
+def ucuz_hile_betigi(checks: list[dict]) -> str:
+    """Check'lerde adi gecen her yolu bos olarak yaratan tembel bir betik.
+
+    Hicbir is yapmiyor: dizinleri aciyor, dosyalari bos olarak dokunuyor,
+    silinmesi gerekenleri siliyor. Bu betik check'leri geciyorsa task'in
+    olcecek bir seyi yok demektir.
+    """
+    satirlar: list[str] = []
+    for c in checks:
+        op, path = c.get("op"), c.get("path")
+        if not path:
+            continue
+        q = shlex.quote(path)
+        if op in {"is_dir", "dir_entries_eq"}:
+            satirlar.append(f"mkdir -p {q}")
+        elif op == "not_exists":
+            satirlar.append(f"rm -rf {q}")
+        else:
+            satirlar.append(f'mkdir -p "$(dirname {q})" && : > {q}')
+    return "\n".join(dict.fromkeys(satirlar)) or "true"
+
+
+def gate_cheap_hack(task: Task, rep) -> GateResult:
+    """Hicbir is yapmayan bir cozum gecmemeli.
+
+    Uretilen bir task'in referansi bos bir dosya birakmisti; turetilen check
+    de "icerik bos olsun" oldu ve `touch sonuc.txt` tam puan aldi. Bant
+    filtresi bunu ancak 16 ajan rollout'u harcayarak fark ederdi. Burada
+    tek konteynerde, saniyeler icinde anlasiliyor.
+    """
+    if rep is None or not rep.checks:
+        return GateResult("ucuz hile", False, "turetilen check yok")
+    r = run_alt(task, {"name": "ucuz hile", "script": ucuz_hile_betigi(rep.checks)},
+                rep.checks)
+    return GateResult(
+        "ucuz hile", not r.ok,
+        f"is yapmayan betik {r.derived_passed}/{r.derived_total} check geciyor -- "
+        f"check'lerin olctugu bir sey yok",
+    )
 
 
 def gate_equivalence(task: Task, checks: list[dict] | None) -> GateResult:
@@ -174,6 +219,7 @@ def run_gauntlet(task: Task, spec_only: bool = False) -> list[GateResult]:
     results.append(det)
     results.append(gate_discriminates(task, rep))
     results.append(gate_output_kinds(task, rep))
+    results.append(gate_cheap_hack(task, rep))
     results.append(gate_equivalence(task, rep.checks if rep else None))
     return results
 

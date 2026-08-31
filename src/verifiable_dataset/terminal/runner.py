@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from verifiable_dataset.terminal.sandbox import DockerSandbox, docker_available
-from verifiable_dataset.terminal.task import GradeResult, Task, grade
+from verifiable_dataset.terminal.task import GradeResult, Task, grade, run_script
 
 SYSTEM_PROMPT = (
     "Sen bir Linux terminalinde calisan bir yardimcisin. "
@@ -138,7 +138,7 @@ def run_reference(task: Task, verbose: bool = True) -> Episode:
     with task.make_sandbox() as sandbox:
         task.prepare(sandbox)
         _assert_not_pre_solved(task, sandbox)
-        result = sandbox.exec(task.reference_solution, timeout=60)
+        result = run_script(sandbox, task.reference_solution, timeout=60)
         if verbose:
             print(f"[referans] exit={result.exit_code}")
             if result.stderr.strip():

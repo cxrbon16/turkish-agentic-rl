@@ -22,13 +22,15 @@ import sys
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 import yaml
 
+from verifiable_dataset.terminal.checks import _json_close
 from verifiable_dataset.terminal.checks import report as checks_report
 from verifiable_dataset.terminal.checks import run_checks
 from verifiable_dataset.terminal.sandbox import DockerSandbox, docker_available
-from verifiable_dataset.terminal.task import Task
+from verifiable_dataset.terminal.task import Task, run_script
 
 # Bu sayidan uzun dosyalarda satir satir file_contains uretmek yerine
 # tek bir file_content_eq daha okunakli.
@@ -128,101 +130,107 @@ def infer_kind(rel: str, raw: bytes) -> str:
     return "file"
 
 
-def json_field_checks(rel: str, text: str) -> tuple[list[dict], list[str]]:
-    """JSON ciktisini alan alan kontrol et -- butun dosyayi byte byte degil.
+def beklenen_uyusmazligi(rel: str, kind: str, actual: Any, beklenen: Any) -> str:
+    """Modelin bildirdigi degeri referansin gercekten urettigiyle karsilastir.
 
-    Anahtar sirasi, girinti ve ensure_ascii tercihi dogru cozumler arasinda
-    degisir; alan bazli karsilastirma bunlari cezalandirmaz.
+    Turetme, referansin DAVRANISINI hakikat kabul eder; bu yuzden buggy bir
+    referans yanlis cevabi ground truth yapar ve her kapi memnun kalir.
+    ``beklenen`` modelin NIYETI: ikisi celisiyorsa biri yanlistir ve task
+    hazir degildir. Ayni yanitin icinde geldigi icin ek maliyeti yok.
     """
-    checks: list[dict] = []
-    skipped: list[str] = []
-    data = json.loads(text)
-    if not isinstance(data, dict):
-        # Ust duzey sozluk degilse karsilastirilacak alan yok; belgenin
-        # tamami yapisal olarak karsilastirilir. Sirayi anlamli sayiyoruz --
-        # gereginden siki cikarsa denklik kapisi soyleyecek.
-        return [{"op": "json_eq", "path": rel, "value": data}], []
-    for key, value in data.items():
-        if isinstance(value, list):
-            checks.append({"op": "json_field_eq", "path": rel, "field": key,
-                           "value": value, "as_set": True})
-        elif isinstance(value, bool) or value is None or isinstance(value, dict):
-            # bool/None/ic ice dict bugunku op setinin disinda kaliyor
-            skipped.append(f"{key} ({type(value).__name__})")
-        elif isinstance(value, float):
-            checks.append({"op": "json_field_eq", "path": rel, "field": key,
-                           "value": value, "tol": 0.01})
-        else:
-            checks.append({"op": "json_field_eq", "path": rel, "field": key,
-                           "value": value})
-    return checks, skipped
+    if kind == "json":
+        hedef = beklenen
+        if isinstance(beklenen, str):
+            try:
+                hedef = json.loads(beklenen)
+            except json.JSONDecodeError:
+                return f"{rel}: beklenen gecerli JSON degil"
+        if _json_close(actual, hedef, 0.01, True):
+            return ""
+    elif kind in {"lines", "dir"}:
+        istenen = (beklenen if isinstance(beklenen, list)
+                   else [ln.strip() for ln in str(beklenen).splitlines() if ln.strip()])
+        if sorted(str(x).strip() for x in actual) == sorted(str(x).strip() for x in istenen):
+            return ""
+    elif str(actual).strip() == str(beklenen).strip():
+        return ""
+    return (f"{rel}: referansin urettigi deger, outputs'ta bildirilen beklenen "
+            f"degerle uyusmuyor -- beklenen {str(beklenen)[:80]!r}, "
+            f"uretilen {str(actual)[:80]!r}")
 
 
 def checks_for_file(rel: str, raw: bytes, override: dict | None,
                     sandbox: DockerSandbox | None,
                     ) -> tuple[list[dict], list[str], list[str]]:
+    """Bir artefakt icin TEK check uret.
+
+    Odul ikili oldugu icin bir dosyaya uc check koymak ikisinden fazlasini
+    getirmiyor: hepsi gecmek zorunda, yani konjonksiyondan baska bir sey
+    degiller. Gevseklik ise op'un kendi semantiginde tasiniyor --
+    json_eq sayilara tolerans, file_lines_eq siraya duyarsizlik verir.
+    """
     kind = (override or {}).get("kind") or infer_kind(rel, raw)
+    beklenen = (override or {}).get("beklenen")
     notes: list[str] = []
     sorunlar: list[str] = []
+
+    def bitir(check: dict | None, deger: Any) -> tuple[list[dict], list[str], list[str]]:
+        if beklenen is not None:
+            fark = beklenen_uyusmazligi(rel, kind, deger, beklenen)
+            if fark:
+                sorunlar.append(fark)
+        return ([check] if check else []), notes, sorunlar
 
     if kind == "program":
         # Referansin yazdigi her betik hedefin parcasi degil: cogu sadece
         # ise yarayan bir arac. Bildirilmemis betige check koymak "sen de
         # tam boyle bir dosya olustur" demek olur ve tek satirlik dogru
-        # cozumu haksiz yere duserdi. Bu yuzden yalnizca outputs: icinde
-        # bildirilenler kontrol edilir.
+        # cozumu haksiz yere duserdi.
         if override is None:
             notes.append(f"{rel}: ara dosya sayilip atlandi; hedefin parcasiysa "
                          f"outputs: icinde bildir")
             return [], notes, sorunlar
         # Bir programin dogrulugu diskteki metninde degil, calisinca ne
         # urettiginde. Diff bunu goremez, `run` bildirimi sart.
-        out = [{"op": "is_file", "path": rel}]
         run = override.get("run")
         if not run:
-            notes.append(f"{rel}: outputs: icinde `run` bildirilirse "
-                         f"run_stdout_eq de uretilir")
-        elif sandbox is not None:
-            res = sandbox.exec(run)
-            if res.exit_code == 0:
-                out.append({"op": "run_stdout_eq", "cmd": run,
-                            "value": res.stdout.strip()})
-            else:
-                notes.append(f"{rel}: `{run}` referans dunyasinda exit={res.exit_code}")
-        return out, notes, sorunlar
+            notes.append(f"{rel}: outputs: icinde `run` bildirilirse betigin "
+                         f"metni yerine ciktisi kontrol edilir")
+            return bitir({"op": "is_file", "path": rel}, "")
+        if sandbox is None:
+            return bitir({"op": "is_file", "path": rel}, "")
+        res = sandbox.exec(run)
+        if res.exit_code != 0:
+            sorunlar.append(f"{rel}: `{run}` referans dunyasinda exit={res.exit_code}")
+            return bitir({"op": "is_file", "path": rel}, "")
+        return bitir({"op": "run_stdout_eq", "cmd": run, "value": res.stdout.strip()},
+                     res.stdout.strip())
 
     if kind == "opaque":
         notes.append(f"{rel}: metin degil, sadece varligi kontrol ediliyor")
         return [{"op": "is_file", "path": rel}], notes, sorunlar
 
     if kind == "empty":
-        return [{"op": "is_file", "path": rel}], notes, sorunlar
+        return bitir({"op": "is_file", "path": rel}, "")
 
     text = raw.decode("utf-8", errors="replace")
 
     if kind == "json":
         try:
-            field_checks, skipped = json_field_checks(rel, text)
+            data = json.loads(text)
         except json.JSONDecodeError as e:
             sorunlar.append(f"{rel}: kind=json bildirildi ama referansin urettigi "
                             f"dosya gecerli JSON degil ({e})")
-            return ([{"op": "is_file", "path": rel},
-                     {"op": "file_content_eq", "path": rel, "value": text.strip()}],
-                    notes, sorunlar)
-        if skipped:
-            notes.append(f"{rel}: kontrol edilemeyen alanlar: {', '.join(skipped)}")
-        return [{"op": "is_file", "path": rel}] + field_checks, notes, sorunlar
+            return [{"op": "file_content_eq", "path": rel, "value": text.strip()}], \
+                notes, sorunlar
+        return bitir({"op": "json_eq", "path": rel, "value": data}, data)
 
     if kind == "lines":
         lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
-        out = [{"op": "is_file", "path": rel},
-               {"op": "file_line_count_eq", "path": rel, "value": len(lines)}]
-        out += [{"op": "file_contains", "path": rel, "value": ln} for ln in lines]
-        return out, notes, sorunlar
+        return bitir({"op": "file_lines_eq", "path": rel, "value": lines}, lines)
 
-    return ([{"op": "is_file", "path": rel},
-             {"op": "file_content_eq", "path": rel, "value": text.strip()}],
-            notes, sorunlar)
+    return bitir({"op": "file_content_eq", "path": rel, "value": text.strip()},
+                 text.strip())
 
 
 def build_checks(diff: TreeDiff, b_dirs: dict, b_files: dict,
@@ -233,19 +241,36 @@ def build_checks(diff: TreeDiff, b_dirs: dict, b_files: dict,
     notes: list[str] = []
     sorunlar: list[str] = []
 
-    for rel in diff.created_dirs:
-        checks.append({"op": "is_dir", "path": rel})
-        checks.append({"op": "dir_entries_eq", "path": rel, "value": sorted(b_dirs[rel])})
-    for rel in diff.changed_dirs:
+    # outputs: bildirildiyse hedef odur ve gerisi aractir. Referansin yol
+    # boyunca biraktigi ara dosyalari check'e cevirmek "sen de tam bu gecici
+    # dosyalari ayni adlarla uret" demek olur; uretilmis bir task'ta bu
+    # sessizce cozumu referansin bicimine hapsediyordu.
+    kapsam = set(overrides)
+
+    def kapsamda(rel: str) -> bool:
+        return not kapsam or rel in kapsam
+
+    for rel in diff.created_dirs + diff.changed_dirs:
+        if not kapsamda(rel):
+            continue
+        # is_dir gereksiz: dir_entries_eq dizin degilse zaten duser.
         checks.append({"op": "dir_entries_eq", "path": rel, "value": sorted(b_dirs[rel])})
 
+    atlanan = 0
     for rel in diff.created_files + diff.modified_files:
+        if not kapsamda(rel):
+            atlanan += 1
+            continue
         file_checks, file_notes, file_sorunlar = checks_for_file(
             rel, b_files[rel], overrides.get(rel), sandbox)
         checks.extend(file_checks)
         notes.extend(file_notes)
         sorunlar.extend(file_sorunlar)
+    if atlanan:
+        notes.append(f"{atlanan} ara dosya kapsam disi birakildi (outputs bildirilmis)")
 
+    # Silmeler her zaman kapsamda: baslangic dunyasindan kaybolan bir dosya
+    # ara dosya olamaz, gercek bir durum degisikligidir.
     for rel in diff.deleted:
         checks.append({"op": "not_exists", "path": rel})
 
@@ -292,7 +317,7 @@ def derive(task: Task) -> DeriveReport:
             snap_a = sandbox.snapshot(Path(tmp) / "a")
             a = scan(snap_a)
 
-            result = sandbox.exec(task.reference_solution, timeout=60)
+            result = run_script(sandbox, task.reference_solution, timeout=60)
             if result.exit_code != 0:
                 return DeriveReport(
                     task.id, [], [], 0, 0, 0,
@@ -328,12 +353,14 @@ def signature(check: dict) -> tuple:
 # Elle yazilmis bir check'i turetici daha siki bir op'la kapsiyorsa bu bir
 # eksik degil; rapor ikisini karistirmamali.
 SUBSUMED_BY: dict[str, set[str]] = {
-    "is_file": {"file_content_eq", "file_line_count_eq", "file_contains",
-                "file_matches", "json_field_eq", "json_eq", "run_stdout_eq"},
+    "is_file": {"file_content_eq", "file_lines_eq", "file_line_count_eq",
+                "file_contains", "file_matches", "json_field_eq", "json_eq",
+                "run_stdout_eq"},
     "is_dir": {"dir_entries_eq"},
-    "file_contains": {"file_content_eq"},
-    "file_matches": {"file_content_eq"},
-    "file_line_count_eq": {"file_content_eq"},
+    "file_contains": {"file_content_eq", "file_lines_eq"},
+    "file_matches": {"file_content_eq", "file_lines_eq"},
+    "file_line_count_eq": {"file_content_eq", "file_lines_eq"},
+    "json_field_eq": {"json_eq"},
 }
 
 
@@ -345,6 +372,11 @@ def compare(derived: list[dict], handwritten: list[dict]) -> tuple[list, list, l
     by_path: dict[str, set[str]] = {}
     for op, path, _ in d:
         by_path.setdefault(path, set()).add(op)
+        if op == "run_stdout_eq":
+            # Bir komut, adi gecen dosyalari da kapsar: `python3 topla.py`
+            # topla.py yoksa zaten duser, ayrica is_file aramaya gerek yok.
+            for token in path.split():
+                by_path.setdefault(token, set()).add(op)
 
     covered, missed = [], []
     for sig in sorted(h - d):

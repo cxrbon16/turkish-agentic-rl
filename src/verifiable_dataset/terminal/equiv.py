@@ -24,7 +24,7 @@ from verifiable_dataset.terminal.checks import report as checks_report
 from verifiable_dataset.terminal.checks import run_checks
 from verifiable_dataset.terminal.derive import derive
 from verifiable_dataset.terminal.sandbox import docker_available
-from verifiable_dataset.terminal.task import Task
+from verifiable_dataset.terminal.task import Task, run_script
 
 
 @dataclass
@@ -50,7 +50,7 @@ def run_alt(task: Task, alt: dict, derived: list[dict]) -> AltResult:
     with tempfile.TemporaryDirectory(prefix="vds-equiv-") as tmp:
         with task.make_sandbox() as sandbox:
             task.prepare(sandbox)
-            run = sandbox.exec(alt["script"], timeout=60)
+            run = run_script(sandbox, alt["script"], timeout=60)
             res.exit_code = run.exit_code
             res.stderr = run.stderr.strip()[:200]
             snapshot = sandbox.snapshot(Path(tmp) / "ws")

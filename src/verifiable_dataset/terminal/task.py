@@ -13,7 +13,18 @@ import yaml
 
 from verifiable_dataset.terminal.checks import report as checks_report
 from verifiable_dataset.terminal.checks import run_checks
-from verifiable_dataset.terminal.sandbox import DockerSandbox
+from verifiable_dataset.terminal.sandbox import DockerSandbox, ExecResult
+
+# Bir boru hattinin ortasindaki hata, son komut basarili oldugu surece
+# gorunmez: `bc` kurulu degilse `hesapla | bc | tee out` yine exit 0 doner,
+# dosya bos kalir ve o bosluk ground truth olur. pipefail hatayi cikis
+# koduna tasiyor, boylece bozuk bir referans sessizce gecmiyor.
+PIPEFAIL = "set -o pipefail\n"
+
+
+def run_script(sandbox: DockerSandbox, script: str, timeout: int = 60) -> ExecResult:
+    """Task'a ait bir betigi (setup, referans, alternatif) pipefail ile calistir."""
+    return sandbox.exec(PIPEFAIL + script, timeout=timeout)
 
 
 @dataclass
@@ -66,7 +77,7 @@ class Task:
         """Seed the world the task starts from."""
         if not self.setup.strip():
             return
-        result = sandbox.exec(self.setup, timeout=120)
+        result = run_script(sandbox, self.setup, timeout=120)
         if result.exit_code != 0:
             raise RuntimeError(
                 f"{self.id}: setup basarisiz (exit={result.exit_code}): "
