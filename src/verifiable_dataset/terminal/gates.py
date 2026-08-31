@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from verifiable_dataset.terminal.derive import derive
+from verifiable_dataset.terminal.prompts import denetle as prompt_denetle
 from verifiable_dataset.terminal.equiv import run_alt
 from verifiable_dataset.terminal.sandbox import docker_available
 from verifiable_dataset.terminal.seeds import tools_used, uses_tool
@@ -79,6 +80,21 @@ def gate_prompt_turkce(task: Task) -> GateResult:
     var = TURKCE_HARFLER & set(task.prompt)
     return GateResult("prompt turkce", bool(var),
                       "prompt'ta hic Turkce karakter yok -- ASCII'lestirilmis olabilir")
+
+
+def gate_prompt_covers_outputs(task: Task) -> GateResult:
+    """Prompt, check'lerin sart kostugu her artefakti adiyla anmali.
+
+    Check'ler prompt'tan once donuyor. Prompt bir cikti dosyasini hic
+    anmazsa gorev cozulemez hale gelir: yardimci adini bilemedigi bir
+    dosyayi uretemez, ama check onu istiyordur. Ayni denetim cozum
+    sizintisina da bakiyor -- referansin komutlari prompt'a girmisse gorev
+    hedef ayristirma olmaktan cikip komut kopyalamaya doner.
+    """
+    if not task.prompt.strip():
+        return GateResult("prompt kapsami", True, skipped=True, detail="prompt yok")
+    sorunlar = prompt_denetle(task, task.prompt)
+    return GateResult("prompt kapsami", not sorunlar, "; ".join(sorunlar[:3]))
 
 
 def gate_tool_conformance(task: Task, eksik_araclar: list[str]) -> GateResult:
@@ -226,6 +242,7 @@ def run_gauntlet(task: Task, spec_only: bool = False) -> list[GateResult]:
     ]
     if not spec_only:
         results.append(gate_prompt_turkce(task))
+        results.append(gate_prompt_covers_outputs(task))
     # Arac uygunlugu artik referansin stderr'ine de bakiyor, o yuzden
     # turetmeden sonra calisiyor.
     det, rep, eksik_araclar = gate_determinism(task)
