@@ -22,6 +22,7 @@ import random
 import re
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -31,7 +32,7 @@ from verifiable_dataset.terminal.derive import checks_yaz
 from verifiable_dataset.terminal.gates import run_gauntlet
 from verifiable_dataset.terminal.sandbox import docker_available
 from verifiable_dataset.terminal.seeds import Seed, sample, tools_of_image
-from verifiable_dataset.terminal.llm import make_client
+from verifiable_dataset.terminal.llm import make_client, resolve_model
 from verifiable_dataset.terminal.task import Task
 
 PIPELINE_VERSION = "spec-1"
@@ -240,11 +241,17 @@ class Aday:
     task_dir: Path | None = None
     hata: str = ""
     dusen_kapilar: list[str] = field(default_factory=list)
+    log: list[str] = field(default_factory=list)
 
 
 def generate_one(client, model: str, seed: Seed, out_dir: Path,
                  max_deneme: int = 3, verbose: bool = True) -> Aday:
     aday = Aday(seed=seed)
+
+    def kaydet(satir: str) -> None:
+        # Es zamanli kosuda dogrudan print etmek 8 parcacigin
+        # satirlarini birbirine karistiriyor; aday bitince topluca basilir.
+        aday.log.append(satir)
     mesajlar = [
         {"role": "system", "content": SPEC_TALIMAT},
         {"role": "user", "content": seed_brief(seed)},
@@ -265,7 +272,7 @@ def generate_one(client, model: str, seed: Seed, out_dir: Path,
         if spec.error:
             geri = f"Yanitin ayristirilamadi: {spec.error}. Formata birebir uy."
             if verbose:
-                print(f"    deneme {deneme}: {spec.error}")
+                kaydet(f"    deneme {deneme}: {spec.error}")
             mesajlar += [{"role": "assistant", "content": ham},
                          {"role": "user", "content": geri}]
             continue
@@ -285,7 +292,7 @@ def generate_one(client, model: str, seed: Seed, out_dir: Path,
             hata = f"{type(e).__name__}: {e}"
             aday.dusen_kapilar = ["gauntlet coktu"]
             if verbose:
-                print(f"    deneme {deneme}: gauntlet coktu -- {hata[:160]}")
+                kaydet(f"    deneme {deneme}: gauntlet coktu -- {hata[:160]}")
             if deneme == max_deneme:
                 aday.hata = f"gauntlet coktu: {hata}"
                 return aday
@@ -307,7 +314,7 @@ def generate_one(client, model: str, seed: Seed, out_dir: Path,
         aday.dusen_kapilar = [r.name for r in dusen]
         if verbose:
             for r in dusen:
-                print(f"    deneme {deneme}: [{r.name}] {r.detail[:120]}")
+                kaydet(f"    deneme {deneme}: [{r.name}] {r.detail[:120]}")
         if deneme == max_deneme:
             return aday
 
@@ -327,7 +334,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--n", type=int, default=5, help="uretilecek aday sayisi")
-    parser.add_argument("--model", required=True)
+    parser.add_argument("--model", default="",
+                        help="bos birakilirsa .env'deki OPENAI_MODEL_NAME")
     parser.add_argument("--base-url", default="https://api.mistral.ai/v1")
     parser.add_argument("--api-key", default="",
                         help="bos birakilirsa .env okunur; kendi sunucun icin gereksiz")
@@ -339,7 +347,14 @@ def main() -> int:
                         help="adaylar arasi bekleme")
     parser.add_argument("--istek-araligi", type=float, default=0.0,
                         help="iki API istegi arasinda en az bu kadar saniye bekle")
+    parser.add_argument("--concurrency", type=int, default=1,
+                        help="es zamanli aday sayisi")
     args = parser.parse_args()
+
+    args.model = resolve_model(args.model)
+    if not args.model:
+        print("--model verilmedi ve .env'de OPENAI_MODEL_NAME yok")
+        return 2
 
     ok, info = docker_available()
     if not ok:
@@ -353,22 +368,43 @@ def main() -> int:
     rng = random.Random(args.rng)
     print(f"model={args.model}  n={args.n}  cikti={out_dir}/  docker={info}\n")
 
-    adaylar: list[Aday] = []
-    for i in range(args.n):
-        seed = sample(rng, i)
-        print(f"[{i + 1}/{args.n}] {seed.id}  {'+'.join(seed.tools)}  {seed.konu}  "
-              f"{seed.hedef}  kaynak={seed.kaynak} cikti={seed.cikti} "
-              f"kesif={seed.kesif} adim={seed.adim}")
-        aday = generate_one(client, args.model, seed, out_dir, args.denemeler)
-        adaylar.append(aday)
+    def basligi(seed: Seed, sira: int) -> str:
+        return (f"[{sira}/{args.n}] {seed.id}  {'+'.join(seed.tools)}  {seed.konu}  "
+                f"{seed.hedef}  kaynak={seed.kaynak} cikti={seed.cikti} "
+                f"kesif={seed.kesif} adim={seed.adim}")
+
+    def sonucu(aday: Aday) -> str:
         if aday.kabul:
-            print(f"    KABUL ({aday.deneme}. denemede)  -> {aday.task_dir}")
-        elif aday.hata:
-            print(f"    HATA  {aday.hata}")
-        else:
-            print(f"    RED   dusen kapilar: {', '.join(aday.dusen_kapilar)}")
-        if args.gecikme and i < args.n - 1:
-            time.sleep(args.gecikme)
+            return f"    KABUL ({aday.deneme}. denemede)  -> {aday.task_dir}"
+        if aday.hata:
+            return f"    HATA  {aday.hata}"
+        return f"    RED   dusen kapilar: {', '.join(aday.dusen_kapilar)}"
+
+    seedler = [sample(rng, i) for i in range(args.n)]
+    adaylar: list[Aday] = []
+
+    if args.concurrency > 1:
+        # Her aday kendi konteynerlerini acar; es zamanlilik cekirdek
+        # sayisini asmasin, yoksa gauntlet'ler birbirini yavaslatir.
+        print(f"es zamanlilik: {args.concurrency}\n")
+        with ThreadPoolExecutor(max_workers=args.concurrency) as havuz:
+            isler = {havuz.submit(generate_one, client, args.model, seed,
+                                  out_dir, args.denemeler): (i + 1, seed)
+                     for i, seed in enumerate(seedler)}
+            for bitmis in as_completed(isler):
+                sira, seed = isler[bitmis]
+                aday = bitmis.result()
+                adaylar.append(aday)
+                # Adayin butun ciktisi tek blok halinde: satirlar karismasin.
+                print("\n".join([basligi(seed, sira), *aday.log, sonucu(aday)]))
+    else:
+        for i, seed in enumerate(seedler):
+            print(basligi(seed, i + 1))
+            aday = generate_one(client, args.model, seed, out_dir, args.denemeler)
+            adaylar.append(aday)
+            print("\n".join([*aday.log, sonucu(aday)]))
+            if args.gecikme and i < args.n - 1:
+                time.sleep(args.gecikme)
 
     kabul = sum(1 for a in adaylar if a.kabul)
     print(f"\nKABUL ORANI: {kabul}/{len(adaylar)}")

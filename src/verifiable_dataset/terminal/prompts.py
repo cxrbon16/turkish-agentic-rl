@@ -24,7 +24,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from verifiable_dataset.terminal.llm import make_client
+from verifiable_dataset.terminal.llm import make_client, resolve_model
 from verifiable_dataset.terminal.task import Task
 
 TURKCE_HARFLER = set("çğıöşüÇĞİÖŞÜ")
@@ -210,7 +210,8 @@ def main() -> int:
     parser.add_argument("--task", default="")
     parser.add_argument("--all", action="store_true")
     parser.add_argument("--envs", default="envs_gen")
-    parser.add_argument("--model", required=True)
+    parser.add_argument("--model", default="",
+                        help="bos birakilirsa .env'deki OPENAI_MODEL_NAME")
     parser.add_argument("--base-url", default="https://api.mistral.ai/v1")
     parser.add_argument("--api-key", default="")
     parser.add_argument("--denemeler", type=int, default=3)
@@ -220,6 +221,11 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=0,
                         help="en fazla kac task islensin (0 = hepsi)")
     args = parser.parse_args()
+
+    args.model = resolve_model(args.model)
+    if not args.model:
+        print("--model verilmedi ve .env'de OPENAI_MODEL_NAME yok")
+        return 2
 
     if args.all:
         task_dirs = sorted(p.parent for p in Path(args.envs).glob("*/task.yaml")
