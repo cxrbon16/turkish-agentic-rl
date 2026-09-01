@@ -212,7 +212,8 @@ def main() -> int:
     parser.add_argument("--envs", default="envs_gen")
     parser.add_argument("--model", default="",
                         help="bos birakilirsa .env'deki OPENAI_MODEL_NAME")
-    parser.add_argument("--base-url", default="https://api.mistral.ai/v1")
+    parser.add_argument("--base-url", default="",
+                        help="bos birakilirsa .env'deki OPENAI_BASE_URL")
     parser.add_argument("--api-key", default="")
     parser.add_argument("--denemeler", type=int, default=3)
     parser.add_argument("--gecikme", type=float, default=0.5)

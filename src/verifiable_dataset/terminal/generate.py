@@ -336,11 +336,15 @@ def main() -> int:
     parser.add_argument("--n", type=int, default=5, help="uretilecek aday sayisi")
     parser.add_argument("--model", default="",
                         help="bos birakilirsa .env'deki OPENAI_MODEL_NAME")
-    parser.add_argument("--base-url", default="https://api.mistral.ai/v1")
+    parser.add_argument("--base-url", default="",
+                        help="bos birakilirsa .env'deki OPENAI_BASE_URL")
     parser.add_argument("--api-key", default="",
                         help="bos birakilirsa .env okunur; kendi sunucun icin gereksiz")
     parser.add_argument("--out", default="envs_gen")
     parser.add_argument("--rng", type=int, default=0)
+    parser.add_argument("--id-basla", type=int, default=0,
+                        help="seed id numaralari buradan bassin; mevcut "
+                             "task'larin uzerine yazmamak icin")
     parser.add_argument("--denemeler", type=int, default=3,
                         help="bir aday icin en fazla kac onarim turu")
     parser.add_argument("--gecikme", type=float, default=1.0,
@@ -386,7 +390,7 @@ def main() -> int:
             return f"    HATA  {aday.hata}"
         return f"    RED   dusen kapilar: {', '.join(aday.dusen_kapilar)}"
 
-    seedler = [sample(rng, i) for i in range(args.n)]
+    seedler = [sample(rng, args.id_basla + i) for i in range(args.n)]
     adaylar: list[Aday] = []
 
     if args.concurrency > 1:
