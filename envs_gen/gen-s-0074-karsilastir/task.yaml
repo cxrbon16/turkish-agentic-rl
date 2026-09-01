@@ -1,0 +1,81 @@
+id: gen-s-0074-karsilastir
+split: single_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 8
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  students a.txt ve students b.txt dosyalarını karşılaştır; ortak satırları same.txt'ye, sadece a.txt'de olanları only_a.txt'ye, sadece b.txt'de olanları ise only_b.txt'ye yaz.
+
+setup: |
+  cat > "students a.txt" <<'EOF'
+  Alice 85
+  Bob 70
+  Charlie 90
+  David 60
+  Eve 80
+  EOF
+
+  cat > "students b.txt" <<'EOF'
+  Alice 85
+  Bob 75
+  Charlie 90
+  David 65
+  Eve 80
+  EOF
+
+  cat > "trap.txt" <<'EOF'
+  Alice 85
+  Bob 70
+  EOF
+
+goal_tr: >
+  students a.txt ve students b.txt dosyalarini karsilastirarak, her iki
+  dosyada da ayni olan satirlari same.txt dosyasina, yalnizca a.txt
+  dosyasinda bulunan satirlari only_a.txt dosyasina ve yalnizca b.txt
+  dosyasinda bulunan satirlari only_b.txt dosyasina yaz.
+
+reference_solution: |
+  sort "students a.txt" > a_sorted.txt
+  sort "students b.txt" > b_sorted.txt
+  comm -12 a_sorted.txt b_sorted.txt > same.txt
+  comm -23 a_sorted.txt b_sorted.txt > only_a.txt
+  comm -13 a_sorted.txt b_sorted.txt > only_b.txt
+  diff -u a_sorted.txt b_sorted.txt > diff_output.txt
+  rm a_sorted.txt b_sorted.txt diff_output.txt
+
+outputs:
+  - {path: same.txt, kind: file}
+  - {path: only_a.txt, kind: file}
+  - {path: only_b.txt, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: only_a.txt, value: [Bob 70, David 60]}
+  - {op: file_lines_eq, path: only_b.txt, value: [Bob 75, David 65]}
+  - {op: file_lines_eq, path: same.txt, value: [Alice 85, Charlie 90, Eve 80]}
+
+metadata:
+  domain: karsilastir
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0074
+    bundle: karsilastir
+    tools:
+    - diff
+    - comm
+    konu: ogrenci-notlari
+    hedef: karsilastir
+    girdi: log-satiri
+    kaynak: iki-dosya-capraz
+    cikti: birden-cok-dosya
+    kesif: yok
+    uslup: terse
+    direnc: bosluklu-ad
+    bukulme: tuzak-dosya
+    adim: 1
+    image: verifiable-dataset/base:latest
+    metadata: {}

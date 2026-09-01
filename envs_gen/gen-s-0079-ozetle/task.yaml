@@ -1,0 +1,64 @@
+id: gen-s-0079-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  server.log dosyasındaki her satırın ilk 10 karakterinden oluşan tarih kısmını ve üçüncü sütunda yer alan log seviyesini alarak, bunları virgülle ayrılmış bir şekilde summary.csv dosyasına yazın.
+
+setup: |
+  cat > server.log <<'EOF'
+  2023-10-01 10:00:01 INFO User1 LOGIN
+  2023-10-01 10:05:12 ERROR Database Timeout
+  2023-10-01 10:10:45 INFO User2 LOGIN
+  2023-10-01 10:15:30 WARNING Memory High
+  2023-10-01 10:20:00 ERROR Disk Full
+  2023-10-01 10:25:15 INFO User1 LOGOUT
+  2023-10-01 10:30:00 ERROR Network Failure
+  EOF
+  touch trap.log
+  echo "This is a trap file" > trap.log
+
+goal_tr: >
+  server.log dosyasındaki her satırın tarih kısmını (ilk 10 karakter) ve log
+  seviyesini (3. sütun) alarak, bunları virgülle ayrılmış bir CSV dosyası
+  olarak summary.csv dosyasına yaz.
+
+reference_solution: |
+  cut -c 1-10 server.log > dates.txt
+  cut -d' ' -f3 server.log > levels.txt
+  paste -d',' dates.txt levels.txt > summary.csv
+  rm dates.txt levels.txt
+
+outputs:
+  - {path: summary.csv, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: summary.csv, value: ['2023-10-01,INFO', '2023-10-01,ERROR', '2023-10-01,INFO', '2023-10-01,WARNING', '2023-10-01,ERROR', '2023-10-01,INFO', '2023-10-01,ERROR']}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0079
+    bundle: sutun
+    tools:
+    - cut
+    - paste
+    konu: sunucu-loglari
+    hedef: ozetle
+    girdi: duz-metin
+    kaynak: tek-dosya
+    cikti: csv
+    kesif: yok
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

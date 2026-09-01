@@ -1,0 +1,79 @@
+id: gen-s-0045-ayikla
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  inventory.ini dosyasındaki her bölümün id değerini alıp, bu değerlerin ters çevrilmiş halini ve codes.ini dosyasındaki karşılık gelen değerleri result.txt dosyasına yaz.
+
+setup: |
+  cat > inventory.ini <<'EOF'
+  [item1]
+  id=101
+  name=Widget_A
+  price=25
+  [item2]
+  id=102
+  name=Gadget_B
+  price=40
+  [item3]
+  id=103
+  name=Tool_C
+  price=15
+  EOF
+
+  cat > codes.ini <<'EOF'
+  [id_mapping]
+  101=WIDGET
+  102=GADGET
+  103=TOOL
+  EOF
+
+  touch trap_file.ini
+
+goal_tr: >
+  inventory.ini dosyasındaki her bölümün ID değerini alıp codes.ini
+  dosyasındaki karşılık gelen değerle eşleştirerek, ID'yi ters çevrilmiş
+  şekilde ve yanına karşılığını ekleyerek result.txt dosyasına yaz.
+
+reference_solution: |
+  grep "id=" inventory.ini | cut -d'=' -f2 > ids.tmp
+  while read id; do
+      rev_id=$(echo "$id" | rev)
+      code=$(grep "^$id=" codes.ini | cut -d'=' -f2)
+      echo "$rev_id:$code" >> result.txt
+  done < ids.tmp
+  rm ids.tmp
+
+outputs:
+  - {path: result.txt, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: result.txt, value: ['101:WIDGET', '201:GADGET', '301:TOOL']}
+
+metadata:
+  domain: ayikla
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0045
+    bundle: ters-cevir
+    tools:
+    - rev
+    - cut
+    konu: envanter
+    hedef: ayikla
+    girdi: ini
+    kaynak: iki-dosya-capraz
+    cikti: yeniden-adlandirilmis
+    kesif: veriye-bak
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

@@ -1,0 +1,57 @@
+id: gen-s-0011-ozetle
+split: single_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 8
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) inventory.txt dosyasındaki Item ve Quantity sütunlarını birleştirin.
+  2) Her satırı JSON formatına dönüştürerek summary.json dosyasına yazın.
+
+setup: |
+  cat > inventory.txt <<'EOF'
+  ID,Item,Quantity,Price
+  1,Laptop,10,1000
+  2,Mouse,50,25
+  3,Keyboard,30,45
+  4,Monitor,20,200
+  EOF
+
+goal_tr: >
+  inventory.txt dosyasindeki Item ve Quantity sutunlarini birleştirerek her
+  satırı JSON formatında summary.json dosyasına yaz.
+
+reference_solution: |
+  cut -d',' -f2,3 inventory.txt | tail -n +2 | paste -d' ' - - | awk '{print "{\"item\": \"" $1 "\", \"quantity\": " $2 "}"}' > summary.json
+
+outputs:
+  - {path: summary.json, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: summary.json, value: ['{"item": "Laptop,10", "quantity": Mouse,50}', '{"item": "Keyboard,30", "quantity": Monitor,20}']}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0011
+    bundle: sutun
+    tools:
+    - cut
+    - paste
+    konu: envanter
+    hedef: ozetle
+    girdi: duz-metin
+    kaynak: tek-dosya
+    cikti: json
+    kesif: yok
+    uslup: numarali-emir
+    direnc: yok
+    bukulme: olcek
+    adim: 1
+    image: verifiable-dataset/base:latest
+    metadata: {}

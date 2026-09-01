@@ -1,0 +1,75 @@
+id: gen-s-0051-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) shipments.ini dosyasındaki tüm şehir ve durum bilgilerini çıkarın.
+  2) Bu bilgileri kullanarak benzersiz şehir-durum çiftlerini belirleyin.
+  3) Elde edilen benzersiz çiftleri alfabetik sıraya dizin.
+  4) Bu çiftleri, her satırda bir çift olacak şekilde ve aralarında virgül kullanarak shipments.csv dosyasına yazın.
+
+setup: |
+  cat > shipments.ini <<'EOF'
+  [SHIP001]
+  status=DELIVERED
+  city=Istanbul
+  [SHIP002]
+  status=IN_TRANSIT
+  city=Ankara
+  [SHIP003]
+  status=DELIVERED
+  city=Istanbul
+  [SHIP004]
+  status=PENDING
+  city=Izmir
+  [SHIP005]
+  status=IN_TRANSIT
+  city=Ankara
+  [SHIP006]
+  status=DELIVERED
+  city=Istanbul
+  EOF
+
+goal_tr: >
+  shipments.ini dosyasındaki şehirleri ve durumları çıkararak, her benzersiz
+  şehir-durum çiftini alfabetik sırada shipments.csv dosyasına virgülle
+  ayrılmış olarak yaz.
+
+reference_solution: |
+  find . -name "shipments.ini" > found_file.txt
+  FILE=$(cat found_file.txt)
+  grep -E "city=|status=" "$FILE" | sed 's/.*=//' | paste -d, - - | sort | uniq > shipments.csv
+
+outputs:
+  - {path: shipments.csv, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: shipments.csv, value: ['DELIVERED,Istanbul', 'IN_TRANSIT,Ankara', 'PENDING,Izmir']}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0051
+    bundle: sirala
+    tools:
+    - sort
+    - uniq
+    konu: kargo-takibi
+    hedef: donustur
+    girdi: ini
+    kaynak: tek-dosya
+    cikti: csv
+    kesif: dosyayi-bul
+    uslup: numarali-emir
+    direnc: yok
+    bukulme: yok
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

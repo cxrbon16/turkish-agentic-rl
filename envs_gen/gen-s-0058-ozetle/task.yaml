@@ -1,0 +1,70 @@
+id: gen-s-0058-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  orders dizinindeki tüm alt dizinlerde bulunan dosyaların toplam satır sayısını hesaplayın ve bu sayıyı sonuc.txt dosyasına yazın.
+
+setup: |
+  mkdir -p orders/day1 orders/day2
+  cat > orders/day1/order1.txt <<'EOF'
+  Customer: Alice
+  Item: Burger
+  Price: 10
+  EOF
+  cat > orders/day1/order2.txt <<'EOF'
+  Customer: Bob
+  Item: Pizza
+  Price: 15
+  EOF
+  cat > orders/day2/order1.txt <<'EOF'
+  Customer: Charlie
+  Item: Salad
+  Price: 8
+  EOF
+  cat > orders/day2/order2.txt <<'EOF'
+  Customer: Dave
+  Item: Pasta
+  Price: 12
+  EOF
+
+goal_tr: >
+  orders dizinindeki tüm alt dizinlerde bulunan dosyaların toplam satır
+  sayısını hesaplayıp sonuc.txt dosyasına yazın.
+
+reference_solution: |
+  find orders -type f | xargs wc -l | tail -n 1 | awk '{print $1}' > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '12'}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0058
+    bundle: dizin-istatistik
+    tools:
+    - wc
+    - find
+    konu: restoran-siparisleri
+    hedef: ozetle
+    girdi: log-satiri
+    kaynak: dizin-agaci
+    cikti: tek-sayi
+    kesif: yok
+    uslup: duz-hedef
+    direnc: crlf
+    bukulme: yok
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

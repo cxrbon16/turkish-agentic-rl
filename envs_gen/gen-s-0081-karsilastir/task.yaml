@@ -1,0 +1,68 @@
+id: gen-s-0081-karsilastir
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) warehouse1.csv ve warehouse2.csv dosyalarında bulunan ortak ürün ID'lerini belirleyin.
+  2) Bu ortak ürün ID'lerinin toplam sayısını hesaplayın.
+  3) Hesaplanan sayıyı sonuc.txt dosyasına kaydedin.
+
+setup: |
+  cat > warehouse1.csv <<'EOF'
+  A101,Widget,10
+  B202,Gadget,5
+  C303,Sprocket,20
+  D404,Gear,15
+  E505,Bolt,50
+  EOF
+
+  cat > warehouse2.csv <<'EOF'
+  A101,Widget,12
+  B202,Gadget,4
+  D404,Gear,15
+  F606,Nut,100
+  G707,Washer,30
+  EOF
+
+goal_tr: >
+  warehouse1.csv ve warehouse2.csv dosyalarındaki ortak ürün ID'lerinin
+  sayısını hesaplayıp sonuc.txt dosyasına yazın.
+
+reference_solution: |
+  sort warehouse1.csv | cut -d, -f1 > w1_ids.txt
+  sort warehouse2.csv | cut -d, -f1 > w2_ids.txt
+  comm -12 w1_ids.txt w2_ids.txt | wc -l > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '3'}
+
+metadata:
+  domain: karsilastir
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0081
+    bundle: kume-farki
+    tools:
+    - comm
+    - sort
+    konu: envanter
+    hedef: karsilastir
+    girdi: csv
+    kaynak: cok-dosya
+    cikti: tek-sayi
+    kesif: yok
+    uslup: numarali-emir
+    direnc: yok
+    bukulme: yok
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

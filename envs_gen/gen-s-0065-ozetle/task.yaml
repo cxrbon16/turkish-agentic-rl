@@ -39,13 +39,7 @@ outputs:
   - {path: ozet.csv, kind: csv}
 
 checks:
-  - {op: file_content_eq, path: ozet.csv, value: 'URUN1,250
-
-    URUN2,450
-
-    URUN3,225
-
-    urun,toplam_miktar'}
+  - {op: file_lines_eq, path: ozet.csv, value: ['URUN1,250', 'URUN2,450', 'URUN3,225', 'urun,toplam_miktar']}
 
 metadata:
   domain: ozetle

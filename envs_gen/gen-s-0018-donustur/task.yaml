@@ -31,20 +31,8 @@ outputs:
   - {path: output/ters_urunler.txt, kind: file}
 
 checks:
-  - {op: file_content_eq, path: output/ters_siparisler.txt, value: 'Airetsum,1001,54:03:21,10-01-3202
-
-    Biretsum,2001,22:53:21,10-01-3202
-
-    Ciretsum,3001,01:51:91,20-01-3202
-
-    Airetsum,4001,03:54:02,20-01-3202'}
-  - {op: file_content_eq, path: output/ters_urunler.txt, value: 'atirehgram
-
-    inoreppep
-
-    anairategev
-
-    atirehgram'}
+  - {op: file_lines_eq, path: output/ters_siparisler.txt, value: ['Airetsum,1001,54:03:21,10-01-3202', 'Biretsum,2001,22:53:21,10-01-3202', 'Ciretsum,3001,01:51:91,20-01-3202', 'Airetsum,4001,03:54:02,20-01-3202']}
+  - {op: file_lines_eq, path: output/ters_urunler.txt, value: [atirehgram, inoreppep, anairategev, atirehgram]}
 
 metadata:
   domain: donustur

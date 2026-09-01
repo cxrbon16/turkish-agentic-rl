@@ -1,0 +1,60 @@
+id: gen-s-0047-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  logs/server_logs.tsv dosyasındaki ERROR içeren satırların sayısını sonuc.txt dosyasına sadece rakam olarak yaz.
+
+setup: |
+  mkdir -p logs
+  cat > logs/server_logs.tsv <<'EOF'
+  2023-10-01 10:00:01	INFO	System booted
+  2023-10-01 10:05:22	ERROR	Disk full
+  2023-10-01 10:10:45	INFO	User login
+  2023-10-01 10:15:12	ERROR	Connection lost
+  2023-10-01 10:20:33	WARNING	Memory low
+  2023-10-01 10:25:00	ERROR	Timeout occurred
+  EOF
+  # Remove trailing newline to satisfy resistance
+  printf "2023-10-01 10:30:15	ERROR	Service crashed" >> logs/server_logs.tsv
+
+goal_tr: >
+  logs dizinindeki server_logs.tsv dosyasını bul ve ERROR içeren satırların
+  sayısını sonuc.txt dosyasına sadece rakam olarak yaz.
+
+reference_solution: |
+  find logs -name "server_logs.tsv" | xargs grep "ERROR" | wc -l > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '4'}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0047
+    bundle: say
+    tools:
+    - grep
+    - wc
+    konu: sunucu-loglari
+    hedef: ozetle
+    girdi: tsv
+    kaynak: tek-dosya
+    cikti: tek-sayi
+    kesif: dosyayi-bul
+    uslup: terse
+    direnc: son-newline-yok
+    bukulme: olcek
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

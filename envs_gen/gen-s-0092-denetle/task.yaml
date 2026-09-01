@@ -37,11 +37,7 @@ outputs:
   - {path: hata_raporu.csv, kind: file}
 
 checks:
-  - {op: file_content_eq, path: hata_raporu.csv, value: 'Baglanti koptu
-
-    Disk dolu
-
-    Zaman asimi'}
+  - {op: file_lines_eq, path: hata_raporu.csv, value: [Baglanti koptu, Disk dolu, Zaman asimi]}
 
 metadata:
   domain: denetle

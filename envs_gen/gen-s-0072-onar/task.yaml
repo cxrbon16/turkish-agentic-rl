@@ -1,0 +1,65 @@
+id: gen-s-0072-onar
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  appointments.txt dosyasındaki randevular ile cancellations.txt dosyasındaki iptalleri karşılaştırın ve ortak olan kayıtların sayısını sonuc.txt dosyasına yazın.
+
+setup: |
+  cat > appointments.txt <<'EOF'
+  2023-10-01|09:00|A101|H123|B1
+  2023-10-01|10:00|A102|H456|B2
+  2023-10-01|11:00|A103|H789|B3
+  2023-10-02|09:00|A101|H111|B4
+  2023-10-02|10:00|A102|H222|B5
+  EOF
+
+  cat > cancellations.txt <<'EOF'
+  2023-10-01|09:00|H123
+  2023-10-01|11:00|H789
+  2023-10-02|10:00|H222
+  EOF
+
+goal_tr: >
+  appointments.txt dosyasındaki randevular ile cancellations.txt
+  dosyasındaki iptalleri karşılaştırarak, ortak olan kayıtların sayısını
+  sonuc.txt dosyasına yazın.
+
+reference_solution: |
+  sed 's/|/ /g' appointments.txt | tr ' ' '\n' | sort > app_flat.txt
+  sed 's/|/ /g' cancellations.txt | tr ' ' '\n' | sort > can_flat.txt
+  comm -12 app_flat.txt can_flat.txt | wc -l > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '9'}
+
+metadata:
+  domain: onar
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0072
+    bundle: metin-duzenle
+    tools:
+    - sed
+    - tr
+    konu: hastane-randevulari
+    hedef: onar
+    girdi: log-satiri
+    kaynak: iki-dosya-capraz
+    cikti: tek-sayi
+    kesif: yok
+    uslup: kisit-sakli
+    direnc: yok
+    bukulme: yok
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

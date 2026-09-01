@@ -1,0 +1,72 @@
+id: gen-s-0040-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) server1.csv ve server2.csv dosyalarındaki ortak mesajları bulun.
+  2) Bu ortak mesajları server3.csv dosyasına kaydedin.
+
+setup: |
+  cat > server1.csv <<'EOF'
+  timestamp,level,message
+  2023-10-01T10:00:01,INFO,System boot
+  2023-10-01T10:05:23,ERROR,Disk failure
+  2023-10-01T10:10:45,WARN,High memory usage
+  2023-10-01T10:15:12,INFO,User login
+  2023-10-01T10:20:00,ERROR,Network timeout
+  EOF
+
+  cat > server2.csv <<'EOF'
+  timestamp,level,message
+  2023-10-01T10:00:05,INFO,System boot
+  2023-10-01T10:06:11,ERROR,CPU overheat
+  2023-10-01T10:10:45,WARN,High memory usage
+  2023-10-01T10:15:10,INFO,User login
+  2023-10-01T10:25:00,ERROR,Database crash
+  EOF
+
+  cat > server3.csv <<'EOF'
+  2023-10-01T10:00:01,INFO,System boot
+  2023-10-01T10:05:23,ERROR,Disk failure
+  EOF
+
+goal_tr: >
+  server1.csv ve server2.csv dosyalarindaki ortak olan mesajlari bulup
+  bunları server3.csv dosyasina yazın.
+
+reference_solution: |
+  grep -F -f <(cut -d',' -f3 server1.csv | tail -n +2 | sort) <(cut -d',' -f3 server2.csv | tail -n +2) | cut -d',' -f3 | sort | uniq | tee server3.csv
+
+outputs:
+  - {path: server3.csv, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: server3.csv, value: [High memory usage, System boot, User login]}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0040
+    bundle: dallandir
+    tools:
+    - tee
+    - cut
+    konu: sunucu-loglari
+    hedef: donustur
+    girdi: csv
+    kaynak: iki-dosya-capraz
+    cikti: satir-listesi
+    kesif: yok
+    uslup: numarali-emir
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

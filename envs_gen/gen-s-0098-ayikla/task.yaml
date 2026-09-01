@@ -1,0 +1,58 @@
+id: gen-s-0098-ayikla
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  inventory.ini dosyasındaki her satırın eşittir işaretinden sonraki değerini ters çevirerek her satıra bir sonuç gelecek şekilde inventory_reversed.txt dosyasına yaz.
+
+setup: |
+  cat > inventory.ini <<'EOF'
+  [section1]
+  item1=12345
+  item2=67890
+  [section2]
+  item3=abcde
+  item4=fghij
+  EOF
+
+goal_tr: >
+  inventory.ini dosyasındaki her satırın değer kısmını (eşittir işaretinden
+  sonraki kısım) ters çevirerek her satıra bir sonuç olacak şekilde
+  inventory_reversed.txt dosyasına yazın.
+
+reference_solution: |
+  cut -d'=' -f2 inventory.ini | rev > inventory_reversed.txt
+
+outputs:
+  - {path: inventory_reversed.txt, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: inventory_reversed.txt, value: [']1noitces[', '54321', 09876, ']2noitces[', edcba, jihgf]}
+
+metadata:
+  domain: ayikla
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0098
+    bundle: ters-cevir
+    tools:
+    - rev
+    - cut
+    konu: envanter
+    hedef: ayikla
+    girdi: ini
+    kaynak: tek-dosya
+    cikti: satir-listesi
+    kesif: yok
+    uslup: terse
+    direnc: yok
+    bukulme: yok
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

@@ -1,0 +1,62 @@
+id: gen-s-0039-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  reviews.txt dosyasındaki her bir yorumun kaç kez tekrarlandığını hesaplayın. En çok tekrarlanan yorumu ve tekrar sayısını, aralarında virgül olacak şekilde summary.csv dosyasına kaydedin.
+
+setup: |
+  cat > reviews.txt <<'EOF'
+  ID    RATING  COMMENT
+  101   5       Excellent product!
+  102   4       Very good
+  103   5       Excellent product!
+  104   3       Okay
+  105   4       Very good
+  106   5       Excellent product!
+  107   1       Poor quality
+  108   4       Very good
+  109   5       Excellent product!
+  110   2       Not great
+  EOF
+
+goal_tr: >
+  reviews.txt dosyasindeki her bir yorumun kaç kez tekrarlandığını bulup, en
+  çok tekrarlanan yorumu ve sayısını summary.csv dosyasina kaydedin.
+
+reference_solution: |
+  cut -d' ' -f3- reviews.txt | tail -n +2 | sort | uniq -c | sort -nr | head -n 1 | awk '{print $2 "," $1}' > summary.csv
+
+outputs:
+  - {path: summary.csv, kind: file}
+
+checks:
+  - {op: file_content_eq, path: summary.csv, value: '5,4'}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0039
+    bundle: sirala
+    tools:
+    - sort
+    - uniq
+    konu: urun-yorumlari
+    hedef: ozetle
+    girdi: sabit-genislik
+    kaynak: tek-dosya
+    cikti: csv
+    kesif: yok
+    uslup: kisit-sakli
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

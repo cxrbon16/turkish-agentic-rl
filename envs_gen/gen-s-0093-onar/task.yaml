@@ -1,0 +1,89 @@
+id: gen-s-0093-onar
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Bugün hastane yönetim sistemi verilerini düzenlemem gerekiyor. Randevu kayıtları farklı dosyalarda dağılmış durumda ve bazı kayıtlar eksik olduğu için analiz yapamıyorum. Lütfen appointments.txt ve appointments_corrupt.txt dosyalarındaki eksik verileri boş string ile doldurarak birleştirin ve sonucu geçerli bir JSON listesi olarak appointments.json dosyasına kaydedin.
+
+setup: |
+  cat > appointments.txt <<'EOF'
+  PatientID,Date,Time,Doctor
+  P001,2023-10-01,10:00,Dr. Smith
+  P002,2023-10-01,11:00,Dr. Jones
+  P003,2023-10-02,09:00,Dr. Smith
+  P004,2023-10-02,14:00,Dr. Brown
+  P005,,15:00,Dr. Jones
+  P006,2023-10-03,10:00,
+  EOF
+
+  cat > appointments_corrupt.txt <<'EOF'
+  PatientID,Date,Time,Doctor
+  P007,2023-10-03,11:00,Dr. Smith
+  P008,2023-10-03,12:00,Dr. Jones
+  P009,2023-10-04,09:00,Dr. Smith
+  P010,2023-10-04,15:00,Dr. Brown
+  P011,2023-10-05,10:00,Dr. Jones
+  P012,2023-10-05,11:00,
+  EOF
+
+  touch empty_file.txt
+  touch appointments_backup.txt
+
+goal_tr: >
+  appointments.txt ve appointments_corrupt.txt dosyalarındaki eksik verileri
+  boş string ile doldurarak birleştirin ve sonucu valid bir JSON listesi
+  olarak appointments.json dosyasına kaydedin.
+
+reference_solution: |
+  python3 -c "
+  import json
+  import csv
+
+  data = []
+  files = ['appointments.txt', 'appointments_corrupt.txt']
+  for filename in files:
+      with open(filename, 'r') as f:
+          reader = csv.DictReader(f)
+          for row in reader:
+              # Fill missing values with empty string
+              for key in row:
+                  if row[key] is None:
+                      row[key] = ''
+              data.append(row)
+
+  with open('appointments.json', 'w') as f:
+      json.dump(data, f, indent=4)
+  "
+
+outputs:
+  - {path: appointments.json, kind: json}
+
+checks:
+  - {op: json_eq, path: appointments.json, value: [{PatientID: P001, Date: '2023-10-01', Time: '10:00', Doctor: Dr. Smith}, {PatientID: P002, Date: '2023-10-01', Time: '11:00', Doctor: Dr. Jones}, {PatientID: P003, Date: '2023-10-02', Time: '09:00', Doctor: Dr. Smith}, {PatientID: P004, Date: '2023-10-02', Time: '14:00', Doctor: Dr. Brown}, {PatientID: P005, Date: '', Time: '15:00', Doctor: Dr. Jones}, {PatientID: P006, Date: '2023-10-03', Time: '10:00', Doctor: ''}, {PatientID: P007, Date: '2023-10-03', Time: '11:00', Doctor: Dr. Smith}, {PatientID: P008, Date: '2023-10-03', Time: '12:00', Doctor: Dr. Jones}, {PatientID: P009, Date: '2023-10-04', Time: '09:00', Doctor: Dr. Smith}, {PatientID: P010, Date: '2023-10-04', Time: '15:00', Doctor: Dr. Brown}, {PatientID: P011, Date: '2023-10-05', Time: '10:00', Doctor: Dr. Jones}, {PatientID: P012, Date: '2023-10-05', Time: '11:00', Doctor: ''}]}
+
+metadata:
+  domain: onar
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0093
+    bundle: python-veri
+    tools:
+    - python3
+    konu: hastane-randevulari
+    hedef: onar
+    girdi: duz-metin
+    kaynak: tek-dosya
+    cikti: json
+    kesif: yok
+    uslup: baglam-gomulu
+    direnc: bos-dosya
+    bukulme: tuzak-dosya
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

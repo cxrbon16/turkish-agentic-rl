@@ -1,0 +1,63 @@
+id: gen-s-0057-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  server logs dizinindeki .json uzantılı dosyalarda bulunan ERROR seviyesindeki kayıtların toplam sayısını sadece sayı olacak şekilde sonuc.txt dosyasına yazın.
+
+setup: |
+  mkdir -p "server logs"
+  cat > "server logs/access_log.json" <<'JSON'
+  {"timestamp": "2023-10-01T10:00:00Z", "level": "INFO", "message": "Connection established"}
+  {"timestamp": "2023-10-01T10:01:00Z", "level": "ERROR", "message": "Disk full"}
+  JSON
+  cat > "server logs/error_log.json" <<'JSON'
+  {"timestamp": "2023-10-01T10:02:00Z", "level": "ERROR", "message": "Timeout occurred"}
+  {"timestamp": "2023-10-01T10:03:00Z", "level": "INFO", "message": "Retry successful"}
+  JSON
+  touch "server logs/backup.old"
+  echo "This is a trap file" > "server logs/backup.old"
+
+goal_tr: >
+  server logs dizinindeki json uzantılı dosyalarda yer alan ERROR
+  seviyesindeki kayıtların toplam sayısını sonuc.txt dosyasına sadece sayı
+  olarak yaz
+
+reference_solution: |
+  find "server logs" -name "*.json" -exec grep -c "ERROR" {} + | awk '{s+=$1} END {print s}' > sonuc.txt
+  # Note: The reference uses find and wc is required by seed. Correcting to use wc.
+  find "server logs" -name "*.json" -exec grep "ERROR" {} + | wc -l > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '2'}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0057
+    bundle: dizin-istatistik
+    tools:
+    - wc
+    - find
+    konu: sunucu-loglari
+    hedef: ozetle
+    girdi: json
+    kaynak: cok-dosya
+    cikti: tek-sayi
+    kesif: yok
+    uslup: duz-hedef
+    direnc: bosluklu-ad
+    bukulme: tuzak-dosya
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

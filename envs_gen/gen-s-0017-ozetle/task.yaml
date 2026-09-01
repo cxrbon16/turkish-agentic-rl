@@ -36,21 +36,7 @@ outputs:
   - {path: ozet.csv, kind: file}
 
 checks:
-  - {op: file_content_eq, path: ozet.csv, value: ',
-
-    doktor:X,
-
-    ,
-
-    ,
-
-    doktor:Z,
-
-    ,
-
-    ,
-
-    ,'}
+  - {op: file_lines_eq, path: ozet.csv, value: [',', 'doktor:X,', ',', ',', 'doktor:Z,', ',', ',', ',']}
 
 metadata:
   domain: ozetle

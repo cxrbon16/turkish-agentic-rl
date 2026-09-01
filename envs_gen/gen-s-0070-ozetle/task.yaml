@@ -1,0 +1,77 @@
+id: gen-s-0070-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  weather_data dizinindeki tsv dosyalarının ilk ve son satırlarını ayıklayarak, her bir dosya için ilk_satir.txt ve son_satir.txt adında dosyaları summary dizinine kaydedin.
+
+setup: |
+  mkdir -p weather_data
+  cat > weather_data/day1.tsv <<'EOF'
+  date	temp	condition
+  2023-01-01	10	Sunny
+  2023-01-01	12	Cloudy
+  2023-01-01	11	Rainy
+  EOF
+  cat > weather_data/day2.tsv <<'EOF'
+  date	temp	condition
+  2023-01-02	15	Sunny
+  2023-01-02	14	Windy
+  2023-01-02	16	Sunny
+  EOF
+  cat > weather_data/day3.tsv <<'EOF'
+  date	temp	condition
+  2023-01-03	5	Snowy
+  2023-01-03	4	Snowy
+  2023-01-03	6	Cloudy
+  EOF
+  cat > weather_data/dummy.txt <<'EOF'
+  This is a trap file and should be ignored.
+  EOF
+
+goal_tr: >
+  weather_data dizinindeki tsv dosyalarinin ilk ve son satirlarini
+  ayiklayarak her dosya icin ilk_satir.txt ve son_satir.txt adli dosyalari
+  summary dizinine kaydet
+
+reference_solution: |
+  mkdir -p summary
+  for f in weather_data/*.tsv; do
+      fname=$(basename "$f" .tsv)
+      head -n 1 "$f" > "summary/${fname}_first.txt"
+      tail -n 1 "$f" > "summary/${fname}_last.txt"
+  done
+
+outputs:
+  - {path: summary, kind: dir}
+
+checks:
+  - {op: dir_entries_eq, path: summary, value: [day1_first.txt, day1_last.txt, day2_first.txt, day2_last.txt, day3_first.txt, day3_last.txt]}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0070
+    bundle: satir-araligi
+    tools:
+    - head
+    - tail
+    konu: hava-durumu-kayitlari
+    hedef: ozetle
+    girdi: tsv
+    kaynak: cok-dosya
+    cikti: dizin-yapisi
+    kesif: yok
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

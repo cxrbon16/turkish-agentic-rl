@@ -1,0 +1,62 @@
+id: gen-s-0021-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  inventory.csv dosyasının ilk 3 satırı ile son 3 satırında bulunan adetlerin toplamını hesaplayın ve sonucu result.txt dosyasına yazın.
+
+setup: |
+  cat > inventory.csv <<'EOF'
+  id,item,quantity,price
+  1,Widget A,50,10.00
+  2,Widget B,20,15.00
+  3,Gadget X,100,5.00
+  4,Gadget Y,10,20.00
+  5,Tool Z,30,12.00
+  6,Tool W,40,8.00
+  EOF
+  # Convert to CRLF
+  sed -i 's/$/\r/' inventory.csv
+
+goal_tr: >
+  inventory.csv dosyasinin ilk 3 satiri ile son 3 satirindaki adetlerin
+  toplamini hesapla ve sonucu result.txt dosyasina yaz.
+
+reference_solution: |
+  head -n 3 inventory.csv > first3.txt
+  tail -n 3 inventory.csv > last3.txt
+  cat first3.txt last3.txt | cut -d',' -f3 | tr -d '\r' | awk '{sum += $1} END {print sum}' > result.txt
+
+outputs:
+  - {path: result.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: result.txt, value: '150'}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0021
+    bundle: satir-araligi
+    tools:
+    - head
+    - tail
+    konu: envanter
+    hedef: ozetle
+    girdi: csv
+    kaynak: tek-dosya
+    cikti: tek-sayi
+    kesif: yok
+    uslup: kisit-sakli
+    direnc: crlf
+    bukulme: olcek
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

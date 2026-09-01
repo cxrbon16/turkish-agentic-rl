@@ -1,0 +1,72 @@
+id: gen-s-0012-arsivle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  vardiyalar dizinindeki JSON dosyalarını vardiyalar.tar.gz adıyla arşivleyip sıkıştır.
+
+setup: |
+  mkdir -p vardiyalar
+  cat > vardiyalar/shift1.json <<'EOF'
+  [
+    {"id": 1, "name": "Ali", "hours": 8},
+    {"id": 2, "name": "Veli", "hours": 4}
+  ]
+  EOF
+  cat > vardiyalar/shift2.json <<'EOF'
+  [
+    {"id": 3, "name": "Ayse", "hours": 12},
+    {"id": 4, "name": "Fatma", "hours": 6}
+  ]
+  EOF
+  cat > vardiyalar/shift3.json <<'EOF'
+  [
+    {"id": 5, "name": "Can", "hours": 8},
+    {"id": 6, "name": "Deniz", "hours": 8}
+  ]
+  EOF
+
+goal_tr: >
+  vardiyalar dizinindeki JSON dosyalarini vardiyalar.tar.gz adli bir dosyada
+  arsivle ve sıkıştır
+
+reference_solution: |
+  find vardiyalar -name "*.json" | sort | xargs tar -cf - | gzip > vardiyalar.tar.gz
+
+outputs:
+  - {path: vardiyalar.tar.gz, kind: file}
+
+checks:
+  - {op: run_stdout_eq, cmd: tar -tzf vardiyalar.tar.gz | sort, value: 'vardiyalar/shift1.json
+
+    vardiyalar/shift2.json
+
+    vardiyalar/shift3.json'}
+
+metadata:
+  domain: arsivle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0012
+    bundle: arsiv
+    tools:
+    - tar
+    - gzip
+    konu: personel-vardiyalari
+    hedef: arsivle
+    girdi: json
+    kaynak: cok-dosya
+    cikti: birden-cok-dosya
+    kesif: yok
+    uslup: terse
+    direnc: baslik-yok
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

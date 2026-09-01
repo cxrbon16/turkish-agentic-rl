@@ -1,0 +1,88 @@
+id: gen-s-0049-onar
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  data/patient_records dizinindeki tüm CSV dosyalarından status değeri scheduled olan satırları çıkarın ve kalan verileri cleaned_records.csv dosyasına yazın.
+
+setup: |
+  mkdir -p data/patient_records
+  cat > data/patient_records/records1.csv <<'EOF'
+  id,name,date,status
+  101,John Doe,2023-01-10,scheduled
+  102,Jane Smith,2023-01-11,completed
+  103,Bob Brown,2023-01-12,cancelled
+  EOF
+  cat > data/patient_records/records2.csv <<'EOF'
+  id,name,date,status
+  201,Alice White,2023-02-01,scheduled
+  202,Charlie Green,2023-02-02,completed
+  203,Eve Black,2023-02-03,cancelled
+  EOF
+  cat > data/patient_records/records3.csv <<'EOF'
+  id,name,date,status
+  301,Frank Red,2023-03-01,scheduled
+  302,Grace Blue,2023-03-02,completed
+  303,Hank Yellow,2023-03-03,cancelled
+  EOF
+
+goal_tr: >
+  data/patient_records dizinindeki tum CSV dosyalarindan status degeri
+  scheduled olan satirlari cikarin ve kalan verileri cleaned_records.csv
+  dosyasina yazin.
+
+reference_solution: |
+  python3 -c "
+  import os, csv
+
+  input_dir = 'data/patient_records'
+  output_file = 'cleaned_records.csv'
+  all_data = []
+  files = sorted([f for f in os.listdir(input_dir) if f.endswith('.csv')])
+
+  for filename in files:
+      with open(os.path.join(input_dir, filename), 'r') as f:
+          reader = csv.DictReader(f)
+          for row in reader:
+              if row['status'] != 'scheduled':
+                  all_data.append(row)
+
+  if all_data:
+      with open(output_file, 'w', newline='') as f:
+          writer = csv.DictWriter(f, fieldnames=all_data[0].keys())
+          writer.writeheader()
+          writer.writerows(all_data)
+  "
+
+outputs:
+  - {path: cleaned_records.csv, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: cleaned_records.csv, value: ['id,name,date,status', '102,Jane Smith,2023-01-11,completed', '103,Bob Brown,2023-01-12,cancelled', '202,Charlie Green,2023-02-02,completed', '203,Eve Black,2023-02-03,cancelled', '302,Grace Blue,2023-03-02,completed', '303,Hank Yellow,2023-03-03,cancelled']}
+
+metadata:
+  domain: onar
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0049
+    bundle: python-veri
+    tools:
+    - python3
+    konu: hastane-randevulari
+    hedef: onar
+    girdi: csv
+    kaynak: dizin-agaci
+    cikti: yeniden-adlandirilmis
+    kesif: yok
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

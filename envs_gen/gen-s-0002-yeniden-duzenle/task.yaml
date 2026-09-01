@@ -1,0 +1,78 @@
+id: gen-s-0002-yeniden-duzenle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  patients.csv ve appointments.csv dosyalarını kullanarak, her hastanın adına göre oluşturulmuş klasörler içinde o hastaya ait randevu bilgilerini içeren dosyalar oluşturun ve tüm bu yapıyı appointments_archive.tar adlı bir arşiv dosyası olarak paketleyin.
+
+setup: |
+  cat > patients.csv <<'EOF'
+  ID,Name,City
+  1,John Doe,New York
+  2,Jane Smith,Los Angeles
+  3,Bob Brown,Chicago
+  4,Alice Green,Houston
+  5,Charlie White,Phoenix
+  EOF
+
+  cat > appointments.csv <<'EOF'
+  AppID,PatientID,Date,Doctor
+  101,1,2023-10-01,Dr. Adams
+  102,3,2023-10-02,Dr. Baker
+  103,2,2023-10-03,Dr. Adams
+  104,5,2023-10-04,Dr. Clark
+  105,4,2023-10-05,Dr. Baker
+  106,1,2023-10-06,Dr. Clark
+  EOF
+
+goal_tr: >
+  patients.csv ve appointments.csv dosyalarını kullanarak, her hastanın
+  adıyla oluşturulmuş klasörler içinde o hastaya ait randevu bilgilerini
+  içeren dosyalar oluşturun ve tüm yapıyı appointments_archive.tar dosyası
+  olarak paketleyin.
+
+reference_solution: |
+  join -t, -1 1 -2 2 <(sort patients.csv) <(sort appointments.csv) | while IFS=, read -r pid name city aid date doc; do
+      mkdir -p "appointments/$name"
+      echo "$aid,$date,$doc" > "appointments/$name/$aid.txt"
+  done
+  find appointments -type f -exec tar -rvf appointments_archive.tar {} +
+  rm -rf appointments
+
+outputs:
+  - {path: appointments_archive.tar, kind: file}
+
+checks:
+  - {op: run_stdout_eq, cmd: tar -tf appointments_archive.tar | sort, value: 'appointments/Bob Brown/102.txt
+
+    appointments/Charlie White/104.txt
+
+    appointments/John Doe/101.txt'}
+
+metadata:
+  domain: yeniden-duzenle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0002
+    bundle: secerek-arsivle
+    tools:
+    - tar
+    - find
+    konu: hastane-randevulari
+    hedef: yeniden-duzenle
+    girdi: csv
+    kaynak: iki-dosya-capraz
+    cikti: dizin-yapisi
+    kesif: yok
+    uslup: duz-hedef
+    direnc: bosluklu-ad
+    bukulme: olcek
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

@@ -1,0 +1,103 @@
+id: gen-s-0064-ayikla
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  weather_data/2023 dizinindeki .ini dosyalarından temp bölümündeki avg değerlerini çıkarın ve her birini boşlukları alt çizgiyle değiştirerek january.avg, february.avg ve december.avg dosyalarına kaydedin.
+
+setup: |
+  mkdir -p weather_data/2023
+  cat > weather_data/2023/january.ini <<'EOF'
+  [temp]
+  avg=5
+  max=12
+  min=-2
+  [precip]
+  total=80
+  days=15
+  EOF
+  cat > weather_data/2023/february.ini <<'EOF'
+  [temp]
+  avg=7
+  max=15
+  min=0
+  [precip]
+  total=45
+  days=10
+  EOF
+  cat > weather_data/2023/december.ini <<'EOF'
+  [temp]
+  avg=3
+  max=10
+  min=-5
+  [precip]
+  total=90
+  days=20
+  EOF
+  cat > weather_data/trap.txt <<'EOF'
+  This is a trap file, do not process me.
+  EOF
+
+goal_tr: >
+  weather_data dizinindeki .ini dosyalarindan temp bolumundeki avg
+  degerlerini ayikla ve her birini <dosya_adi>.avg adli dosyalara yazarken
+  bosluklari alt cizgiyle degistir.
+
+reference_solution: |
+  find weather_data -name "*.ini" | while read -r file; do
+      filename=$(basename "$file" .ini)
+      sed -n '/\[temp\]/,/\[precip\]/p' "$file" | grep 'avg=' | cut -d= -f2 > "${filename}.avg"
+      tr ' ' '_' < "${filename}.avg" | sed -i 's/ $//' "${filename}.avg"
+  done
+  # Note: The actual required steps to satisfy seed are:
+  # 1. find files
+  # 2. sed to isolate section
+  # 3. tr to replace spaces (though in this data there are none, the tool is used)
+  # 4. sed for cleanup/formatting
+
+  # Corrected reference for the specific data provided to ensure tools are used:
+  find weather_data -name "*.ini" | while read -r file; do
+      base=$(basename "$file" .ini)
+      # Use sed to extract the value after avg= in the temp section
+      val=$(sed -n '/\[temp\]/,/\[precip\]/p' "$file" | sed -n 's/^avg=//p')
+      # Use tr to replace any potential spaces with underscore (per requirement)
+      echo "$val" | tr ' ' '_' > "${base}.avg"
+  done
+
+outputs:
+  - {path: january.avg, kind: file}
+  - {path: february.avg, kind: file}
+  - {path: december.avg, kind: file}
+
+checks:
+  - {op: file_content_eq, path: december.avg, value: '3'}
+  - {op: file_content_eq, path: february.avg, value: '7'}
+  - {op: file_content_eq, path: january.avg, value: '5'}
+
+metadata:
+  domain: ayikla
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0064
+    bundle: metin-duzenle
+    tools:
+    - sed
+    - tr
+    konu: hava-durumu-kayitlari
+    hedef: ayikla
+    girdi: ini
+    kaynak: dizin-agaci
+    cikti: yeniden-adlandirilmis
+    kesif: yok
+    uslup: terse
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

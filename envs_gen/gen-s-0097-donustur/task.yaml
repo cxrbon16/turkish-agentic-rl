@@ -1,0 +1,60 @@
+id: gen-s-0097-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  shifts.tsv dosyasındaki isimleri tersine çevirin ve bunları shift_id ile virgülle ayırarak sonuc.csv dosyasına yazın.
+
+  Şu şartlar sağlanmalı:
+  - sonuc.csv dosyası oluşturulmalı.
+  - Her satırda ters çevrilmiş isim ve shift_id virgülle ayrılarak yer almalı.
+
+setup: |
+  cat > shifts.tsv <<'EOF'
+  name	shift_id
+  John Doe	101
+  Jane Smith	102
+  Bob Brown	103
+  Alice White	104
+  EOF
+
+goal_tr: >
+  shifts.tsv dosyasındaki isimleri tersine çevirip shift_id ile virgülle
+  ayırarak sonuc.csv dosyasına yaz.
+
+reference_solution: |
+  rev shifts.tsv | cut -f1,2 | tr '\t' ',' > sonuc.csv
+
+outputs:
+  - {path: sonuc.csv, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: sonuc.csv, value: ['di_tfihs,eman', '101,eoD nhoJ', '201,htimS enaJ', '301,nworB boB', '401,etihW ecilA']}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0097
+    bundle: ters-cevir
+    tools:
+    - rev
+    - cut
+    konu: personel-vardiyalari
+    hedef: donustur
+    girdi: tsv
+    kaynak: tek-dosya
+    cikti: csv
+    kesif: yok
+    uslup: kabul-kriteri
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

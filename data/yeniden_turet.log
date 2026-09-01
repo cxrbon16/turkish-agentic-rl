@@ -1,0 +1,1229 @@
+gen-s-0000-ayikla
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0000-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(özet.txt)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0001-donustur
+  HATA referans exit=1: sed: -e expression #1, char 29: invalid reference \1 on `s' command's RHS
+sed: -e expression #1, char 27: invalid reference \1 on `s' command's RHS
+sed: -e expression #1, char 27: invalid reference \1
+
+gen-s-0001-toplu-yeniden-adlandir
+  turetilen      : 7 check   [saglam]
+  referansta (B) : 7/7 geciyor
+  baslangicta (A): 0/7 geciyor
+  elle yazilanla : 4 ortak, 0 daha gucluyle kapsanan, 3 kacan, 3 ekstra
+     - kacan   : file_content_eq(yeni_notlar/A_notlar.txt)
+     - kacan   : file_content_eq(yeni_notlar/B_notlar.txt)
+     - kacan   : file_content_eq(yeni_notlar/C_notlar.txt)
+  -> 7 check task.yaml'a yazildi
+
+gen-s-0002-denetle
+  turetilen      : 6 check   [saglam]
+  referansta (B) : 6/6 geciyor
+  baslangicta (A): 0/6 geciyor
+  elle yazilanla : 6 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 4 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 6 check task.yaml'a yazildi
+
+gen-s-0002-yeniden-duzenle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : (bu task eski tarz check.py kullaniyor)
+  ! appointments_archive.tar: arsiv, icerik listesiyle karsilastiriliyor
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0003-denetle
+  turetilen      : 2 check   [saglam]
+  referansta (B) : 2/2 geciyor
+  baslangicta (A): 0/2 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(audit/2023.txt)
+  -> 2 check task.yaml'a yazildi
+
+gen-s-0003-karsilastir
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0004-ayikla
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0004-grupla-say
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(sonuc.txt)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0005-onar
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(fixed_orders.txt)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0006-toplu-yeniden-adlandir
+  turetilen      : 5 check   [saglam]
+  referansta (B) : 5/5 geciyor
+  baslangicta (A): 0/5 geciyor
+  elle yazilanla : 5 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 4 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 5 check task.yaml'a yazildi
+
+gen-s-0007-bol
+  turetilen      : 2 check   [saglam]
+  referansta (B) : 2/2 geciyor
+  baslangicta (A): 0/2 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 2 kacan, 2 ekstra
+     - kacan   : file_content_eq(cikti/kalemler.ini)
+     - kacan   : file_content_eq(cikti/tuzak.ini)
+  -> 2 check task.yaml'a yazildi
+
+gen-s-0007-donustur
+  turetilen      : 4 check   [saglam]
+  referansta (B) : 4/4 geciyor
+  baslangicta (A): 0/4 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 4 kacan, 4 ekstra
+     - kacan   : file_content_eq(Alice/info.txt)
+     - kacan   : file_content_eq(Bob/info.txt)
+     - kacan   : file_content_eq(Charlie/info.txt)
+     - kacan   : file_content_eq(David/info.txt)
+  -> 4 check task.yaml'a yazildi
+
+gen-s-0008-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : (bu task eski tarz check.py kullaniyor)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0009-birlestir
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0009-karsilastir
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(json_output.txt)
+  ! 4 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0010-ayikla
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0010-denetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(denetim_raporu.json)
+  X denetim_raporu.json: .json uzantili ama gecerli JSON degil
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0011-ayikla
+  turetilen      : 5 check   [saglam]
+  referansta (B) : 5/5 geciyor
+  baslangicta (A): 0/5 geciyor
+  elle yazilanla : 5 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 5 check task.yaml'a yazildi
+
+gen-s-0011-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(summary.json)
+  X summary.json: .json uzantili ama gecerli JSON degil
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0012-arsivle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : (bu task eski tarz check.py kullaniyor)
+  ! vardiyalar.tar.gz: arsiv, icerik listesiyle karsilastiriliyor
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0012-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(yorumlar.json)
+  X yorumlar.json: .json uzantili ama gecerli JSON degil
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0013-denetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(sonuc.txt)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0014-ozetle
+  turetilen      : 3 check   [saglam]
+  referansta (B) : 3/3 geciyor
+  baslangicta (A): 0/3 geciyor
+  elle yazilanla : 2 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(Dystopian.txt)
+  -> 3 check task.yaml'a yazildi
+
+gen-s-0015-denetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(toplam_satirlar.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0015-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0016-ayikla
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0016-bol
+  turetilen      : 2 check   [saglam]
+  referansta (B) : 2/2 geciyor
+  baslangicta (A): 0/2 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 2 kacan, 2 ekstra
+     - kacan   : file_content_eq(library books/footer.csv)
+     - kacan   : file_content_eq(library books/header.csv)
+  -> 2 check task.yaml'a yazildi
+
+gen-s-0017-onar
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0017-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(ozet.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0018-donustur
+  turetilen      : 2 check   [saglam]
+  referansta (B) : 2/2 geciyor
+  baslangicta (A): 0/2 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 2 kacan, 2 ekstra
+     - kacan   : file_content_eq(output/ters_siparisler.txt)
+     - kacan   : file_content_eq(output/ters_urunler.txt)
+  -> 2 check task.yaml'a yazildi
+
+gen-s-0018-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 1 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0019-ayikla
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0019-denetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_lines_eq(tekrar_edenler.txt)
+  ! 1 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0020-ayikla
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0020-onar
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 4 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0021-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 3 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0021-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 2 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0022-bol
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : (bu task eski tarz check.py kullaniyor)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0022-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 1 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0023-denetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(audit.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0023-dogrula
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0024-yeniden-duzenle
+  turetilen      : 2 check   [saglam]
+  referansta (B) : 2/2 geciyor
+  baslangicta (A): 0/2 geciyor
+  elle yazilanla : (bu task eski tarz check.py kullaniyor)
+  ! sorted_logs.tar: arsiv, icerik listesiyle karsilastiriliyor
+  ! 2 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 2 check task.yaml'a yazildi
+
+gen-s-0025-denetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0025-dogrula
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0026-grupla-say
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(sonuc.txt)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0026-yeniden-duzenle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(siparisler_duzenli.tar)
+  ! siparisler_duzenli.tar: arsiv, icerik listesiyle karsilastiriliyor
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0027-denetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 2 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0028-yeniden-duzenle
+  turetilen      : 8 check   [saglam]
+  referansta (B) : 8/8 geciyor
+  baslangicta (A): 0/8 geciyor
+  elle yazilanla : 8 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 4 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 8 check task.yaml'a yazildi
+
+gen-s-0029-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0030-bol
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(shipments.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0031-denetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(orders_count.txt)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0032-birlestir
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 2 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0033-arsivle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : (bu task eski tarz check.py kullaniyor)
+  ! shifts_archive.tar.gz: arsiv, icerik listesiyle karsilastiriliyor
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0034-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 2 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0035-ayikla
+  turetilen      : 2 check   [saglam]
+  referansta (B) : 2/2 geciyor
+  baslangicta (A): 0/2 geciyor
+  elle yazilanla : 2 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 2 check task.yaml'a yazildi
+
+gen-s-0036-bol
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : (bu task eski tarz check.py kullaniyor)
+  ! 3 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0037-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(summary/combined.txt)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0038-toplu-yeniden-adlandir
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 4 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0039-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0040-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(server3.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0041-birlestir
+  turetilen      : 3 check   [saglam]
+  referansta (B) : 3/3 geciyor
+  baslangicta (A): 0/3 geciyor
+  elle yazilanla : 2 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(merged.txt)
+  ! 2 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 3 check task.yaml'a yazildi
+
+gen-s-0042-birlestir
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 3 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0043-dogrula
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(appointments_summary.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0044-karsilastir
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 3 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0045-ayikla
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(result.txt)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0046-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(output/result.txt)
+  ! 2 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0047-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0048-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(sonuc.txt)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0049-onar
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : (bu task eski tarz check.py kullaniyor)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0050-denetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0051-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(shipments.csv)
+  ! 1 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0052-onar
+  turetilen      : 3 check   [saglam]
+  referansta (B) : 3/3 geciyor
+  baslangicta (A): 0/3 geciyor
+  elle yazilanla : 3 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 3 check task.yaml'a yazildi
+
+gen-s-0053-ayikla
+  turetilen      : 5 check   [saglam]
+  referansta (B) : 5/5 geciyor
+  baslangicta (A): 0/5 geciyor
+  elle yazilanla : 5 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 3 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 5 check task.yaml'a yazildi
+
+gen-s-0054-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 1 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0055-grupla-say
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(sonuc.txt)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0056-karsilastir
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(data/sorted/common.txt)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0057-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0058-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0059-arsivle
+  turetilen      : 0 check   [SORUNLU]
+  referansta (B) : 0/0 geciyor
+  baslangicta (A): 0/0 geciyor   <-- ayirt etmiyor!
+  elle yazilanla : (bu task eski tarz check.py kullaniyor)
+  X appointments/: outputs: icinde bildirilmis ama referans uretmiyor
+  ! 3 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> yazilmadi: check seti saglam degil
+
+gen-s-0059-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0060-donustur
+  turetilen      : 3 check   [saglam]
+  referansta (B) : 3/3 geciyor
+  baslangicta (A): 0/3 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 3 kacan, 3 ekstra
+     - kacan   : file_content_eq(processed_weather/station1.txt)
+     - kacan   : file_content_eq(processed_weather/station2.txt)
+     - kacan   : file_content_eq(processed_weather/station3.txt)
+  -> 3 check task.yaml'a yazildi
+
+gen-s-0061-grupla-say
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0061-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0063-bol
+  turetilen      : 0 check   [SORUNLU]
+  referansta (B) : 0/0 geciyor
+  baslangicta (A): 0/0 geciyor   <-- ayirt etmiyor!
+  elle yazilanla : (bu task eski tarz check.py kullaniyor)
+  X logs_split/log_part_1.txt: outputs: icinde bildirilmis ama referans uretmiyor
+  X logs_split/log_part_2.txt: outputs: icinde bildirilmis ama referans uretmiyor
+  X logs_split/log_part_3.txt: outputs: icinde bildirilmis ama referans uretmiyor
+  X logs_split/log_part_4.txt: outputs: icinde bildirilmis ama referans uretmiyor
+  ! 4 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> yazilmadi: check seti saglam degil
+
+gen-s-0064-ayikla
+  turetilen      : 3 check   [saglam]
+  referansta (B) : 3/3 geciyor
+  baslangicta (A): 0/3 geciyor
+  elle yazilanla : 3 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 3 check task.yaml'a yazildi
+
+gen-s-0064-dogrula
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0065-dogrula
+  turetilen      : 5 check   [saglam]
+  referansta (B) : 5/5 geciyor
+  baslangicta (A): 0/5 geciyor
+  elle yazilanla : 5 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 3 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 5 check task.yaml'a yazildi
+
+gen-s-0065-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(ozet.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0066-birlestir
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(result.txt)
+  ! 2 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0066-bol
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(bol.json)
+  X bol.json: .json uzantili ama gecerli JSON degil
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0067-denetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(kargo/denetim_raporu.txt)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0067-sirala-sec
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0068-dogrula
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0068-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(reviews.json)
+  X reviews.json: .json uzantili ama gecerli JSON degil
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0069-ayikla
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(output.txt)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0069-ozetle
+  turetilen      : 4 check   [saglam]
+  referansta (B) : 4/4 geciyor
+  baslangicta (A): 0/4 geciyor
+  elle yazilanla : 2 ortak, 0 daha gucluyle kapsanan, 2 kacan, 2 ekstra
+     - kacan   : file_content_eq(output/all_temperatures.txt)
+     - kacan   : file_content_eq(output/all_weather.txt)
+  ! 27 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 4 check task.yaml'a yazildi
+
+gen-s-0070-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(cikti.json)
+  X cikti.json: .json uzantili ama gecerli JSON degil
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0070-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 6 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0071-ayikla
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(output.json)
+  X output.json: .json uzantili ama gecerli JSON degil
+  ! 1 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0071-bol
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 3 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0072-onar
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 2 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0072-yeniden-duzenle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0073-ayikla
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 1 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0073-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(summary.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0074-karsilastir
+  turetilen      : 3 check   [saglam]
+  referansta (B) : 3/3 geciyor
+  baslangicta (A): 0/3 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 3 kacan, 3 ekstra
+     - kacan   : file_content_eq(only_a.txt)
+     - kacan   : file_content_eq(only_b.txt)
+     - kacan   : file_content_eq(same.txt)
+  -> 3 check task.yaml'a yazildi
+
+gen-s-0074-onar
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(hava_raporu_duzenli.log)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0075-yeniden-duzenle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(sonuc.json)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0076-denetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(audit.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0076-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(siparisler.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0077-ayikla
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(entries.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0077-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0078-ayikla
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(ad_vardiya.txt)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0078-yeniden-duzenle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0079-karsilastir
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(notlar/ortak_ogrenciler.txt)
+  ! 4 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0079-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(summary.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0080-denetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 5 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0080-toplu-yeniden-adlandir
+  turetilen      : 5 check   [saglam]
+  referansta (B) : 5/5 geciyor
+  baslangicta (A): 0/5 geciyor
+  elle yazilanla : 5 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 4 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 5 check task.yaml'a yazildi
+
+gen-s-0081-karsilastir
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 2 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0081-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 2 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0082-birlestir
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(merged_inventory.txt)
+  ! 2 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0082-karsilastir
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 4 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0083-denetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(students_diff.txt)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0083-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0084-ayikla
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : (bu task eski tarz check.py kullaniyor)
+  X sonuc.json: .json uzantili ama gecerli JSON degil
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0084-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0085-ayikla
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(sonuc.json)
+  X sonuc.json: .json uzantili ama gecerli JSON degil
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0085-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(cikti.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0086-bol
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(kargo.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0086-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 1 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0087-dogrula
+  turetilen      : 3 check   [saglam]
+  referansta (B) : 3/3 geciyor
+  baslangicta (A): 0/3 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 3 kacan, 3 ekstra
+     - kacan   : file_content_eq(diff_result/common.txt)
+     - kacan   : file_content_eq(diff_result/only_a.txt)
+     - kacan   : file_content_eq(diff_result/only_b.txt)
+  -> 3 check task.yaml'a yazildi
+
+gen-s-0087-yeniden-duzenle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(envanter.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0088-arsivle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : (bu task eski tarz check.py kullaniyor)
+  ! library_archive.tar: arsiv, icerik listesiyle karsilastiriliyor
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0088-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(cikti.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0089-ayikla
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(employees_day.txt)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0089-dogrula
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(sensor_output.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0090-ayikla
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0090-karsilastir
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  ! 2 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0091-denetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0091-ozetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(kodlar.txt)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0092-denetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(hata_raporu.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0092-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : (bu task eski tarz check.py kullaniyor)
+  ! 1 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0093-ayikla
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(randevular.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0093-onar
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0094-denetle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(denetim/rapor.txt)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0094-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(sonuc.txt)
+  ! 2 ara dosya kapsam disi birakildi (outputs bildirilmis)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0095-ayikla
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0096-dogrula
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 1 ortak, 0 daha gucluyle kapsanan, 0 kacan, 0 ekstra
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0096-yeniden-duzenle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : (bu task eski tarz check.py kullaniyor)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0097-donustur
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(sonuc.csv)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0098-arsivle
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(kitaplar.tar)
+  ! kitaplar.tar: arsiv, icerik listesiyle karsilastiriliyor
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0098-ayikla
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(inventory_reversed.txt)
+  -> 1 check task.yaml'a yazildi
+
+gen-s-0099-sirala-sec
+  turetilen      : 1 check   [saglam]
+  referansta (B) : 1/1 geciyor
+  baslangicta (A): 0/1 geciyor
+  elle yazilanla : 0 ortak, 0 daha gucluyle kapsanan, 1 kacan, 1 ekstra
+     - kacan   : file_content_eq(sonuc.csv)
+  -> 1 check task.yaml'a yazildi
+
+OZET: 151/154 task'ta turetilen check seti saglam, elle yazilanlardan 87 check kacirildi

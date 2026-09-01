@@ -1,0 +1,70 @@
+id: gen-s-0010-ayikla
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) data_jan.txt, data_feb.txt ve data_mar.txt dosyalarındaki sabit genişlikli verileri ayıklayın.
+  2) Ayıklanan her satırın sonundaki boşlukları kaldırın.
+  3) İşlenen bu verileri birleştirerek sonuc.txt dosyasına yazın.
+
+setup: |
+  cat > data_jan.txt <<'EOF'
+  20230101 100.00  Income
+  20230102  50.00  Expense
+  20230103  75.50  Income
+  EOF
+  cat > data_feb.txt <<'EOF'
+  20230201  200.00 Income
+  20230205  150.00 Expense
+  20230210  10.00  Expense
+  EOF
+  cat > data_mar.txt <<'EOF'
+  20230301  300.00 Income
+  20230315  45.00  Expense
+  20230320  60.00  Expense
+  EOF
+  cat > ignore.txt <<'EOF'
+  This is a trap file and should be ignored.
+  EOF
+
+goal_tr: >
+  data_*.txt dosyalarindeki sabit genislikteki verileri ayikla, her satirin
+  sonundaki boşlukları kaldır ve bunları birleştirerek sonuc.txt dosyasına
+  yaz.
+
+reference_solution: |
+  cat data_jan.txt data_feb.txt data_mar.txt | sed 's/[[:space:]]*$//' | tr '\n' ' ' | tr -d ' ' > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: 20230101100.00Income2023010250.00Expense2023010375.50Income20230201200.00Income20230205150.00Expense2023021010.00Expense20230301300.00Income2023031545.00Expense2023032060.00Expense}
+
+metadata:
+  domain: ayikla
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0010
+    bundle: metin-duzenle
+    tools:
+    - sed
+    - tr
+    konu: muhasebe-kalemleri
+    hedef: ayikla
+    girdi: sabit-genislik
+    kaynak: cok-dosya
+    cikti: yeniden-adlandirilmis
+    kesif: yok
+    uslup: numarali-emir
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

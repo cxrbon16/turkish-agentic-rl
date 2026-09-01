@@ -33,17 +33,7 @@ outputs:
   - {path: cikti.csv, kind: file}
 
 checks:
-  - {op: file_content_eq, path: cikti.csv, value: 'id,hasta_adi,soyadi,doctor,tarih,saat
-
-    1,Ahmet,Yilmaz,Dr.Smith,2023-10-01,09:00
-
-    2,Mehmet,Demir,Dr.Johnson,2023-10-01,10:00
-
-    3,Ayse,Kaya,Dr.Smith,2023-10-01,11:00
-
-    4,Fatma,Ozturk,Dr.Johnson,2023-10-02,09:00
-
-    5,Can,Balci,Dr.Smith,2023-10-02,10:00'}
+  - {op: file_lines_eq, path: cikti.csv, value: ['id,hasta_adi,soyadi,doctor,tarih,saat', '1,Ahmet,Yilmaz,Dr.Smith,2023-10-01,09:00', '2,Mehmet,Demir,Dr.Johnson,2023-10-01,10:00', '3,Ayse,Kaya,Dr.Smith,2023-10-01,11:00', '4,Fatma,Ozturk,Dr.Johnson,2023-10-02,09:00', '5,Can,Balci,Dr.Smith,2023-10-02,10:00']}
 
 metadata:
   domain: donustur

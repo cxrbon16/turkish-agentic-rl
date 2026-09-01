@@ -1,0 +1,64 @@
+id: gen-s-0059-arsivle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) appointments.tar arşivinden sadece .json uzantılı dosyaları, appointments/ dizin yapısını koruyarak çıkarın.
+  2) Çıkarma işlemi sırasında dummy.txt dosyasını hariç tutun.
+
+setup: |
+  mkdir -p appointments/2023/10
+  mkdir -p appointments/2023/11
+  cat > appointments/2023/10/app1.json <<'JSON'
+  {"id": 1, "patient": "John Doe", "date": "2023-10-05"}
+  JSON
+  cat > appointments/2023/10/app2.json <<'JSON'
+  {"id": 2, "patient": "Jane Smith", "date": "2023-10-12"}
+  JSON
+  cat > appointments/2023/11/app3.json <<'JSON'
+  {"id": 3, "patient": "Bob Brown", "date": "2023-11-01"}
+  JSON
+  cat > appointments/dummy.txt <<'TEXT'
+  This is a trap file.
+  TEXT
+  tar -cf appointments.tar appointments/
+  rm -rf appointments/
+
+goal_tr: >
+  appointments.tar arşivi içindeki sadece .json uzantılı dosyaları
+  appointments/ dizin yapısını koruyarak çıkarın ve dummy.txt dosyasını
+  hariç tutun.
+
+reference_solution: |
+  find . -name "appointments.tar" -exec tar -tf {} + | grep '\.json$' | xargs -I {} tar -xf appointments.tar {}
+
+outputs:
+  - {path: appointments/, kind: dir}
+
+metadata:
+  domain: arsivle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0059
+    bundle: secerek-arsivle
+    tools:
+    - tar
+    - find
+    konu: hastane-randevulari
+    hedef: arsivle
+    girdi: json
+    kaynak: tarball
+    cikti: dizin-yapisi
+    kesif: veriye-bak
+    uslup: numarali-emir
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

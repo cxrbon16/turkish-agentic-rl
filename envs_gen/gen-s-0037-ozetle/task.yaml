@@ -1,0 +1,69 @@
+id: gen-s-0037-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  logs dizinindeki sabit genişlikli log dosyalarından tarih ve mesaj kısımlarını ayıklayıp birleştirerek summary/combined.txt dosyasını oluşturun.
+
+setup: |
+  cat > log1.txt <<'EOF'
+  2023-10-01 10:00:01 INFO  User1 login
+  2023-10-01 10:05:22 ERROR Disk full
+  2023-10-01 10:10:05 WARN  CPU high
+  EOF
+  cat > log2.txt <<'EOF'
+  2023-10-01 11:00:01 INFO  User2 login
+  2023-10-01 11:05:22 ERROR Network down
+  2023-10-01 11:10:05 WARN  RAM low
+  EOF
+  touch empty.txt
+  mkdir logs
+  mv log1.txt logs/
+  mv log2.txt logs/
+  mv empty.txt logs/
+
+goal_tr: >
+  logs dizinindeki sabit genişlikli log dosyalarından tarih ve mesaj
+  kısımlarını ayıklayıp birleştirerek summary/combined.txt dosyasını
+  oluşturun
+
+reference_solution: |
+  mkdir -p summary
+  cut -c 1-10,21- logs/log1.txt > part1.tmp
+  cut -c 1-10,21- logs/log2.txt > part2.tmp
+  paste -d' ' part1.tmp part2.tmp > summary/combined.txt
+  rm part1.tmp part2.tmp
+
+outputs:
+  - {path: summary/combined.txt, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: summary/combined.txt, value: [2023-10-01INFO  User1 login 2023-10-01INFO  User2 login, 2023-10-01ERROR Disk full 2023-10-01ERROR Network down, 2023-10-01WARN  CPU high 2023-10-01WARN  RAM low]}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0037
+    bundle: sutun
+    tools:
+    - cut
+    - paste
+    konu: sunucu-loglari
+    hedef: ozetle
+    girdi: sabit-genislik
+    kaynak: cok-dosya
+    cikti: dizin-yapisi
+    kesif: yok
+    uslup: terse
+    direnc: bos-dosya
+    bukulme: yok
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

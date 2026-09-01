@@ -1,0 +1,86 @@
+id: gen-s-0014-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Kütüphanedeki kitapları düzenlemek için uzun bir gün geçirdim ve verileri daha iyi organize etmem gerekiyor. Lütfen library.ini dosyasındaki her kitabın türünü ve yılını, türlerine göre gruplandırarak Fiction.txt, Dystopian.txt ve Fantasy.txt dosyalarına yazın.
+
+setup: |
+  cat > library.ini <<'EOF'
+  [Book1]
+  title=The Great Gatsby
+  author=F. Scott Fitzgerald
+  year=1925
+  genre=Fiction
+
+  [Book2]
+  title=1984
+  author=George Orwell
+  year=1949
+  genre=Dystopian
+
+  [Book3]
+  title=Brave New World
+  author=Aldous Huxley
+  year=1932
+  genre=Dystopian
+
+  [Book4]
+  title=The Hobbit
+  author=J.R.R. Tolkien
+  year=1937
+  genre=Fantasy
+  EOF
+
+goal_tr: >
+  library.ini dosyasındaki her kitabın türünü ve yılını, türlere göre
+  gruplandırılmış ayrı dosyalara (genre.txt) yazın.
+
+reference_solution: |
+  python3 -c "
+  import configparser
+  config = configparser.ConfigParser()
+  config.read('library.ini')
+  for section in config.sections():
+      genre = config[section]['genre']
+      year = config[section]['year']
+      with open(f'{genre}.txt', 'a') as f:
+          f.write(f'{year}\n')
+  "
+
+outputs:
+  - {path: Fiction.txt, kind: file}
+  - {path: Dystopian.txt, kind: file}
+  - {path: Fantasy.txt, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: Dystopian.txt, value: ['1949', '1932']}
+  - {op: file_content_eq, path: Fantasy.txt, value: '1937'}
+  - {op: file_content_eq, path: Fiction.txt, value: '1925'}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0014
+    bundle: python-veri
+    tools:
+    - python3
+    konu: kutuphane-kayitlari
+    hedef: ozetle
+    girdi: ini
+    kaynak: tek-dosya
+    cikti: birden-cok-dosya
+    kesif: yok
+    uslup: baglam-gomulu
+    direnc: yok
+    bukulme: yok
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

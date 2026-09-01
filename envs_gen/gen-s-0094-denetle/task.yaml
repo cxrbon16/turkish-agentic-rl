@@ -38,9 +38,7 @@ outputs:
   - {path: denetim/rapor.txt, kind: file}
 
 checks:
-  - {op: file_content_eq, path: denetim/rapor.txt, value: '7
-
-    5'}
+  - {op: file_lines_eq, path: denetim/rapor.txt, value: ['7', '5']}
 
 metadata:
   domain: denetle

@@ -1,0 +1,78 @@
+id: gen-s-0048-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  weather_data dizinindeki .ini uzantılı dosyaları bulun ve her bir dosyadaki toplam satır sayısını listeleyerek sonuc.txt dosyasına kaydedin.
+
+setup: |
+  mkdir -p weather_data
+  cat > weather_data/station1.ini <<'EOF'
+  [sensor]
+  id=101
+  city=Istanbul
+  [readings]
+  temp=22.5
+  humidity=60
+  EOF
+  cat > weather_data/station2.ini <<'EOF'
+  [sensor]
+  id=102
+  city=Ankara
+  [readings]
+  temp=15.2
+  humidity=40
+  EOF
+  cat > weather_data/station3.ini <<'EOF'
+  [sensor]
+  id=103
+  city=Izmir
+  [readings]
+  temp=28.0
+  humidity=55
+  EOF
+  cat > weather_data/readme.txt <<'EOF'
+  This is a metadata file.
+  EOF
+  touch weather_data/empty.ini
+
+goal_tr: >
+  weather_data dizinindeki .ini uzantılı dosyaları bul ve her bir dosyadaki
+  toplam satır sayısını listeleyip sonuc.txt dosyasına yaz.
+
+reference_solution: |
+  find weather_data -name "*.ini" -exec wc -l {} + > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: sonuc.txt, value: [6 weather_data/station1.ini, 6 weather_data/station2.ini, 6 weather_data/station3.ini, 0 weather_data/empty.ini, 18 total]}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0048
+    bundle: dizin-istatistik
+    tools:
+    - wc
+    - find
+    konu: hava-durumu-kayitlari
+    hedef: ozetle
+    girdi: ini
+    kaynak: cok-dosya
+    cikti: satir-listesi
+    kesif: yok
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

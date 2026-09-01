@@ -1,0 +1,83 @@
+id: gen-s-0024-yeniden-duzenle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Bugün laboratuvar verilerini düzenlemekle uğraşıyorum ve sensör kayıtlarının düzensiz olması işleri oldukça zorlaştırıyor. Verileri daha rahat analiz edebilmek için düzenli bir yapıya ihtiyacım var. Lütfen measurements dizini altındaki tüm .log dosyalarını bulun ve her birinin içeriğini alfabetik olarak sıralayarak, orijinal dosya adlarıyla sorted_measurements dizini altında kaydedin. Son olarak, bu dizini sorted_logs.tar adında bir arşiv dosyası haline getirin.
+
+setup: |
+  mkdir -p measurements/a measurements/b
+  cat > measurements/a/sensor1.log <<'EOF'
+  2023-01-01 10:00:01 temp=22.5
+  2023-01-01 10:05:01 temp=22.7
+  2023-01-01 10:10:01 temp=22.6
+  EOF
+  cat > measurements/a/sensor2.log <<'EOF'
+  2023-01-01 10:00:02 hum=45
+  2023-01-01 10:05:02 hum=46
+  2023-01-01 10:10:02 hum=45
+  EOF
+  cat > measurements/b/sensor1.log <<'EOF'
+  2023-01-01 10:00:01 temp=21.5
+  2023-01-01 10:05:01 temp=21.7
+  2023-01-01 10:10:01 temp=21.6
+  EOF
+  cat > measurements/b/sensor2.log <<'EOF'
+  2023-01-01 10:00:02 hum=40
+  2023-01-01 10:05:02 hum=41
+  2023-01-01 10:10:02 hum=40
+  EOF
+
+goal_tr: >
+  measurements dizini altındaki tüm .log dosyalarını bulup, her birinin
+  içeriğini "sorted_measurements" dizini altında orijinal dosya adıyla
+  kaydedin; ancak her dosyanın içeriği alfabetik olarak sıralanmış
+  olmalıdır.
+
+reference_solution: |
+  mkdir -p sorted_measurements
+  find measurements -name "*.log" | while read -r file; do
+      filename=$(basename "$file")
+      sort "$file" > "sorted_measurements/$filename"
+  done
+  tar -cf sorted_logs.tar sorted_measurements
+
+outputs:
+  - {path: sorted_measurements, kind: dir}
+  - {path: sorted_logs.tar, kind: file}
+
+checks:
+  - {op: dir_entries_eq, path: sorted_measurements, value: [sensor1.log, sensor2.log]}
+  - {op: run_stdout_eq, cmd: tar -tf sorted_logs.tar | sort, value: 'sorted_measurements/
+
+    sorted_measurements/sensor1.log
+
+    sorted_measurements/sensor2.log'}
+
+metadata:
+  domain: yeniden-duzenle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0024
+    bundle: secerek-arsivle
+    tools:
+    - tar
+    - find
+    konu: sensor-olcumleri
+    hedef: yeniden-duzenle
+    girdi: log-satiri
+    kaynak: cok-dosya
+    cikti: birden-cok-dosya
+    kesif: dosyayi-bul
+    uslup: baglam-gomulu
+    direnc: yok
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

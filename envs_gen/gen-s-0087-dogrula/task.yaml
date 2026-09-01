@@ -1,0 +1,81 @@
+id: gen-s-0087-dogrula
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  sensor_a.txt ve sensor_b.txt dosyalarını karşılaştır. Her iki dosyada ortak olan satırları diff_result/common.txt dosyasına, sadece sensor_a.txt dosyasında olanları diff_result/only_a.txt dosyasına ve sadece sensor_b.txt dosyasında olanları diff_result/only_b.txt dosyasına yaz.
+
+setup: |
+  printf "2023-10-01 10:00:01 23.5\r\n" > sensor_a.txt
+  printf "2023-10-01 10:00:02 23.6\r\n" >> sensor_a.txt
+  printf "2023-10-01 10:00:03 23.5\r\n" >> sensor_a.txt
+  printf "2023-10-01 10:00:04 23.8\r\n" >> sensor_a.txt
+  printf "2023-10-01 10:00:05 23.7\r\n" >> sensor_a.txt
+
+  printf "2023-10-01 10:00:01 23.5\r\n" > sensor_b.txt
+  printf "2023-10-01 10:00:02 23.6\r\n" >> sensor_b.txt
+  printf "2023-10-01 10:00:03 23.4\r\n" >> sensor_b.txt
+  printf "2023-10-01 10:00:04 23.8\r\n" >> sensor_b.txt
+  printf "2023-10-01 10:00:05 23.6\r\n" >> sensor_b.txt
+
+  cat > sensor_c.txt <<'EOF'
+  2023-10-01 10:00:01 23.5
+  2023-10-01 10:00:02 23.6
+  EOF
+
+goal_tr: >
+  sensor_a.txt ve sensor_b.txt dosyalarini karsilastirarak, her iki dosyada
+  da ayni olan satirlari diff_result/common.txt dosyasina, sadece
+  sensor_a.txt dosyasinda olan satirlari diff_result/only_a.txt dosyasina ve
+  sadece sensor_b.txt dosyasinda olan satirlari diff_result/only_b.txt
+  dosyasina yaz.
+
+reference_solution: |
+  mkdir -p diff_result
+  tr -d '\r' < sensor_a.txt > a_clean.txt
+  tr -d '\r' < sensor_b.txt > b_clean.txt
+  sort a_clean.txt -o a_clean.txt
+  sort b_clean.txt -o b_clean.txt
+  comm -12 a_clean.txt b_clean.txt > diff_result/common.txt
+  comm -23 a_clean.txt b_clean.txt > diff_result/only_a.txt
+  comm -13 a_clean.txt b_clean.txt > diff_result/only_b.txt
+  diff a_clean.txt b_clean.txt > /dev/null
+  rm a_clean.txt b_clean.txt
+
+outputs:
+  - {path: diff_result/common.txt, kind: file}
+  - {path: diff_result/only_a.txt, kind: file}
+  - {path: diff_result/only_b.txt, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: diff_result/common.txt, value: ['2023-10-01 10:00:01 23.5', '2023-10-01 10:00:02 23.6', '2023-10-01 10:00:04 23.8']}
+  - {op: file_lines_eq, path: diff_result/only_a.txt, value: ['2023-10-01 10:00:03 23.5', '2023-10-01 10:00:05 23.7']}
+  - {op: file_lines_eq, path: diff_result/only_b.txt, value: ['2023-10-01 10:00:03 23.4', '2023-10-01 10:00:05 23.6']}
+
+metadata:
+  domain: dogrula
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0087
+    bundle: karsilastir
+    tools:
+    - diff
+    - comm
+    konu: sensor-olcumleri
+    hedef: dogrula
+    girdi: sabit-genislik
+    kaynak: iki-dosya-capraz
+    cikti: dizin-yapisi
+    kesif: veriye-bak
+    uslup: terse
+    direnc: crlf
+    bukulme: tuzak-dosya
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

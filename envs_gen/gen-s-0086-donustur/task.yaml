@@ -1,0 +1,56 @@
+id: gen-s-0086-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  inventory.log dosyasında BOM_ID değeri 12345 olan satırların toplam QTY miktarını hesaplayın ve bu toplamı result.txt dosyasına yazın.
+
+setup: |
+  cat > inventory.log <<'EOF'
+  BOM_ID:12345,PART:MOTOR,QTY:10,LOC:WH1
+  BOM_ID:12345,PART:GEAR,QTY:50,LOC:WH1
+  BOM_ID:12345,PART:BOLT,QTY:200,LOC:WH2
+  BOM_ID:67890,PART:AXLE,QTY:5,LOC:WH2
+  BOM_ID:67890,PART:NUT,QTY:100,LOC:WH1
+  EOF
+
+goal_tr: >
+  inventory.log dosyasındaki BOM_ID değeri 12345 olan satırların toplam QTY
+  miktarını hesaplayıp result.txt dosyasına yaz.
+
+reference_solution: |
+  grep '^BOM_ID:12345' inventory.log | cut -d',' -f3 | cut -d':' -f2 | tee temp_qtys.txt | awk '{s+=$1} END {print s}' > result.txt
+
+outputs:
+  - {path: result.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: result.txt, value: '260'}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0086
+    bundle: dallandir
+    tools:
+    - tee
+    - cut
+    konu: envanter
+    hedef: donustur
+    girdi: log-satiri
+    kaynak: tek-dosya
+    cikti: tek-sayi
+    kesif: dosyayi-bul
+    uslup: duz-hedef
+    direnc: bom
+    bukulme: yok
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

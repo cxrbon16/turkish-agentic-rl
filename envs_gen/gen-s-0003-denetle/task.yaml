@@ -1,0 +1,73 @@
+id: gen-s-0003-denetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  entries dizini altındaki tüm dosyalarda "ERROR" içeren satırları bulun. Bu satırları yıllara göre ayırarak audit/2023.txt ve audit/2024.txt dosyalarına kaydedin.
+
+setup: |
+  mkdir -p entries/2023 entries/2024
+  cat > entries/2023/jan.txt <<'EOF'
+  2023-01-01 100.00 OK
+  2023-01-05 50.25 ERROR
+  2023-01-10 20.00 OK
+  EOF
+  cat > entries/2023/feb.txt <<'EOF'
+  2023-02-01 120.00 OK
+  2023-02-15 300.00 ERROR
+  EOF
+  cat > entries/2024/jan.txt <<'EOF'
+  2024-01-01 400.00 OK
+  2024-01-02 15.00 ERROR
+  EOF
+  cat > entries/2024/feb.txt <<'EOF'
+  2024-02-01 50.00 OK
+  2024-02-10 10.00 OK
+  EOF
+
+goal_tr: >
+  entries dizini altındaki tüm dosyalarda ERROR içeren satırları bul ve her
+  yıl için ayrı bir dosyada (year.txt) bu satırları birleştirerek audit
+  dizinine kaydet.
+
+reference_solution: |
+  mkdir -p audit
+  find entries -type f | xargs grep -H 'ERROR' | awk -F'/' '{print $2, $0}' | while read year line; do
+      echo "$line" >> audit/$year.txt
+  done
+
+outputs:
+  - {path: audit/2023.txt, kind: file}
+  - {path: audit/2024.txt, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: audit/2023.txt, value: ['entries/2023/feb.txt:2023-02-15 300.00 ERROR', 'entries/2023/jan.txt:2023-01-05 50.25 ERROR']}
+  - {op: file_content_eq, path: audit/2024.txt, value: 'entries/2024/jan.txt:2024-01-02 15.00 ERROR'}
+
+metadata:
+  domain: denetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0003
+    bundle: cok-dosya-ara
+    tools:
+    - xargs
+    - grep
+    konu: muhasebe-kalemleri
+    hedef: denetle
+    girdi: sabit-genislik
+    kaynak: dizin-agaci
+    cikti: dizin-yapisi
+    kesif: yok
+    uslup: kisit-sakli
+    direnc: bom
+    bukulme: olcek
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

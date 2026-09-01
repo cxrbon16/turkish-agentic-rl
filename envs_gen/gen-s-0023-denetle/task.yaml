@@ -1,0 +1,74 @@
+id: gen-s-0023-denetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  logs dizinindeki .ini dosyalarını tara. cpu_load değeri 50'den büyük olan sunucuları, dosya adları ve değerleriyle birlikte audit.csv dosyasına yaz.
+
+setup: |
+  mkdir -p logs
+  cat > logs/server1.ini <<'EOF'
+  [METRICS]
+  cpu_load=25
+  mem_usage=40
+  disk_io=10
+  network_latency=15
+  EOF
+  cat > logs/server2.ini <<'EOF'
+  [METRICS]
+  cpu_load=80
+  mem_usage=90
+  disk_io=45
+  network_latency=120
+  EOF
+  cat > logs/server3.ini <<'EOF'
+  [METRICS]
+  cpu_load=10
+  mem_usage=20
+  disk_io=5
+  network_latency=8
+  EOF
+
+goal_tr: >
+  logs dizinindeki ini dosyalarini tara ve cpu_load degeri 50'den buyuk olan
+  sunuculari, dosya adlari ve degerleriyle birlikte audit.csv dosyasina yaz.
+
+reference_solution: |
+  awk -F'=' '/^cpu_load/ {
+      split(FILENAME, path, "/");
+      split(path[length(path)], name, ".");
+      print name[1] "," $2
+  }' logs/*.ini > audit.csv
+
+outputs:
+  - {path: audit.csv, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: audit.csv, value: ['server1,25', 'server2,80', 'server3,10']}
+
+metadata:
+  domain: denetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0023
+    bundle: awk
+    tools:
+    - awk
+    konu: sunucu-loglari
+    hedef: denetle
+    girdi: ini
+    kaynak: cok-dosya
+    cikti: csv
+    kesif: veriye-bak
+    uslup: terse
+    direnc: yok
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

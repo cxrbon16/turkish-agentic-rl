@@ -1,0 +1,64 @@
+id: gen-s-0000-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  sensors.txt dosyasındaki her satırın ilk 10 karakterini ve 13-16. karakterlerini ayırıp birleştirerek özet.txt dosyasına yazın.
+
+setup: |
+  cat > sensors.txt <<'EOF'
+  2023-10-01 08:00:01  23.5  45.2  1012
+  2023-10-01 08:05:01  23.6  45.3  1011
+  2023-10-01 08:10:01  23.8  45.1  1012
+  2023-10-01 08:15:01  24.0  45.0  1013
+  2023-10-01 08:20:01  24.2  44.8  1012
+  2023-10-01 08:25:01  24.1  44.7  1011
+  2023-10-01 08:30:01  23.9  44.9  1012
+  2023-10-01 08:35:01  23.7  45.1  1013
+  2023-10-01 08:40:01  23.6  45.2  1012
+  2023-10-01 08:45:01  23.5  45.3  1011
+  EOF
+
+goal_tr: >
+  sensors.txt dosyasındaki her satırın ilk 10 karakterini ve 13-16.
+  karakterlerini ayırarak, bunları birleştirip özet.txt dosyasına yaz.
+
+reference_solution: |
+  cut -c 1-10 sensors.txt > dates.txt
+  cut -c 13-16 sensors.txt > values.txt
+  paste -d ' ' dates.txt values.txt > özet.txt
+  rm dates.txt values.txt
+
+outputs:
+  - {path: özet.txt, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: özet.txt, value: ['2023-10-01 8:00', '2023-10-01 8:05', '2023-10-01 8:10', '2023-10-01 8:15', '2023-10-01 8:20', '2023-10-01 8:25', '2023-10-01 8:30', '2023-10-01 8:35', '2023-10-01 8:40', '2023-10-01 8:45']}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0000
+    bundle: sutun
+    tools:
+    - cut
+    - paste
+    konu: sensor-olcumleri
+    hedef: ozetle
+    girdi: sabit-genislik
+    kaynak: tek-dosya
+    cikti: satir-listesi
+    kesif: yok
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

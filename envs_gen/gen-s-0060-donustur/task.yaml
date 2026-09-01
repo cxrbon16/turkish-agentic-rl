@@ -2,33 +2,62 @@ id: gen-s-0060-donustur
 split: multi_step
 image: verifiable-dataset/base:latest
 workdir: /workspace
-max_turns: 12
+max_turns: 14
 
 # Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
 # asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
 prompt: |
-  1) kitaplar klasöründeki tüm CSV dosyalarını oku ve her bir dosyada bulunan satır sayısını hesapla.
-  2) Tüm CSV dosyaları için bulunan satır sayılarını topla.
-  3) Toplam sonucunu sadece sayı olarak sayi.txt dosyasına yaz.
+  weather_data dizinindeki her bir sabit genişlikli dosyanın son sütununu ters çevirin ve ilk 5 karakterini alarak aynı isimli dosyaları processed_weather/station1.txt, processed_weather/station2.txt ve processed_weather/station3.txt olarak kaydedin.
 
 setup: |
-  mkdir -p kitaplar
-  printf "1,Odyssia,1984\n2,Dune,1965\n3,1984,1949\n" > kitaplar/veri1.csv
-  printf "4,Brave New World,1932\n5,Fahrenheit 451,1953\n" > kitaplar/veri2.csv
-  printf "6,The Hobbit,1937\n" > kitaplar/veri3.csv
+  mkdir -p weather_data
+  cat > weather_data/station1.txt <<'EOF'
+  2023-01-01 12:00  22.5  45%  Sunny
+  2023-01-01 13:00  23.0  44%  Sunny
+  2023-01-01 14:00  23.5  43%  Sunny
+  2023-01-01 15:00  22.8  46%  Cloudy
+  EOF
+  cat > weather_data/station2.txt <<'EOF'
+  2023-01-01 12:00  18.2  60%  Rainy
+  2023-01-01 13:00  18.5  58%  Rainy
+  2023-01-01 14:00  17.9  62%  Rainy
+  2023-01-01 15:00  17.5  65%  Cloudy
+  EOF
+  cat > weather_data/station3.txt <<'EOF'
+  2023-01-01 12:00  10.1  80%  Snowy
+  2023-01-01 13:00  10.5  78%  Snowy
+  2023-01-01 14:00  10.3  79%  Snowy
+  2023-01-01 15:00  9.8   82%  Snowy
+  EOF
 
 goal_tr: >
-  kitaplar klasorundeki tum csv dosyalarindaki kitap sayisini toplamini
-  sayi.txt'ye sadece sayi olarak yaz
+  weather_data dizinindeki her bir sabit genişlikli dosyanın son sütununu
+  ters çevirip ilk 5 karakterini alarak aynı isimli dosyaları
+  processed_weather dizinine kaydedin.
 
 reference_solution: |
-  cut -d',' -f1 kitaplar/*.csv | paste -d'\n' -s | wc -l > sayi.txt
+  mkdir -p processed_weather
+  for f in weather_data/*.txt; do
+      rev "$f" | cut -c 1-5 | rev > "processed_weather/$(basename "$f")"
+  done
+  mv processed_weather/*.txt processed_weather/$(basename $(ls weather_data/*.txt | head -n 1)).txt
+  # Note: The seed requires multiple output files, but the twist is scale. 
+  # The reference solution must process each input file.
+  mkdir -p processed_weather
+  for f in weather_data/*.txt; do
+      filename=$(basename "$f")
+      rev "$f" | cut -c 1-5 | rev > "processed_weather/$filename"
+  done
 
 outputs:
-  - {path: sayi.txt, kind: file}
+  - {path: processed_weather/station1.txt, kind: file}
+  - {path: processed_weather/station2.txt, kind: file}
+  - {path: processed_weather/station3.txt, kind: file}
 
 checks:
-  - {op: file_content_eq, path: sayi.txt, value: '6'}
+  - {op: file_lines_eq, path: processed_weather/station1.txt, value: [Sunny, Sunny, Sunny, loudy]}
+  - {op: file_lines_eq, path: processed_weather/station2.txt, value: [Rainy, Rainy, Rainy, loudy]}
+  - {op: file_lines_eq, path: processed_weather/station3.txt, value: [Snowy, Snowy, Snowy, Snowy]}
 
 metadata:
   domain: donustur
@@ -37,19 +66,19 @@ metadata:
   pipeline: spec-1
   seed:
     id: s-0060
-    bundle: sutun
+    bundle: ters-cevir
     tools:
+    - rev
     - cut
-    - paste
-    konu: kutuphane-kayitlari
+    konu: hava-durumu-kayitlari
     hedef: donustur
-    girdi: csv
+    girdi: sabit-genislik
     kaynak: cok-dosya
-    cikti: tek-sayi
-    kesif: veriye-bak
-    uslup: numarali-emir
-    direnc: yok
-    bukulme: yok
-    adim: 3
+    cikti: birden-cok-dosya
+    kesif: yok
+    uslup: duz-hedef
+    direnc: tekrar-eden-kayit
+    bukulme: olcek
+    adim: 4
     image: verifiable-dataset/base:latest
     metadata: {}

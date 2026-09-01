@@ -1,0 +1,75 @@
+id: gen-s-0038-toplu-yeniden-adlandir
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Bugün şirketin finansal kayıtlarını düzenlemem gerekiyor çünkü Ocak ve Şubat aylarına ait veriler farklı alt dizinlerde dağınık halde bulunuyor. Bu karışıklığı gidermek için accounts dizini altındaki tüm alt dizinlerde bulunan .csv dosyalarını, orijinal dizin adını ve dosya adını birleştirerek (dizin_dosya.csv şeklinde) /workspace/renamed_files dizinine yeniden adlandırarak kopyalamanı istiyorum. Böylece hangi dosyanın hangi aya ait olduğunu kolayca anlayabileceğim.
+
+setup: |
+  mkdir -p accounts/january accounts/february
+  cat > accounts/january/a01.csv <<'CSV'
+  id,amount,desc
+  1,100,Office Supplies
+  CSV
+  cat > accounts/january/a02.csv <<'CSV'
+  id,amount,desc
+  2,200,Travel
+  CSV
+  cat > accounts/february/b01.csv <<'CSV'
+  id,amount,desc
+  3,300,Rent
+  CSV
+  cat > accounts/february/b02.csv <<'CSV'
+  id,amount,desc
+  4,400,Utilities
+  CSV
+  touch accounts/january/README.txt
+  touch accounts/february/notes.log
+
+goal_tr: >
+  accounts dizini altındaki tüm alt dizinlerde bulunan .csv dosyalarını,
+  orijinal dizin adını ve dosya adını birleştirerek (dizin_dosya.csv
+  şeklinde) /workspace/renamed_files dizinine yeniden adlandırarak kopyala.
+
+reference_solution: |
+  mkdir -p renamed_files
+  find accounts -type f -name "*.csv" | while read -r file; do
+      dir=$(dirname "$file")
+      base=$(basename "$dir")
+      fname=$(basename "$file")
+      cp "$file" "renamed_files/${base}_${fname}"
+  done
+
+outputs:
+  - {path: renamed_files, kind: dir}
+
+checks:
+  - {op: dir_entries_eq, path: renamed_files, value: [february_b01.csv, february_b02.csv, january_a01.csv, january_a02.csv]}
+
+metadata:
+  domain: toplu-yeniden-adlandir
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0038
+    bundle: yol-parcala
+    tools:
+    - basename
+    - dirname
+    konu: muhasebe-kalemleri
+    hedef: toplu-yeniden-adlandir
+    girdi: csv
+    kaynak: cok-dosya
+    cikti: birden-cok-dosya
+    kesif: veriye-bak
+    uslup: baglam-gomulu
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

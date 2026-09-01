@@ -32,11 +32,7 @@ outputs:
   - {path: hava_raporu_duzenli.log, kind: file}
 
 checks:
-  - {op: file_content_eq, path: hava_raporu_duzenli.log, value: '2023-01-01 Istanbul 15C bulutlu
-
-    2023-01-02 Ankara 5C kar
-
-    2023-01-03 Izmir 20C gunesli'}
+  - {op: file_lines_eq, path: hava_raporu_duzenli.log, value: [2023-01-01 Istanbul 15C bulutlu, 2023-01-02 Ankara 5C kar, 2023-01-03 Izmir 20C gunesli]}
 
 metadata:
   domain: onar

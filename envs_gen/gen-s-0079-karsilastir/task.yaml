@@ -41,11 +41,7 @@ outputs:
   - {path: notlar/ortak_ogrenciler.txt, kind: file}
 
 checks:
-  - {op: file_content_eq, path: notlar/ortak_ogrenciler.txt, value: 'Ali
-
-    Ayse
-
-    Mehmet'}
+  - {op: file_lines_eq, path: notlar/ortak_ogrenciler.txt, value: [Ali, Ayse, Mehmet]}
 
 metadata:
   domain: karsilastir

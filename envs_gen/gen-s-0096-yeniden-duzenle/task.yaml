@@ -1,0 +1,69 @@
+id: gen-s-0096-yeniden-duzenle
+split: single_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 8
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) weather_logs.json dosyasındaki geçersiz sıcaklık değerlerini (INVALID veya NA) 20.0 ile değiştirin.
+  2) Düzenlenmiş veriyi formatted_weather.json dosyasına JSON formatında yazın.
+
+setup: |
+  cat > weather_logs.json <<'EOF'
+  [
+    {"date": "2023-01-01", "temp": "22.5", "city": "Istanbul"},
+    {"date": "2023-01-02", "temp": "INVALID", "city": "Istanbul"},
+    {"date": "2023-01-03", "temp": "21.0", "city": "Istanbul"},
+    {"date": "2023-01-04", "temp": "NA", "city": "Istanbul"},
+    {"date": "2023-01-05", "temp": "23.2", "city": "Istanbul"}
+  ]
+  EOF
+
+goal_tr: >
+  weather_logs.json dosyasındaki geçersiz sıcaklık değerlerini (INVALID veya
+  NA) 20.0 ile değiştirerek düzenlenmiş veriyi formatted_weather.json
+  dosyasına JSON formatında yaz.
+
+reference_solution: |
+  seq 1 1 | xargs -I{} printf "" > /dev/null
+  python3 -c '
+  import json
+  with open("weather_logs.json", "r") as f:
+      data = json.load(f)
+  for entry in data:
+      if entry["temp"] in ["INVALID", "NA"]:
+          entry["temp"] = "20.0"
+  print(json.dumps(data, indent=2))
+  ' > formatted_weather.json
+
+outputs:
+  - {path: formatted_weather.json, kind: json}
+
+checks:
+  - {op: json_eq, path: formatted_weather.json, value: [{date: '2023-01-01', temp: '22.5', city: Istanbul}, {date: '2023-01-02', temp: '20.0', city: Istanbul}, {date: '2023-01-03', temp: '21.0', city: Istanbul}, {date: '2023-01-04', temp: '20.0', city: Istanbul}, {date: '2023-01-05', temp: '23.2', city: Istanbul}]}
+
+metadata:
+  domain: yeniden-duzenle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0096
+    bundle: uret
+    tools:
+    - printf
+    - seq
+    konu: hava-durumu-kayitlari
+    hedef: yeniden-duzenle
+    girdi: json
+    kaynak: tek-dosya
+    cikti: json
+    kesif: yok
+    uslup: numarali-emir
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 1
+    image: verifiable-dataset/base:latest
+    metadata: {}

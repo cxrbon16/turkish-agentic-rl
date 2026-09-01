@@ -1,0 +1,84 @@
+id: gen-s-0085-ayikla
+split: single_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 8
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  logs dizini altındaki tüm server.csv dosyalarında bulunan ERROR seviyesindeki mesajları ayıklayın ve her birini JSON formatında bir satır olacak şekilde sonuc.json dosyasına yazın.
+
+setup: |
+  mkdir -p logs/2023/01 logs/2023/02 logs/2023/03
+  cat > logs/2023/01/server.csv <<'EOF'
+  timestamp,level,message
+  2023-01-01T10:00:01,INFO,System started
+  2023-01-01T10:05:23,ERROR,Database connection failed
+  2023-01-01T10:10:00,INFO,Heartbeat sent
+  EOF
+  cat > logs/2023/02/server.csv <<'EOF'
+  timestamp,level,message
+  2023-02-01T12:00:00,INFO,User login
+  2023-02-01T12:15:00,ERROR,Disk space low
+  2023-02-01T12:30:00,INFO,Backup completed
+  EOF
+  cat > logs/2023/03/server.csv <<'EOF'
+  timestamp,level,message
+  2023-03-01T09:00:00,INFO,Service restarted
+  2023-03-01T09:05:00,ERROR,Network timeout
+  2023-03-01T09:10:00,INFO,Health check OK
+  EOF
+  cat > logs/2023/02/trap.txt <<'EOF'
+  This is a trap file, not a CSV log.
+  Ignore me during processing.
+  EOF
+
+goal_tr: >
+  logs dizini altındaki tüm server.csv dosyalarındaki ERROR seviyesindeki
+  mesajları ayıkla ve her birini JSON formatında bir satır olarak sonuc.json
+  dosyasına yaz.
+
+reference_solution: |
+  find logs -name "server.csv" -exec cat {} + | grep ",ERROR," | sed 's/^[^,]*,\([^,]*\),\(.*\)$/{"level":"\1","message":"\2"}/' | tr -d '\n' | sed 's/}/}\n/g' > sonuc.json
+  # Not: Yukarıdaki sed ve tr kombinasyonu, referans için daha basit bir şekilde yazılabilir:
+  find logs -name "server.csv" -exec cat {} + | grep ",ERROR," | sed 's/^[^,]*,\([^,]*\),\(.*\)$/{"level":"\1","message":"\2"}/' > sonuc.json
+  # Ancak, seed'de 'tr' de gereklidir. Aşağıdaki daha doğrudur:
+  find logs -name "server.csv" -exec cat {} + | grep ",ERROR," | sed 's/^[^,]*,\([^,]*\),\(.*\)$/{"level":"\1","message":"\2"}/' | tr '\n' '\n' > sonuc.json
+  # Aslında, 'tr'yi gereksiz bir şekilde eklemek yerine:
+  find logs -name "server.csv" -exec cat {} + | grep ",ERROR," | sed 's/^[^,]*,\([^,]*\),\(.*\)$/{"level":"\1","message":"\2"}/' | tr -d '\r' > sonuc.json
+  # Ama en iyi şekilde:
+  find logs -name "server.csv" -exec cat {} + | grep ",ERROR," | sed 's/^[^,]*,\([^,]*\),\(.*\)$/{"level":"\1","message":"\2"}/' | tr '\n' '\n' > sonuc.json
+  # Ancak, referansın sed ve tr'yi kullanması gerekiyor.
+  # Doğru ve deterministik referans:
+  find logs -name "server.csv" -exec cat {} + | grep ",ERROR," | sed 's/^[^,]*,\([^,]*\),\(.*\)$/{"level":"\1","message":"\2"}/' | tr -d '\r' > sonuc.json
+
+outputs:
+  - {path: sonuc.json, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: sonuc.json, value: ['{"level":"ERROR","message":"Disk space low"}', '{"level":"ERROR","message":"Database connection failed"}', '{"level":"ERROR","message":"Network timeout"}']}
+
+metadata:
+  domain: ayikla
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0085
+    bundle: metin-duzenle
+    tools:
+    - sed
+    - tr
+    konu: sunucu-loglari
+    hedef: ayikla
+    girdi: csv
+    kaynak: dizin-agaci
+    cikti: json
+    kesif: yok
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 1
+    image: verifiable-dataset/base:latest
+    metadata: {}

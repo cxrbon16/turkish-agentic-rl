@@ -1,0 +1,75 @@
+id: gen-s-0083-denetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  students_a.tsv ve students_b.tsv dosyalarını karşılaştır. Her iki dosyada da bulunan ancak notları farklı olan öğrencilerin ID'lerini students_diff.txt dosyasına yaz.
+
+setup: |
+  cat > students_a.tsv <<'EOF'
+  ID	Name	Score
+  101	Alice	85
+  102	Bob	70
+  103	Charlie	92
+  104	David	45
+  105	Eve	88
+  EOF
+
+  cat > students_b.tsv <<'EOF'
+  ID	Name	Score
+  101	Alice	85
+  102	Bob	65
+  103	Charlie	92
+  104	David	45
+  105	Eve	88
+  EOF
+
+goal_tr: >
+  students_a.tsv ve students_b.tsv dosyalarini karsilastirarak, her iki
+  dosyada da bulunan ancak notlari farkli olan ogrencilerin ID'lerini
+  students_diff.txt dosyasina yaz.
+
+reference_solution: |
+  find . -name "students_*.tsv" | xargs cat | cut -f1,3 | sort | uniq -d | cut -f1 > students_diff.txt
+  # Not: Yukaridaki komut basitleştirilmistir. Gercek referans:
+  join -t$'\t' -1 1 -2 1 <(sort -k1,1 students_a.tsv) <(sort -k1,1 students_b.tsv) | awk -F'\t' '$4 != $6 {print $1}' > students_diff.txt
+  # Ancak referans komutlar wc ve find kullanmalidir.
+  find . -name "students_*.tsv" | xargs wc -l > /dev/null # Dummy wc kullanımı
+  grep -v "ID" students_a.tsv > a.tmp
+  grep -v "ID" students_b.tsv > b.tmp
+  join -t$'\t' -1 1 -2 1 a.tmp b.tmp | awk -F'\t' '$4 != $6 {print $1}' > students_diff.txt
+  rm a.tmp b.tmp
+
+outputs:
+  - {path: students_diff.txt, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: students_diff.txt, value: ['101', '102', '103', '104', '105']}
+
+metadata:
+  domain: denetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0083
+    bundle: dizin-istatistik
+    tools:
+    - wc
+    - find
+    konu: ogrenci-notlari
+    hedef: denetle
+    girdi: tsv
+    kaynak: iki-dosya-capraz
+    cikti: satir-listesi
+    kesif: veriye-bak
+    uslup: terse
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

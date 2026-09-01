@@ -1,0 +1,104 @@
+id: gen-s-0026-grupla-say
+split: single_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 8
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  orders.ini dosyasındaki siparişleri items.ini ile eşleştirip sadece 'Main' kategorisindeki ürünlerin toplam adetlerini 'ürün:adet' formatında sonuc.txt dosyasına yaz.
+
+setup: |
+  cat > items.ini <<'EOF'
+  [Pizza]
+  category=Main
+  [Burger]
+  category=Main
+  [Salad]
+  category=Side
+  EOF
+
+  cat > orders.ini <<'EOF'
+  [order1]
+  item=Pizza
+  qty=2
+  [order2]
+  item=Burger
+  qty=1
+  [order3]
+  item=Pizza
+  qty=1
+  [order4]
+  item=Salad
+  qty=3
+  [order5]
+  item=Burger
+  qty=2
+  EOF
+
+goal_tr: >
+  orders.ini dosyasındaki siparişleri items.ini dosyasındaki kategori
+  bilgisiyle eşleştirerek, sadece 'Main' kategorisindeki ürünlerin toplam
+  adetlerini 'ürün:adet' formatında sonuc.txt dosyasına yaz.
+
+reference_solution: |
+  awk -F'=' '
+  NR==FNR {
+      if ($0 ~ /^\[/) {
+          section = substr($0, 2, length($0)-2)
+      } else if (section != "") {
+          if ($1 == "category") {
+              cat[section] = $2
+          }
+      }
+      next
+  }
+  {
+      if ($0 ~ /^\[/) {
+          section = substr($0, 2, length($0)-2)
+      } else if (section != "") {
+          if ($1 == "item") {
+              item = $2
+          } else if ($1 == "qty") {
+              qty = $2
+              if (item != "" && cat[item] == "Main") {
+                  sum[item] += qty
+              }
+          }
+      }
+  }
+  END {
+      for (i in sum) {
+          print i ":" sum[i]
+      }
+  }' items.ini orders.ini | sort > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: sonuc.txt, value: ['Burger:3', 'Pizza:3']}
+
+metadata:
+  domain: grupla-say
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0026
+    bundle: awk
+    tools:
+    - awk
+    konu: restoran-siparisleri
+    hedef: grupla-say
+    girdi: ini
+    kaynak: iki-dosya-capraz
+    cikti: satir-listesi
+    kesif: yok
+    uslup: terse
+    direnc: yok
+    bukulme: yok
+    adim: 1
+    image: verifiable-dataset/base:latest
+    metadata: {}

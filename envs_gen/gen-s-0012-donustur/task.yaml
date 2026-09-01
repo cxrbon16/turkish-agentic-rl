@@ -28,7 +28,7 @@ outputs:
   - {path: yorumlar.json, kind: json}
 
 checks:
-  - {op: file_content_eq, path: yorumlar.json, value: "[\n  {\n    \"id\": \"12345\",\n    \"yorum\": \"This product is great\",\n    \"puan\": 5\n  }\n  {\n    \"id\": \"67890\",\n    \"yorum\": \"Very bad\",\n    \"puan\": 1\n  }\n  {\n    \"id\": \"24680\",\n    \"yorum\": \"Not bad\",\n    \"puan\": 3\n  }\n  {\n    \"id\": \"13579\",\n    \"yorum\": \"Excellent\",\n    \"puan\": 5\n  }\n]"}
+  - {op: file_lines_eq, path: yorumlar.json, value: ['[', '{', '"id": "12345",', '"yorum": "This product is great",', '"puan": 5', '}', '{', '"id": "67890",', '"yorum": "Very bad",', '"puan": 1', '}', '{', '"id": "24680",', '"yorum": "Not bad",', '"puan": 3', '}', '{', '"id": "13579",', '"yorum": "Excellent",', '"puan": 5', '}', ']']}
 
 metadata:
   domain: donustur

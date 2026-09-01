@@ -1,0 +1,62 @@
+id: gen-s-0022-bol
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Bugün şirketle ilgili eski veri formatlarını düzenlemekle uğraşıyorum. Sipariş kayıtlarımızı daha sonra analiz edebilmek için düzenli bir hale getirmem gerekiyor. Lütfen orders.txt dosyasındaki sabit genişlikli veriyi virgülle ayrılmış değerlere dönüştürerek sonuc.csv dosyasına yazın.
+
+setup: |
+  cat > orders.txt <<'EOF'
+  ORD001 10.50 2023-01-01
+  ORD002 15.00 2023-01-02
+  ORD003 05.25 2023-01-03
+  ORD004 22.10 2023-01-04
+  ORD005 12.00 2023-01-05
+  EOF
+  cat > decoy.txt <<'EOF'
+  This file is a decoy.
+  It has no relation to the actual task.
+  EOF
+
+goal_tr: >
+  orders.txt dosyasındaki sabit genişlikli veriyi virgülle ayrılmış
+  değerlere dönüştürerek sonuc.csv dosyasına yaz
+
+reference_solution: |
+  num_lines=$(wc -l < orders.txt)
+  seq 1 $num_lines | xargs -I{} printf "%s\n" "{}" > /dev/null
+  cat orders.txt | tr ' ' ',' > sonuc.csv
+
+outputs:
+  - {path: sonuc.csv, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: sonuc.csv, value: ['ORD001,10.50,2023-01-01', 'ORD002,15.00,2023-01-02', 'ORD003,05.25,2023-01-03', 'ORD004,22.10,2023-01-04', 'ORD005,12.00,2023-01-05']}
+
+metadata:
+  domain: bol
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0022
+    bundle: uret
+    tools:
+    - printf
+    - seq
+    konu: restoran-siparisleri
+    hedef: bol
+    girdi: sabit-genislik
+    kaynak: tek-dosya
+    cikti: csv
+    kesif: veriye-bak
+    uslup: baglam-gomulu
+    direnc: baslik-yok
+    bukulme: tuzak-dosya
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

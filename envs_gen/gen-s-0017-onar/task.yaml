@@ -1,0 +1,57 @@
+id: gen-s-0017-onar
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  shifts.csv dosyasındaki Shift sütununda 'Day' olan satırların sayısını hesaplayın ve bu değeri sadece sayı olacak şekilde count.txt dosyasına kaydedin.
+
+setup: |
+  cat > shifts.csv <<'EOF'
+  Employee,Shift
+  Alice,Day
+  Bob,Night
+  Charlie,Day
+  Eve,Night
+  Frank,Day
+  EOF
+
+goal_tr: >
+  shifts.csv dosyasındaki Shift sütununda 'Day' olan satır sayısını hesapla
+  ve sonucu count.txt dosyasına yaz.
+
+reference_solution: |
+  find . -name "shifts.csv" -exec cat {} + | tr ',' '\n' | sed -n '2~2p' | grep -c 'Day' > count.txt
+
+outputs:
+  - {path: count.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: count.txt, value: '3'}
+
+metadata:
+  domain: onar
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0017
+    bundle: metin-duzenle
+    tools:
+    - sed
+    - tr
+    konu: personel-vardiyalari
+    hedef: onar
+    girdi: csv
+    kaynak: tek-dosya
+    cikti: tek-sayi
+    kesif: dosyayi-bul
+    uslup: kisit-sakli
+    direnc: bom
+    bukulme: yok
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

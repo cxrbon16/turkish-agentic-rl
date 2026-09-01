@@ -1,0 +1,63 @@
+id: gen-s-0029-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  data1.txt ve data2.txt dosyalarındaki tutarların toplamını hesaplayıp sonuc.txt dosyasına yaz.
+
+setup: |
+  cat > data1.txt <<'EOF'
+  2023-01-01  100.00
+  2023-01-02  250.50
+  2023-01-03  120.75
+  EOF
+  cat > data2.txt <<'EOF'
+  2023-01-04  300.00
+  2023-01-05  450.25
+  2023-01-06  110.00
+  EOF
+  cat > fake.txt <<'EOF'
+  2023-01-07  999.99
+  2023-01-08  888.88
+  EOF
+
+goal_tr: >
+  data1.txt ve data2.txt dosyalarındaki tutarların toplamını hesapla ve
+  sonucu sonuc.txt dosyasına yaz.
+
+reference_solution: |
+  cat data1.txt data2.txt | rev | cut -d' ' -f1 | rev | awk '{sum += $1} END {print sum}' > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '1331.5'}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0029
+    bundle: ters-cevir
+    tools:
+    - rev
+    - cut
+    konu: muhasebe-kalemleri
+    hedef: donustur
+    girdi: sabit-genislik
+    kaynak: cok-dosya
+    cikti: tek-sayi
+    kesif: yok
+    uslup: terse
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

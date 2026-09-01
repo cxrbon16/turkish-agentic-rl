@@ -1,0 +1,86 @@
+id: gen-s-0027-denetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) weather_logs/station_a ve weather_logs/station_b dizinlerindeki dosyaları inceleyerek, her iki istasyonda da ortak olan tarihleri belirleyin.
+  2) Bu ortak tarihleri, her istasyonun adıyla ilişkilendirilmiş bir dizin yapısı içinde common_data dizininde saklayın.
+
+setup: |
+  mkdir -p weather_logs/station_a weather_logs/station_b
+  cat > weather_logs/station_a/day1.tsv <<'EOF'
+  date	temp	humidity
+  2023-01-01	-5	80
+  2023-01-02	-3	75
+  EOF
+  cat > weather_logs/station_a/day2.tsv <<'EOF'
+  date	temp	humidity
+  2023-01-03	0	70
+  2023-01-04	2	65
+  EOF
+  cat > weather_logs/station_b/day1.tsv <<'EOF'
+  date	temp	humidity
+  2023-01-01	-2	85
+  2023-01-02	0	80
+  EOF
+  cat > weather_logs/station_b/day2.tsv <<'EOF'
+  date	temp	humidity
+  2023-01-03	2	75
+  2023-01-04	5	70
+  EOF
+  touch weather_logs/station_a/empty.tsv
+  touch weather_logs/station_b/empty.tsv
+
+goal_tr: >
+  weather_logs altındaki iki istasyonun verilerini karşılaştırarak, her iki
+  istasyonda da mevcut olan tarihleri belirle ve bu tarihleri her istasyonun
+  adıyla ilişkilendirilmiş bir dizin yapısı içinde sakla.
+
+reference_solution: |
+  find weather_logs -name "*.tsv" -type f -size +0c | while read -r file; do
+      dir=$(dirname "$file")
+      base=$(basename "$file")
+      station=$(basename "$dir")
+      tail -n +2 "$file" | cut -f1 | sort > "$station.$base.dates"
+  done
+  comm -12 <(cat station_a.*.dates | sort -u) <(cat station_b.*.dates | sort -u) > common_dates.txt
+  mkdir -p common_data/station_a common_data/station_b
+  while read -r date; do
+      echo "$date" >> common_data/station_a/dates.txt
+      echo "$date" >> common_data/station_b/dates.txt
+  done < common_dates.txt
+  rm *.dates common_dates.txt
+
+outputs:
+  - {path: common_data, kind: dir}
+
+checks:
+  - {op: dir_entries_eq, path: common_data, value: [station_a, station_b]}
+
+metadata:
+  domain: denetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0027
+    bundle: yol-parcala
+    tools:
+    - basename
+    - dirname
+    konu: hava-durumu-kayitlari
+    hedef: denetle
+    girdi: tsv
+    kaynak: iki-dosya-capraz
+    cikti: dizin-yapisi
+    kesif: veriye-bak
+    uslup: numarali-emir
+    direnc: bos-dosya
+    bukulme: olcek
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

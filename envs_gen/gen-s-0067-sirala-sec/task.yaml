@@ -1,0 +1,58 @@
+id: gen-s-0067-sirala-sec
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  log*.tsv dosyalarındaki ERROR satırlarının üçüncü kolonlarını al, alfabetik olarak sırala, tekrarlananları kaldır ve bunları virgülle ayırarak sonuc.csv dosyasına yaz.
+
+setup: |
+  cat > log1.tsv <<'EOF'
+  2023-10-01 10:00:00	ERROR	Disk full
+  2023-10-01 10:05:00	INFO	User login
+  2023-10-01 10:10:00	ERROR	Timeout
+  EOF
+
+  printf "2023-10-01 10:15:00\tINFO\tUser logout\r\n2023-10-01 10:20:00\tERROR\tDisk full\r\n" > log2.tsv
+  echo -e "2023-10-01 10:25:00\tINFO\tSystem update\n2023-10-01 10:30:00\tERROR\tTimeout" > log3.tsv
+  echo "This is a trap file with no TSV data" > trap.txt
+
+goal_tr: >
+  log*.tsv dosyalarindaki ERROR satirlarinin ucuncu kolonunu al, sirala,
+  tekrarlari kaldir ve virgulle ayirarak sonuc.csv dosyasina yaz
+
+reference_solution: |
+  find . -maxdepth 1 -name "log*.tsv" -exec cat {} + | tr -d '\r' | grep 'ERROR' | cut -f3 | sort | uniq | paste -sd ',' - > sonuc.csv
+
+outputs:
+  - {path: sonuc.csv, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.csv, value: 'Disk full,Timeout'}
+
+metadata:
+  domain: sirala-sec
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0067
+    bundle: sirala
+    tools:
+    - sort
+    - uniq
+    konu: sunucu-loglari
+    hedef: sirala-sec
+    girdi: tsv
+    kaynak: cok-dosya
+    cikti: csv
+    kesif: veriye-bak
+    uslup: duz-hedef
+    direnc: crlf
+    bukulme: tuzak-dosya
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

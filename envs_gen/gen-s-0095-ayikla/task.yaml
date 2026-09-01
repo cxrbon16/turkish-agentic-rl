@@ -1,0 +1,73 @@
+id: gen-s-0095-ayikla
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  weather_*.log dosyalarında TEMP:15 ile başlayan (yani 15.0 ve üzeri) satırların sayısını hesapla ve sonucu {"count": X} formatında output.json dosyasına yaz.
+
+  Şu şartlar sağlanmalı:
+  - Sadece "TEMP:15" ile başlayan satırlar sayılmalı.
+  - Sonuç tam olarak {"count": X} formatında output.json dosyasına kaydedilmeli.
+
+setup: |
+  cat > weather_202301.log <<'EOF'
+  2023-01-01 00:00:00 TEMP:12.5 HUMID:65
+  2023-01-01 06:00:00 TEMP:11.0 HUMID:68
+  2023-01-01 12:00:00 TEMP:14.2 HUMID:60
+  2023-01-01 18:00:00 TEMP:13.1 HUMID:62
+  EOF
+  cat > weather_202302.log <<'EOF'
+  2023-02-01 00:00:00 TEMP:10.1 HUMID:70
+  2023-02-01 06:00:00 TEMP:9.5 HUMID:72
+  2023-02-01 12:00:00 TEMP:11.8 HUMID:67
+  2023-02-01 18:00:00 TEMP:10.7 HUMID:69
+  EOF
+  cat > weather_202303.log <<'EOF'
+  2023-03-01 00:00:00 TEMP:14.0 HUMID:55
+  2023-03-01 06:00:00 TEMP:13.5 HUMID:58
+  2023-03-01 12:00:00 TEMP:16.8 HUMID:52
+  2023-03-01 18:00:00 TEMP:15.2 HUMID:56
+  EOF
+
+goal_tr: >
+  weather_*.log dosyalarinda TEMP:15 ile baslayan (yani 15.0 ve uzeri) satir
+  sayisini hesapla ve sonucu {"count": X} formatinda output.json dosyasina
+  yaz.
+
+reference_solution: |
+  count=$(grep -h "TEMP:15" weather_*.log | wc -l)
+  echo "{\"count\": $count}" > output.json
+
+outputs:
+  - {path: output.json, kind: json}
+
+checks:
+  - {op: json_eq, path: output.json, value: {count: 1}}
+
+metadata:
+  domain: ayikla
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0095
+    bundle: say
+    tools:
+    - grep
+    - wc
+    konu: hava-durumu-kayitlari
+    hedef: ayikla
+    girdi: log-satiri
+    kaynak: cok-dosya
+    cikti: json
+    kesif: yok
+    uslup: kabul-kriteri
+    direnc: yok
+    bukulme: olcek
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

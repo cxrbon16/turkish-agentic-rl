@@ -1,0 +1,83 @@
+id: gen-s-0071-bol
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  book*.txt dosyalarındaki her kitabın Title ve Author bilgilerini çıkararak books_processed adlı bir dizin oluşturun ve her kitabın bilgilerini bu dizin altında ayrı bir JSON nesnesi olarak saklayın.
+
+setup: |
+  cat > book1.txt <<'EOF'
+  Title: The Great Gatsby
+  Author: F. Scott Fitzgerald
+  Year: 1925
+  Genre: Fiction
+  EOF
+
+  cat > book2.txt <<'EOF'
+  Title: 1984
+  Author: George Orwell
+  Year: 1949
+  Genre: Dystopian
+  EOF
+
+  cat > book3.txt <<'EOF'
+  Title: To Kill a Mockingbird
+  Author: Harper Lee
+  Year: 1960
+  Genre: Fiction
+  EOF
+
+  cat > README.txt <<'EOF'
+  This directory contains book records.
+  Ignore this file.
+  EOF
+
+goal_tr: >
+  book*.txt dosyalarındaki her bir kitabın Title ve Author bilgilerini
+  çıkararak, her kitabın ayrı bir JSON nesnesi olarak yer aldığı ve her
+  nesnenin bir alt dizinde saklandığı bir yapı oluşturun.
+
+reference_solution: |
+  mkdir -p books
+  for f in book*.txt; do
+      title=$(grep "Title: " "$f" | cut -d' ' -f3-)
+      author=$(grep "Author: " "$f" | cut -d' ' -f3-)
+      safe_title=$(echo "$title" | tr ' ' '_')
+      mkdir -p "books/$safe_title"
+      echo "{\"title\": \"$title\", \"author\": \"$author\"}" > "books/$safe_title/info.json"
+  done
+  mv books books_processed
+
+outputs:
+  - {path: books_processed, kind: dir}
+
+checks:
+  - {op: dir_entries_eq, path: books_processed, value: [Great_Gatsby, Kill_a_Mockingbird, info.json]}
+
+metadata:
+  domain: bol
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0071
+    bundle: dosya-duzen
+    tools:
+    - mkdir
+    - mv
+    konu: kutuphane-kayitlari
+    hedef: bol
+    girdi: duz-metin
+    kaynak: cok-dosya
+    cikti: json
+    kesif: yok
+    uslup: kisit-sakli
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

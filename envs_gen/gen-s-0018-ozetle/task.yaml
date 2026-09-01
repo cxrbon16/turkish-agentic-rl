@@ -1,0 +1,70 @@
+id: gen-s-0018-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  data/students.txt ve data/grades.txt dosyalarını kullanarak öğrenci ID ve notlarını içeren bir JSON listesi oluştur ve summary.json olarak kaydet.
+
+setup: |
+  mkdir -p data
+  cat > data/students.txt <<'EOF'
+  101 John Doe    85
+  102 Jane Smith  92
+  103 Bob Brown   78
+  104 Alice White 88
+  105 Charlie Day 65
+  EOF
+
+  cat > data/grades.txt <<'EOF'
+  101 85
+  102 92
+  103 78
+  104 88
+  105 65
+  EOF
+
+  cat > data/trap.txt <<'EOF'
+  106 Fake User   0
+  EOF
+
+goal_tr: >
+  data klasorundeki students.txt ve grades.txt dosyalarini kullanarak,
+  ogrenci ID'si ve notu iceren bir JSON listesini summary.json olarak
+  kaydet.
+
+reference_solution: |
+  find data -name "*.txt" | grep -E "students|grades" | sort > files.txt
+  awk 'NR==FNR {a[$1]=$2; next} {if ($1 in a) print $1, a[$1]}' data/students.txt data/grades.txt | awk 'BEGIN {printf "["} {printf "%s{\"id\":\"%s\",\"grade\":%d}", (NR==1?"":", "), $1, $2} END {print "]"}' > summary.json
+
+outputs:
+  - {path: summary.json, kind: json}
+
+checks:
+  - {op: json_eq, path: summary.json, value: [{id: '101', grade: 0}, {id: '102', grade: 0}, {id: '103', grade: 0}, {id: '104', grade: 0}, {id: '105', grade: 0}]}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0018
+    bundle: awk
+    tools:
+    - awk
+    konu: ogrenci-notlari
+    hedef: ozetle
+    girdi: sabit-genislik
+    kaynak: iki-dosya-capraz
+    cikti: json
+    kesif: dosyayi-bul
+    uslup: terse
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

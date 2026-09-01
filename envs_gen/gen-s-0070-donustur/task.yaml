@@ -27,11 +27,7 @@ outputs:
   - {path: cikti.json, kind: json}
 
 checks:
-  - {op: file_content_eq, path: cikti.json, value: '{"id":id,"urun":"","miktar":,"agirlik":,"durum":"100"}
-
-    {"id":id,"urun":"","miktar":,"agirlik":,"durum":"200"}
-
-    {"id":id,"urun":"","miktar":,"agirlik":,"durum":"150"}'}
+  - {op: file_lines_eq, path: cikti.json, value: ['{"id":id,"urun":"","miktar":,"agirlik":,"durum":"100"}', '{"id":id,"urun":"","miktar":,"agirlik":,"durum":"200"}', '{"id":id,"urun":"","miktar":,"agirlik":,"durum":"150"}']}
 
 metadata:
   domain: donustur

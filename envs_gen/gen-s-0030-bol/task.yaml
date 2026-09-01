@@ -1,0 +1,60 @@
+id: gen-s-0030-bol
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Bugün ofiste işler oldukça yoğun, sürekli yeni sevkiyatlar geliyor ve verileri düzenlemek zorunda kalıyorum. Lojistik ekibi, hızlı bir şekilde gönderi takibi yapmak için bazı bilgileri talep etti. Bu yüzden, shipments.json dosyasındaki her bir JSON nesnesinden id ve destination alanlarını çıkararak bunları virgülle ayrılmış bir CSV formatında shipments.csv dosyasına kaydetmen gerekiyor.
+
+setup: |
+  cat > shipments.json <<'EOF'
+  [
+    {"id": "SH101", "status": "delivered", "weight": 12.5, "destination": "New York"},
+    {"id": "SH102", "status": "in_transit", "weight": 5.2, "destination": "London"},
+    {"id": "SH103", "status": "pending", "weight": 20.0, "destination": "Tokyo"},
+    {"id": "SH104", "status": "delivered", "weight": 1.8, "destination": "Berlin"},
+    {"id": "SH105", "status": "in_transit", "weight": 7.4, "destination": "Paris"}
+  ]
+  EOF
+  sed -i 's/$/\r/' shipments.json
+
+goal_tr: >
+  shipments.json dosyasindaki her bir JSON nesnesinden id ve destination
+  alanlarini cikararak bunlari virgulle ayrilmis bir CSV formatinda
+  shipments.csv dosyasina kaydet.
+
+reference_solution: |
+  tr -d '\r' < shipments.json | grep -o '{"id": "[^"]*", "status": "[^"]*", "weight": [0-9.]*, "destination": "[^"]*"}' | cut -d '"' -f4,12 | tr -d ']' | tee shipments.csv
+
+outputs:
+  - {path: shipments.csv, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: shipments.csv, value: [SH101"destination, SH102"destination, SH103"destination, SH104"destination, SH105"destination]}
+
+metadata:
+  domain: bol
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0030
+    bundle: dallandir
+    tools:
+    - tee
+    - cut
+    konu: kargo-takibi
+    hedef: bol
+    girdi: json
+    kaynak: tek-dosya
+    cikti: csv
+    kesif: dosyayi-bul
+    uslup: baglam-gomulu
+    direnc: crlf
+    bukulme: yok
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

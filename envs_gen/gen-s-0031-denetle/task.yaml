@@ -1,0 +1,70 @@
+id: gen-s-0031-denetle
+split: single_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 8
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  orders dizinindeki tüm .ini dosyalarını bulun, her bir dosyanın satır sayısını hesaplayın ve bu sayıları orders_count.txt adlı bir dosyaya kaydedin.
+
+setup: |
+  mkdir -p orders
+  cat > orders/order1.ini <<'EOF'
+  [order]
+  id=101
+  items=pizza,cola
+  customer=Alice
+  EOF
+  cat > orders/order2.ini <<'EOF'
+  [order]
+  id=102
+  items=burger,fries
+  customer=Bob
+  EOF
+  cat > orders/order3.ini <<'EOF'
+  [order]
+  id=103
+  items=salad
+  customer=Charlie
+  EOF
+  touch orders/empty.ini
+
+goal_tr: >
+  orders dizinindeki tüm .ini dosyalarını bul, her bir dosyanın satır
+  sayısını hesapla ve bu sayıyı içeren bir dosyayı orders_count.txt adıyla
+  kaydet.
+
+reference_solution: |
+  find orders -name "*.ini" -exec wc -l {} + > orders_count.txt
+
+outputs:
+  - {path: orders_count.txt, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: orders_count.txt, value: [4 orders/order1.ini, 4 orders/order3.ini, 4 orders/order2.ini, 0 orders/empty.ini, 12 total]}
+
+metadata:
+  domain: denetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0031
+    bundle: dizin-istatistik
+    tools:
+    - wc
+    - find
+    konu: restoran-siparisleri
+    hedef: denetle
+    girdi: ini
+    kaynak: iki-dosya-capraz
+    cikti: yeniden-adlandirilmis
+    kesif: yok
+    uslup: duz-hedef
+    direnc: bos-dosya
+    bukulme: yok
+    adim: 1
+    image: verifiable-dataset/base:latest
+    metadata: {}

@@ -1,0 +1,83 @@
+id: gen-s-0033-arsivle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) shifts/2023 ve shifts/2024 dizinlerindeki tüm .ini dosyalarını arşivleyin.
+  2) Bu arşivlenmiş dosyayı shifts_archive.tar.gz adıyla kaydedin.
+
+setup: |
+  mkdir -p shifts/2023 shifts/2024
+  cat > shifts/2023/january.ini <<'EOF'
+  [Shift1]
+  Name=Alice
+  Hours=40
+  [Shift2]
+  Name=Bob
+  Hours=35
+  EOF
+  cat > shifts/2024/january.ini <<'EOF'
+  [Shift1]
+  Name=Charlie
+  Hours=40
+  [Shift2]
+  Name=Diana
+  Hours=38
+  EOF
+  cat > shifts/2024/february.ini <<'EOF'
+  [Shift1]
+  Name=Eve
+  Hours=42
+  EOF
+  cat > shifts/ignore_me.txt <<'EOF'
+  This file should be ignored.
+  EOF
+  cat > shifts/2023/notes.txt <<'EOF'
+  Notes for 2023
+  EOF
+
+goal_tr: >
+  shifts dizinindeki 2023 ve 2024 alt dizinlerinde bulunan tüm .ini
+  dosyalarını arşivle ve arşivlenmiş dosyayı shifts_archive.tar.gz adıyla
+  kaydet.
+
+reference_solution: |
+  find shifts -type f -name "*.ini" | grep -E '/(2023|2024)/' | sort | tar -cf shifts_archive.tar -T - && gzip -n shifts_archive.tar
+
+outputs:
+  - {path: shifts_archive.tar.gz, kind: file}
+
+checks:
+  - {op: run_stdout_eq, cmd: tar -tzf shifts_archive.tar.gz | sort, value: 'shifts/2023/january.ini
+
+    shifts/2024/february.ini
+
+    shifts/2024/january.ini'}
+
+metadata:
+  domain: arsivle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0033
+    bundle: arsiv
+    tools:
+    - tar
+    - gzip
+    konu: personel-vardiyalari
+    hedef: arsivle
+    girdi: ini
+    kaynak: dizin-agaci
+    cikti: birden-cok-dosya
+    kesif: yok
+    uslup: numarali-emir
+    direnc: bom
+    bukulme: tuzak-dosya
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

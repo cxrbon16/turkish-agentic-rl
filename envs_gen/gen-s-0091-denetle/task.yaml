@@ -1,0 +1,76 @@
+id: gen-s-0091-denetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  data dizinindeki tüm dosyalarda bulunan tekrarlanan satırları kaldırıp benzersiz satırları alfabetik olarak sıralayın ve bunları JSON formatında bir liste olarak output.json dosyasına kaydedin.
+
+setup: |
+  mkdir -p data/sensor_a data/sensor_b data/sensor_c
+  cat > data/sensor_a/reading1.txt <<'EOF'
+  2023-10-01 10:00,23.5
+  2023-10-01 10:05,23.6
+  2023-10-01 10:00,23.5
+  EOF
+  cat > data/sensor_a/reading2.txt <<'EOF'
+  2023-10-01 10:10,23.7
+  2023-10-01 10:05,23.6
+  EOF
+  cat > data/sensor_b/reading1.txt <<'EOF'
+  2023-10-01 10:00,15.2
+  2023-10-01 10:00,15.2
+  EOF
+  cat > data/sensor_b/reading2.txt <<'EOF'
+  2023-10-01 10:05,15.3
+  EOF
+  cat > data/sensor_c/reading1.txt <<'EOF'
+  2023-10-01 10:00,10.1
+  2023-10-01 10:00,10.1
+  2023-10-01 10:00,10.1
+  EOF
+
+goal_tr: >
+  data dizini altındaki tüm dosyalarda bulunan tekrarlanan satırları
+  kaldırın, tüm benzersiz satırları alfabetik olarak sıralayın ve bunları
+  JSON formatında liste olarak output.json dosyasına kaydedin.
+
+reference_solution: |
+  find data -type f -exec cat {} + | sort | uniq > unique_lines.txt
+  printf '[\n' > output.json
+  sed 's/"/\\"/g; s/^/  "/; s/$/",/' unique_lines.txt | sed '$ s/,$//' >> output.json
+  printf '\n]\n' >> output.json
+  rm unique_lines.txt
+
+outputs:
+  - {path: output.json, kind: json}
+
+checks:
+  - {op: json_eq, path: output.json, value: ['2023-10-01 10:00,10.1', '2023-10-01 10:00,15.2', '2023-10-01 10:00,23.5', '2023-10-01 10:05,15.3', '2023-10-01 10:05,23.6', '2023-10-01 10:10,23.7']}
+
+metadata:
+  domain: denetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0091
+    bundle: sirala
+    tools:
+    - sort
+    - uniq
+    konu: sensor-olcumleri
+    hedef: denetle
+    girdi: duz-metin
+    kaynak: dizin-agaci
+    cikti: json
+    kesif: yok
+    uslup: terse
+    direnc: tekrar-eden-kayit
+    bukulme: olcek
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

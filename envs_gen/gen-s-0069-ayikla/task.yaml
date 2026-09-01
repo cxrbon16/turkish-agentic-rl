@@ -1,0 +1,66 @@
+id: gen-s-0069-ayikla
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) ledger.txt dosyasındaki tekrarlanan satırları belirleyin.
+  2) Bu tekrarlanan satırların üçüncü sütununda yer alan kategorileri ters çevirin.
+  3) Elde edilen bu ters çevrilmiş kategorilerden benzersiz olanları alfabetik sıraya göre düzenleyerek output.txt dosyasına yazın.
+
+setup: |
+  cat > ledger.txt <<'EOF'
+  2023-01-01|INV001|OFFICE|150.00
+  2023-01-02|INV002|TRAVEL|300.00
+  2023-01-03|INV003|OFFICE|200.00
+  2023-01-04|INV004|MEALS|50.00
+  2023-01-05|INV005|TRAVEL|120.00
+  2023-01-06|INV006|OFFICE|150.00
+  2023-01-07|INV007|MEALS|75.00
+  2023-01-08|INV008|TRAVEL|300.00
+  2023-01-09|INV009|OFFICE|200.00
+  2023-01-10|INV010|MEALS|150.00
+  2023-01-01|INV001|OFFICE|150.00
+  2023-01-02|INV002|TRAVEL|300.00
+  EOF
+
+goal_tr: >
+  ledger.txt dosyasındaki tekrarlanan satırları bul, bu satırların üçüncü
+  sütunundaki kategorileri ters çevir ve benzersiz olanları alfabetik
+  sırayla output.txt dosyasına yaz.
+
+reference_solution: |
+  sort ledger.txt | uniq -d | cut -d'|' -f3 | rev | sort -u > output.txt
+
+outputs:
+  - {path: output.txt, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: output.txt, value: [ECIFFO, LEVART]}
+
+metadata:
+  domain: ayikla
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0069
+    bundle: ters-cevir
+    tools:
+    - rev
+    - cut
+    konu: muhasebe-kalemleri
+    hedef: ayikla
+    girdi: duz-metin
+    kaynak: tek-dosya
+    cikti: satir-listesi
+    kesif: dosyayi-bul
+    uslup: numarali-emir
+    direnc: tekrar-eden-kayit
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

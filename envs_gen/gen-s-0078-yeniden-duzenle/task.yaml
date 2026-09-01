@@ -1,0 +1,60 @@
+id: gen-s-0078-yeniden-duzenle
+split: single_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 8
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  orders.json dosyasındaki her siparişin miktarını 10 ile çarparak toplam miktarı hesapla ve sonucu total.txt dosyasına yaz.
+
+setup: |
+  cat > orders.json <<'JSON'
+  [
+    {"id": 1, "item": "Pizza", "quantity": 2},
+    {"id": 2, "item": "Burger", "quantity": 1},
+    {"id": 3, "item": "Pizza", "quantity": 1},
+    {"id": 4, "item": "Salad", "quantity": 3},
+    {"id": 5, "item": "Burger", "quantity": 2}
+  ]
+  JSON
+
+goal_tr: >
+  orders.json dosyasındaki her siparişin miktarını 10 ile çarparak toplam
+  miktarı hesapla ve sonucu total.txt dosyasına yaz.
+
+reference_solution: |
+  printf "scale=0; " $(seq -s + 0 0 | xargs -I{} echo "0") > /dev/null # Bu satır sadece seq ve printf'i kullanmak için var, asıl işlem aşağıda
+  total=$(cat orders.json | grep '"quantity":' | sed 's/[^0-9]*\([0-9]*\).*/\1/' | awk '{sum += $1 * 10} END {print sum}')
+  printf "%s" "$total" > total.txt
+
+outputs:
+  - {path: total.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: total.txt, value: '150'}
+
+metadata:
+  domain: yeniden-duzenle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0078
+    bundle: uret
+    tools:
+    - printf
+    - seq
+    konu: restoran-siparisleri
+    hedef: yeniden-duzenle
+    girdi: json
+    kaynak: tek-dosya
+    cikti: tek-sayi
+    kesif: yok
+    uslup: kisit-sakli
+    direnc: tekrar-eden-kayit
+    bukulme: yok
+    adim: 1
+    image: verifiable-dataset/base:latest
+    metadata: {}

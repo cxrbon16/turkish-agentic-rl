@@ -1,0 +1,88 @@
+id: gen-s-0092-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  logs.tar.gz dosyasını açın ve logs_web.txt ile logs_db.txt dosyalarındaki ERROR ve DB_ERROR satırlarını zaman damgalarına göre eşleştirin. Her eşleşmeyi {"timestamp": "zaman", "web": "mesaj", "db": "mesaj"} formatında bir JSON listesi olarak sonuc.json dosyasına kaydedin.
+
+setup: |
+  cat > logs_web.txt <<'EOF'
+  2023-10-01 10:00:01 INFO User1 login
+  2023-10-01 10:05:22 ERROR Timeout
+  2023-10-01 10:10:00 INFO User2 login
+  2023-10-01 10:15:00 ERROR DiskFull
+  EOF
+  cat > logs_db.txt <<'EOF'
+  2023-10-01 10:05:22 DB_ERROR Connection
+  2023-10-01 10:15:00 DB_ERROR WriteFail
+  2023-10-01 10:20:00 DB_INFO Backup
+  EOF
+  touch logs_app.txt
+  tar -cf logs.tar logs_web.txt logs_db.txt logs_app.txt
+  gzip logs.tar
+
+goal_tr: >
+  logs.tar.gz dosyasini ac, logs_web.txt ve logs_db.txt dosyalarindaki ERROR
+  ve DB_ERROR satirlerini zaman damgalarina gore eslestir ve her eslesmeyi
+  {"timestamp": "zaman", "web": "mesaj", "db": "mesaj"} formatinda bir JSON
+  listesi olarak sonuc.json dosyasina yaz.
+
+reference_solution: |
+  gunzip -c logs.tar.gz > logs.tar
+  tar -xf logs.tar logs_web.txt logs_db.txt
+  python3 -c '
+  import json
+  web = []
+  with open("logs_web.txt") as f:
+      for line in f:
+          if "ERROR" in line:
+              parts = line.split()
+              web.append((" ".join(parts[:2]), " ".join(parts[3:])))
+  db = []
+  with open("logs_db.txt") as f:
+      for line in f:
+          if "DB_ERROR" in line:
+              parts = line.split()
+              db.append((" ".join(parts[:2]), " ".join(parts[3:])))
+  result = []
+  for w_ts, w_msg in web:
+      for d_ts, d_msg in db:
+          if w_ts == d_ts:
+              result.append({"timestamp": w_ts, "web": w_msg, "db": d_msg})
+  with open("sonuc.json", "w") as f:
+      json.dump(result, f)
+  '
+
+outputs:
+  - {path: sonuc.json, kind: json}
+
+checks:
+  - {op: json_eq, path: sonuc.json, value: [{timestamp: '2023-10-01 10:05:22', web: Timeout, db: Connection}, {timestamp: '2023-10-01 10:15:00', web: DiskFull, db: WriteFail}]}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0092
+    bundle: arsiv
+    tools:
+    - tar
+    - gzip
+    konu: sunucu-loglari
+    hedef: donustur
+    girdi: sabit-genislik
+    kaynak: iki-dosya-capraz
+    cikti: json
+    kesif: yok
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

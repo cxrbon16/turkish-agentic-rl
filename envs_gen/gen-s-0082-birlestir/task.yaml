@@ -1,0 +1,67 @@
+id: gen-s-0082-birlestir
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  inventory/items/data ve inventory/prices/data dosyalarındaki verileri birleştirerek, her satırda "ID|Name|Category|Price" formatında ve ID'ye göre sıralanmış bir listeyi merged_inventory.txt dosyasına yaz.
+
+setup: |
+  mkdir -p inventory/items inventory/prices
+  cat > inventory/items/data <<'EOF'
+  1|Apple|Fruit
+  2|Carrot|Vegetable
+  3|Bacon|Meat
+  4|Egg|Dairy
+  5|Steak|Meat
+  EOF
+  cat > inventory/prices/data <<'EOF'
+  1|0.50
+  3|2.99
+  5|15.00
+  2|0.75
+  4|1.20
+  EOF
+
+goal_tr: >
+  inventory/items/data ve inventory/prices/data dosyalarındaki verileri
+  birleştirerek, her satırda "ID|Name|Category|Price" formatında ve ID'ye
+  göre sıralanmış bir listeyi merged_inventory.txt dosyasına yaz.
+
+reference_solution: |
+  sort -t'|' -k1,1 inventory/items/data > items_sorted
+  sort -t'|' -k1,1 inventory/prices/data > prices_sorted
+  join -t'|' -1 1 -2 1 items_sorted prices_sorted > merged_inventory.txt
+
+outputs:
+  - {path: merged_inventory.txt, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: merged_inventory.txt, value: [1|Apple|Fruit|0.50, 2|Carrot|Vegetable|0.75, 3|Bacon|Meat|2.99, 4|Egg|Dairy|1.20, 5|Steak|Meat|15.00]}
+
+metadata:
+  domain: birlestir
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0082
+    bundle: birlestir
+    tools:
+    - join
+    - sort
+    konu: envanter
+    hedef: birlestir
+    girdi: log-satiri
+    kaynak: dizin-agaci
+    cikti: satir-listesi
+    kesif: veriye-bak
+    uslup: kisit-sakli
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

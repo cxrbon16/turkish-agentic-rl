@@ -1,0 +1,72 @@
+id: gen-s-0016-bol
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Bugün kütüphane arşivindeki kitap listelerini düzenlemeye çalışıyorum, ancak dosya boyutu çok büyük olduğu için veriyle başa çıkmakta zorlanıyorum. Bu yüzden, "library books/catalog.csv" dosyasının ilk 5 satırını (başlık dahil) "library books/header.csv" dosyasına, son 5 satırını ise "library books/footer.csv" dosyasına ayırarak kaydedebilir misin?
+
+setup: |
+  mkdir -p "library books"
+  cat > "library books/catalog.csv" <<'EOF'
+  ID,Title,Author,Year
+  1,The Great Gatsby,F. Scott Fitzgerald,1925
+  2,To Kill a Mockingbird,Harper Lee,1960
+  3,1984,George Orwell,1949
+  4,Brave New World,Aldous Huxley,1932
+  5,Fahrenheit 451,Ray Bradbury,1953
+  6,Pride and Prejudice,Jane Austen,1813
+  7,The Hobbit,J.R.R. Tolkien,1937
+  8,Moby Dick,Herman Melville,1851
+  9,Ulysses,James Joyce,1922
+  10,The Odyssey,Homer,-800
+  11,War and Peace,Leo Tolstoy,1869
+  12,Crime and Punishment,Fyodor Dostoevsky,1866
+  13,The Divine Comedy,Dante Alighieri,1320
+  14,The Iliad,Homer,-750
+  15,The Aeneid,Virgil,-19 BC
+  EOF
+
+goal_tr: >
+  "library books/catalog.csv" dosyasındaki ilk 5 satırı (başlık dahil) ve
+  son 5 satırı ayırarak "library books/header.csv" ve "library
+  books/footer.csv" dosyalarını oluştur.
+
+reference_solution: |
+  head -n 5 "library books/catalog.csv" > "library books/header.csv"
+  tail -n 5 "library books/catalog.csv" > "library books/footer.csv"
+
+outputs:
+  - {path: library books/header.csv, kind: file}
+  - {path: library books/footer.csv, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: library books/footer.csv, value: ['11,War and Peace,Leo Tolstoy,1869', '12,Crime and Punishment,Fyodor Dostoevsky,1866', '13,The Divine Comedy,Dante Alighieri,1320', '14,The Iliad,Homer,-750', '15,The Aeneid,Virgil,-19 BC']}
+  - {op: file_lines_eq, path: library books/header.csv, value: ['ID,Title,Author,Year', '1,The Great Gatsby,F. Scott Fitzgerald,1925', '2,To Kill a Mockingbird,Harper Lee,1960', '3,1984,George Orwell,1949', '4,Brave New World,Aldous Huxley,1932']}
+
+metadata:
+  domain: bol
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0016
+    bundle: satir-araligi
+    tools:
+    - head
+    - tail
+    konu: kutuphane-kayitlari
+    hedef: bol
+    girdi: csv
+    kaynak: dizin-agaci
+    cikti: dizin-yapisi
+    kesif: yok
+    uslup: baglam-gomulu
+    direnc: bosluklu-ad
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

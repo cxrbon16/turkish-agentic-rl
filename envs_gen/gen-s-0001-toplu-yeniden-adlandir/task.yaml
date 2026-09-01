@@ -40,17 +40,9 @@ outputs:
 
 checks:
   - {op: json_eq, path: durum.json, value: {yeni_notlar: []}}
-  - {op: file_content_eq, path: yeni_notlar/A_notlar.txt, value: 'Ali 85
-
-    Veli 92
-
-    Ayse 78'}
-  - {op: file_content_eq, path: yeni_notlar/B_notlar.txt, value: 'Fatma 88
-
-    Mehmet 95'}
-  - {op: file_content_eq, path: yeni_notlar/C_notlar.txt, value: 'Can 76
-
-    Zeynep 82'}
+  - {op: file_lines_eq, path: yeni_notlar/A_notlar.txt, value: [Ali 85, Veli 92, Ayse 78]}
+  - {op: file_lines_eq, path: yeni_notlar/B_notlar.txt, value: [Fatma 88, Mehmet 95]}
+  - {op: file_lines_eq, path: yeni_notlar/C_notlar.txt, value: [Can 76, Zeynep 82]}
   - {op: not_exists, path: ogrenci_notlari/2023/A/notlar.txt}
   - {op: not_exists, path: ogrenci_notlari/2023/B/notlar.txt}
   - {op: not_exists, path: ogrenci_notlari/2023/C/notlar.txt}

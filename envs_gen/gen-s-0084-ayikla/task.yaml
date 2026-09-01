@@ -1,0 +1,70 @@
+id: gen-s-0084-ayikla
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  books ve books archive dizinlerindeki tsv dosyalarından, sadece her iki dosyada da bulunan ve ISBN numarası 123 olan kayıtları ayıkla ve bunları sonuc.json dosyasına bir JSON dizisi olarak yaz.
+
+setup: |
+  mkdir -p books
+  cat > books/a.tsv <<'EOF'
+  ISBN	Title	Author
+  123	The Great Gatsby	F. Scott Fitzgerald
+  456	1984	George Orwell
+  789	Brave New World	Aldous Huxley
+  EOF
+
+  mkdir -p "books archive"
+  cat > "books archive/b.tsv" <<'EOF'
+  ISBN	Title	Author
+  123	The Great Gatsby	F. Scott Fitzgerald
+  101	Moby Dick	Herman Melville
+  202	War and Peace	Leo Tolstoy
+  EOF
+
+goal_tr: >
+  books ve books archive dizinlerindeki tsv dosyalarindan, sadece her iki
+  dosyada da bulunan ve ISBN numarasi 123 olan kayitlari ayikla ve bunlari
+  sonuc.json dosyasina bir JSON dizisi olarak yaz.
+
+reference_solution: |
+  find books "books archive" -name "*.tsv" -exec cat {} + | sort | uniq > all_books.txt
+  comm -12 <(sort books/a.tsv) <(sort "books archive/b.tsv") | grep "^123" > shared_123.txt
+  echo "[" > sonuc.json
+  sed 's/	/","/g' shared_123.txt | sed 's/^/"/' | sed 's/$/"/' | sed 's/^/"/' | sed 's/$/",/' | sed '$s/,$//' >> sonuc.json
+  echo "]" >> sonuc.json
+  rm all_books.txt shared_123.txt
+
+outputs:
+  - {path: sonuc.json, kind: json}
+
+checks:
+  - {op: file_lines_eq, path: sonuc.json, value: ['[', '""123","The Great Gatsby","F. Scott Fitzgerald""', ']']}
+
+metadata:
+  domain: ayikla
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0084
+    bundle: kume-farki
+    tools:
+    - comm
+    - sort
+    konu: kutuphane-kayitlari
+    hedef: ayikla
+    girdi: tsv
+    kaynak: dizin-agaci
+    cikti: json
+    kesif: veriye-bak
+    uslup: kisit-sakli
+    direnc: bosluklu-ad
+    bukulme: yok
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

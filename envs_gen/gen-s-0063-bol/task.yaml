@@ -1,0 +1,69 @@
+id: gen-s-0063-bol
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) "server logs.txt" dosyasını bulun.
+  2) "logs_split" adında bir dizin oluşturun.
+  3) "server logs.txt" dosyasını her 3 satırda bir bölerek "logs_split" dizini altında "log_part_1.txt", "log_part_2.txt", "log_part_3.txt" ve "log_part_4.txt" adlarıyla kaydedin.
+
+setup: |
+  cat > "server logs.txt" <<'EOF'
+  2023-10-01 10:00:01 INFO Connection established
+  2023-10-01 10:00:05 ERROR Timeout occurred
+  2023-10-01 10:00:10 WARN Memory low
+  2023-10-01 10:00:15 INFO Request processed
+  2023-10-01 10:00:20 ERROR Disk full
+  2023-10-01 10:00:25 WARN CPU spike
+  2023-10-01 10:00:30 INFO Connection closed
+  2023-10-01 10:00:35 ERROR Database connection failed
+  2023-10-01 10:00:40 WARN Retry attempt 1
+  2023-10-01 10:00:45 INFO User logged in
+  2023-10-01 10:00:50 INFO Request processed
+  2023-10-01 10:00:55 ERROR Disk full
+  EOF
+  touch server_logs.txt
+  mkdir -p logs_split
+
+goal_tr: >
+  "server logs.txt" dosyasını bulun ve her 3 satırda bir "log_part_N.txt"
+  adıyla (N=1,2,3,4) "logs_split" klasörüne bölün.
+
+reference_solution: |
+  FILE=$(find . -maxdepth 1 -name "server logs.txt")
+  split -l 3 "$FILE" logs_split/tmp_
+  seq 1 4 | xargs -I {} sh -c "printf 'log_part_%s.txt' {} > tmp_filename; mv logs_split/tmp_{} logs_split/\$(cat tmp_filename); rm tmp_filename"
+
+outputs:
+  - {path: logs_split/log_part_1.txt, kind: file}
+  - {path: logs_split/log_part_2.txt, kind: file}
+  - {path: logs_split/log_part_3.txt, kind: file}
+  - {path: logs_split/log_part_4.txt, kind: file}
+
+metadata:
+  domain: bol
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0063
+    bundle: uret
+    tools:
+    - printf
+    - seq
+    konu: sunucu-loglari
+    hedef: bol
+    girdi: log-satiri
+    kaynak: tek-dosya
+    cikti: birden-cok-dosya
+    kesif: dosyayi-bul
+    uslup: numarali-emir
+    direnc: bosluklu-ad
+    bukulme: tuzak-dosya
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

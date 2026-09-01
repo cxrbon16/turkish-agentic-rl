@@ -34,7 +34,7 @@ outputs:
   - {path: randevular.csv, kind: csv}
 
 checks:
-  - {op: file_content_eq, path: randevular.csv, value: "soyad\ttarih\nYilmaz\t2023-10-15\nDemir\t2023-10-16\nKaya\t2023-10-17\nSahin\t2023-10-18"}
+  - {op: file_lines_eq, path: randevular.csv, value: ["soyad\ttarih", "Yilmaz\t2023-10-15", "Demir\t2023-10-16", "Kaya\t2023-10-17", "Sahin\t2023-10-18"]}
 
 metadata:
   domain: ayikla

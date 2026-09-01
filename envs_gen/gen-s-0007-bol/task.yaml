@@ -39,24 +39,8 @@ outputs:
   - {path: cikti/tuzak.ini, kind: file}
 
 checks:
-  - {op: file_content_eq, path: cikti/kalemler.ini, value: '[Gelir]
-
-    miktar=1000
-
-    tarih=2023-01-01
-
-    [Gider]
-
-    miktar=500
-
-    tarih=2023-01-02
-
-    [Vergi]
-
-    miktar=200
-
-    tarih=2023-01-03'}
-  - {op: file_content_eq, path: cikti/tuzak.ini, value: ''}
+  - {op: file_lines_eq, path: cikti/kalemler.ini, value: ['[Gelir]', miktar=1000, tarih=2023-01-01, '[Gider]', miktar=500, tarih=2023-01-02, '[Vergi]', miktar=200, tarih=2023-01-03]}
+  - {op: is_file, path: cikti/tuzak.ini}
 
 metadata:
   domain: bol

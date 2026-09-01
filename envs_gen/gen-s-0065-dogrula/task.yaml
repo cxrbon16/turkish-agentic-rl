@@ -1,0 +1,105 @@
+id: gen-s-0065-dogrula
+split: single_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 8
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) data dizinindeki tüm CSV dosyalarını inceleyin.
+  2) Her bir CSV dosyasındaki value sütununun tüm değerlerinin sayı olup olmadığını kontrol edin.
+  3) value sütunundaki tüm değerlerin sayı olduğu dosyaları valid_results dizinine taşıyın.
+  4) value sütununda sayı olmayan en az bir değer içeren dosyaları invalid_results dizinine taşıyın.
+
+setup: |
+  mkdir -p data
+  cat > data/sensor1.csv <<'EOF'
+  timestamp,value
+  2023-10-01T00:00:01,10.5
+  2023-10-01T00:00:02,11.2
+  2023-10-01T00:00:03,invalid
+  EOF
+
+  cat > data/sensor2.csv <<'EOF'
+  timestamp,value
+  2023-10-01T00:00:01,20.1
+  2023-10-01T00:00:02,21.5
+  2023-10-01T00:00:03,19.8
+  EOF
+
+  cat > data/sensor3.csv <<'EOF'
+  timestamp,value
+  2023-10-01T00:00:01,30.0
+  2023-10-01T00:00:02,error
+  2023-10-01T00:00:03,31.2
+  EOF
+
+  # Simulating CRLF line endings by converting files
+  sed -i 's/$/\r/' data/*.csv
+
+goal_tr: >
+  data dizinindeki tüm CSV dosyalarını oku, value sütunundaki her bir değeri
+  sayı olup olmadığını kontrol et ve sayı olmayan değerler içeren dosyaları
+  valid_results dizinine, sayı olanları invalid_results dizinine taşı.
+
+reference_solution: |
+  mkdir -p valid_results invalid_results
+  python3 -c "
+  import os
+  import csv
+
+  data_dir = 'data'
+  valid_dir = 'valid_results'
+  invalid_dir = 'invalid_results'
+
+  for filename in os.listdir(data_dir):
+      if filename.endswith('.csv'):
+          filepath = os.path.join(data_dir, filename)
+          with open(filepath, 'r', newline='') as f:
+              reader = csv.DictReader(f)
+              all_valid = True
+              for row in reader:
+                  try:
+                      float(row['value'])
+                  except ValueError:
+                      all_valid = False
+                      break
+
+          dest_dir = valid_dir if all_valid else invalid_dir
+          os.rename(filepath, os.path.join(dest_dir, filename))
+  "
+
+outputs:
+  - {path: valid_results, kind: dir}
+  - {path: invalid_results, kind: dir}
+
+checks:
+  - {op: dir_entries_eq, path: invalid_results, value: [sensor1.csv, sensor3.csv]}
+  - {op: dir_entries_eq, path: valid_results, value: [sensor2.csv]}
+  - {op: not_exists, path: data/sensor1.csv}
+  - {op: not_exists, path: data/sensor2.csv}
+  - {op: not_exists, path: data/sensor3.csv}
+
+metadata:
+  domain: dogrula
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0065
+    bundle: python-veri
+    tools:
+    - python3
+    konu: sensor-olcumleri
+    hedef: dogrula
+    girdi: csv
+    kaynak: cok-dosya
+    cikti: dizin-yapisi
+    kesif: yok
+    uslup: numarali-emir
+    direnc: crlf
+    bukulme: yok
+    adim: 1
+    image: verifiable-dataset/base:latest
+    metadata: {}

@@ -34,13 +34,7 @@ outputs:
   - {path: siparisler.csv, kind: file}
 
 checks:
-  - {op: file_content_eq, path: siparisler.csv, value: 'id,yemek,fiyat
-
-    yemekPidefiyat
-
-    yemekKebapfiyat
-
-    yemekCorbafiyat'}
+  - {op: file_lines_eq, path: siparisler.csv, value: ['id,yemek,fiyat', yemekPidefiyat, yemekKebapfiyat, yemekCorbafiyat]}
 
 metadata:
   domain: donustur

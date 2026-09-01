@@ -39,7 +39,7 @@ outputs:
   - {path: bol.json, kind: json}
 
 checks:
-  - {op: file_content_eq, path: bol.json, value: "[,\n  {\"id\":1,\"level\":\"INFO\",\"message\":\"Server started\"},\n  {\"id\":2,\"level\":\"ERROR\",\"message\":\"Disk full\"},\n  {\"id\":7,\"level\":\"INFO\",\"message\":\"Backup completed\"},\n  {\"id\":8,\"level\":\"ERROR\",\"message\":\"Database down\"}\n]"}
+  - {op: file_lines_eq, path: bol.json, value: ['[,', '{"id":1,"level":"INFO","message":"Server started"},', '{"id":2,"level":"ERROR","message":"Disk full"},', '{"id":7,"level":"INFO","message":"Backup completed"},', '{"id":8,"level":"ERROR","message":"Database down"}', ']']}
 
 metadata:
   domain: bol

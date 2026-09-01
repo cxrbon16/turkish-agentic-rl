@@ -1,0 +1,72 @@
+id: gen-s-0034-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  inventory/item_list.txt dosyasındaki ID’ler ile inventory/log_entries.txt dosyasındaki ITEM numaralarını eşleştirerek, log dosyasında en az bir kez geçen öğelerin sayısını sonuc.txt dosyasına yazın.
+
+setup: |
+  mkdir -p inventory
+  cat > inventory/item_list.txt <<'EOF'
+  ID:1 Name:Iron Bolt Qty:100
+  ID:2 Name:Steel Nut Qty:50
+  ID:3 Name:Copper Wire Qty:200
+  ID:4 Name:Plastic Case Qty:30
+  ID:5 Name:Rubber Seal Qty:10
+  EOF
+
+  cat > inventory/log_entries.txt <<'EOF'
+  2023-01-01 ITEM:1 Action:Check
+  2023-01-02 ITEM:2 Action:Check
+  2023-01-03 ITEM:1 Action:Check
+  2023-01-04 ITEM:4 Action:Check
+  2023-01-05 ITEM:3 Action:Check
+  2023-01-06 ITEM:1 Action:Check
+  2023-01-07 ITEM:5 Action:Check
+  2023-01-08 ITEM:2 Action:Check
+  EOF
+
+goal_tr: >
+  inventory dizinindeki item_list.txt dosyasinda bulunan ID'ler ile
+  log_entries.txt dosyasindaki ITEM numaralarini eslestirerek, log
+  dosyasinda en az bir kez gecen kalemlerin sayisini sonuc.txt dosyasina
+  yaz.
+
+reference_solution: |
+  find inventory -name "item_list.txt" -exec cat {} + | cut -d':' -f2 | cut -d' ' -f1 > ids.txt
+  grep -o 'ITEM:[0-9]\+' inventory/log_entries.txt | cut -d':' -f2 | sort -u > logged_ids.txt
+  comm -12 ids.txt logged_ids.txt | wc -l > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '5'}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0034
+    bundle: dizin-istatistik
+    tools:
+    - wc
+    - find
+    konu: envanter
+    hedef: ozetle
+    girdi: log-satiri
+    kaynak: iki-dosya-capraz
+    cikti: tek-sayi
+    kesif: veriye-bak
+    uslup: kisit-sakli
+    direnc: bosluklu-ad
+    bukulme: yok
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

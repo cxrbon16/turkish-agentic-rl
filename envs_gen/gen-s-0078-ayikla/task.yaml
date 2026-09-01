@@ -31,13 +31,7 @@ outputs:
   - {path: ad_vardiya.txt, kind: file}
 
 checks:
-  - {op: file_content_eq, path: ad_vardiya.txt, value: 'ad:Ahmet,vardiya:Sabah
-
-    ad:Mehmet,vardiya:Aksam
-
-    ad:Ayse,vardiya:Gece
-
-    ad:Fatma,vardiya:Sabah'}
+  - {op: file_lines_eq, path: ad_vardiya.txt, value: ['ad:Ahmet,vardiya:Sabah', 'ad:Mehmet,vardiya:Aksam', 'ad:Ayse,vardiya:Gece', 'ad:Fatma,vardiya:Sabah']}
 
 metadata:
   domain: ayikla

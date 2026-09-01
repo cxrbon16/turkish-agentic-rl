@@ -1,0 +1,73 @@
+id: gen-s-0036-bol
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  data.tar.gz içindeki JSON dosyalarını çıkarın ve her iki dosyada da bulunan şehirleri tespit edin. Bu şehirleri sonuc.json adlı dosyaya JSON listesi olarak kaydedin.
+
+setup: |
+  cat > weather_2023.json <<'JSON'
+  [
+    {"city": "Istanbul", "temp": 25, "date": "2023-01-01"},
+    {"city": "Ankara", "temp": 10, "date": "2023-01-01"},
+    {"city": "Izmir", "temp": 20, "date": "2023-01-01"}
+  ]
+  JSON
+  cat > weather_2024.json <<'JSON'
+  [
+    {"city": "Istanbul", "temp": 22, "date": "2024-01-01"},
+    {"city": "Ankara", "temp": 15, "date": "2024-01-01"},
+    {"city": "Bursa", "temp": 18, "date": "2024-01-01"}
+  ]
+  JSON
+  cat > empty.json < /dev/null
+  tar -czf data.tar.gz weather_2023.json weather_2024.json
+  tar -czf archives.tar.gz empty.json
+
+goal_tr: >
+  data.tar.gz icindeki JSON dosyalarini ayikla, her iki dosyada da bulunan
+  sehirleri bul ve bu sehirleri içeren bir JSON listesini sonuc.json olarak
+  kaydet.
+
+reference_solution: |
+  tar -xzf data.tar.gz
+  grep -o '"city": "[^"]*"' weather_2023.json | cut -d'"' -f4 | sort > cities23.txt
+  grep -o '"city": "[^"]*"' weather_2024.json | cut -d'"' -f4 | sort > cities24.txt
+  comm -12 cities23.txt cities24.txt > common.txt
+  echo "[" > sonuc.json
+  sed 's/.*/  {"city": "&"},/' common.txt | sed '$ s/,$//' >> sonuc.json
+  echo "]" >> sonuc.json
+
+outputs:
+  - {path: sonuc.json, kind: file}
+
+checks:
+  - {op: json_eq, path: sonuc.json, value: [{city: Ankara}, {city: Istanbul}]}
+
+metadata:
+  domain: bol
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0036
+    bundle: arsiv
+    tools:
+    - tar
+    - gzip
+    konu: hava-durumu-kayitlari
+    hedef: bol
+    girdi: json
+    kaynak: iki-dosya-capraz
+    cikti: json
+    kesif: dosyayi-bul
+    uslup: terse
+    direnc: bos-dosya
+    bukulme: tuzak-dosya
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

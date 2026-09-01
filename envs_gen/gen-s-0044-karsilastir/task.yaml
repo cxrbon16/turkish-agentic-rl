@@ -1,0 +1,68 @@
+id: gen-s-0044-karsilastir
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  store_a.csv ve store_b.csv dosyalarındaki ürünleri karşılaştırarak, her iki dosyada da bulunan ortak ürünleri ve bu ürünlerin ilk sütundaki değerlerini içeren bir JSON listesini ortak_urunler.json dosyasına yaz.
+
+setup: |
+  cat > store_a.csv <<'CSV'
+  prod1,5,Good
+  prod2,4,Okay
+  prod3,2,Bad
+  prod4,5,Great
+  prod5,3,Average
+  CSV
+
+  cat > store_b.csv <<'CSV'
+  prod2,4,Okay
+  prod4,5,Great
+  prod6,3,Fair
+  prod7,1,Poor
+  prod8,5,Perfect
+  CSV
+
+goal_tr: >
+  store_a.csv ve store_b.csv dosyalarındaki ürünleri karşılaştırarak her iki
+  dosyada da bulunan ortak ürünleri ve bunların ilk sütundaki değerlerini
+  içeren bir JSON listesini ortak_urunler.json dosyasına yaz.
+
+reference_solution: |
+  sort -t',' -k1,1 store_a.csv > a_sorted.csv
+  sort -t',' -k1,1 store_b.csv > b_sorted.csv
+  comm -12 a_sorted.csv b_sorted.csv | cut -d',' -f1 > common_ids.txt
+  awk 'BEGIN {print "["} {if (NR>1) printf ",\n"; printf "  \"%s\"", $0} END {print "\n]"}' common_ids.txt > ortak_urunler.json
+
+outputs:
+  - {path: ortak_urunler.json, kind: json}
+
+checks:
+  - {op: json_eq, path: ortak_urunler.json, value: [prod2, prod4]}
+
+metadata:
+  domain: karsilastir
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0044
+    bundle: kume-farki
+    tools:
+    - comm
+    - sort
+    konu: urun-yorumlari
+    hedef: karsilastir
+    girdi: csv
+    kaynak: iki-dosya-capraz
+    cikti: json
+    kesif: dolayli-hedef
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

@@ -1,0 +1,79 @@
+id: gen-s-0076-denetle
+split: single_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 8
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) logs_web.tsv ve logs_db.tsv dosyalarındaki zaman damgalarını karşılaştırın.
+  2) Her iki dosyada da ortak olan zaman damgalarını ve bunlara karşılık gelen seviyeleri belirleyin.
+  3) Bu ortak zaman damgalarını ve seviyeleri, virgülle ayrılmış şekilde audit.csv dosyasına kaydedin.
+
+setup: |
+  cat > logs_web.tsv <<'EOF'
+  timestamp	level	message
+  2023-10-01T10:00:01	INFO	Page load
+  2023-10-01T10:00:05	ERROR	Timeout
+  2023-10-01T10:00:10	DEBUG	Cache hit
+  2023-10-01T10:00:15	INFO	Page load
+  2023-10-01T10:00:20	ERROR	404 Not Found
+  EOF
+
+  cat > logs_db.tsv <<'EOF'
+  timestamp	level	message
+  2023-10-01T10:00:05	ERROR	Connection failed
+  2023-10-01T10:00:10	INFO	Query ok
+  2023-10-01T10:00:20	ERROR	Deadlock
+  2023-10-01T10:00:25	INFO	Backup start
+  2023-10-01T10:00:30	ERROR	Timeout
+  EOF
+
+goal_tr: >
+  logs_web.tsv ve logs_db.tsv dosyalarındaki zaman damgalarını
+  karşılaştırarak her iki dosyada da bulunan zaman damgalarını ve bunların
+  seviyelerini audit.csv dosyasına virgülle ayrılmış olarak kaydet.
+
+reference_solution: |
+  python3 -c "
+  with open('logs_web.tsv') as f1, open('logs_db.tsv') as f2:
+      lines1 = f1.readlines()[1:]
+      lines2 = f2.readlines()[1:]
+      web = {l.split('\t')[0]: l.split('\t')[1] for l in lines1}
+      db = {l.split('\t')[0]: l.split('\t')[1] for l in lines2}
+      common = sorted(set(web.keys()) & set(db.keys()))
+      with open('audit.csv', 'w') as out:
+          out.write('timestamp,web_level,db_level\n')
+          for t in common:
+              out.write(f'{t},{web[t]},{db[t]}\n')
+  "
+
+outputs:
+  - {path: audit.csv, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: audit.csv, value: ['timestamp,web_level,db_level', '2023-10-01T10:00:05,ERROR,ERROR', '2023-10-01T10:00:10,DEBUG,INFO', '2023-10-01T10:00:20,ERROR,ERROR']}
+
+metadata:
+  domain: denetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0076
+    bundle: python-veri
+    tools:
+    - python3
+    konu: sunucu-loglari
+    hedef: denetle
+    girdi: tsv
+    kaynak: iki-dosya-capraz
+    cikti: csv
+    kesif: yok
+    uslup: numarali-emir
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 1
+    image: verifiable-dataset/base:latest
+    metadata: {}

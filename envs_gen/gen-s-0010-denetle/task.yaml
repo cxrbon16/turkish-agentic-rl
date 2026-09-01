@@ -51,7 +51,7 @@ outputs:
   - {path: denetim_raporu.json, kind: json}
 
 checks:
-  - {op: file_content_eq, path: denetim_raporu.json, value: "[\n  {\n    \"file\": \"sensor_data/2023-01-01.json\",\n    \"timestamp\": \"08\",\n    \"value\": 08,\n    \"status\": \"ASIM\"\n  },\n  {\n    \"file\": \"sensor_data/2023-01-01.json\",\n    \"timestamp\": \"12\",\n    \"value\": 12,\n    \"status\": \"ASIM\"\n  },\n  {\n    \"file\": \"sensor_data/2023-01-01.json\",\n    \"timestamp\": \"16\",\n    \"value\": 16,\n    \"status\": \"ASIM\"\n  },\n  {\n    \"file\": \"sensor_data/2023-01-02.json\",\n    \"timestamp\": \"09\",\n    \"value\": 09,\n    \"status\": \"ASIM\"\n  },\n  {\n    \"file\": \"sensor_data/2023-01-02.json\",\n    \"timestamp\": \"13\",\n    \"value\": 13,\n    \"status\": \"ASIM\"\n  }\n]"}
+  - {op: file_lines_eq, path: denetim_raporu.json, value: ['[', '{', '"file": "sensor_data/2023-01-01.json",', '"timestamp": "08",', '"value": 08,', '"status": "ASIM"', '},', '{', '"file": "sensor_data/2023-01-01.json",', '"timestamp": "12",', '"value": 12,', '"status": "ASIM"', '},', '{', '"file": "sensor_data/2023-01-01.json",', '"timestamp": "16",', '"value": 16,', '"status": "ASIM"', '},', '{', '"file": "sensor_data/2023-01-02.json",', '"timestamp": "09",', '"value": 09,', '"status": "ASIM"', '},', '{', '"file": "sensor_data/2023-01-02.json",', '"timestamp": "13",', '"value": 13,', '"status": "ASIM"', '}', ']']}
 
 metadata:
   domain: denetle

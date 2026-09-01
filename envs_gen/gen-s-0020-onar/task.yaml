@@ -1,0 +1,68 @@
+id: gen-s-0020-onar
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  shifts_a.txt ve shifts_b.txt dosyalarındaki vardiya bilgilerini karşılaştırarak, her iki dosyada da vardiyası büyük-küçük harf farkı gözetmeksizin aynı olan çalışan sayısını sonuc.txt dosyasına yaz.
+
+setup: |
+  cat > shifts_a.txt <<'EOF'
+  EMP001:Morning
+  EMP002:Night
+  EMP003:Evening
+  EMP004:Morning
+  EOF
+
+  cat > shifts_b.txt <<'EOF'
+  EMP001:night
+  EMP002:morning
+  EMP003:evening
+  EMP004:night
+  EOF
+
+goal_tr: >
+  shifts_a.txt ve shifts_b.txt dosyalarındaki vardiya bilgilerini
+  karşılaştırarak, her iki dosyada da vardiyası büyük-küçük harf farkı
+  gözetmeksizin aynı olan çalışan sayısını sonuc.txt dosyasına yaz.
+
+reference_solution: |
+  tr '[:upper:]' '[:lower:]' < shifts_a.txt > a_low.txt
+  tr '[:upper:]' '[:lower:]' < shifts_b.txt > b_low.txt
+  sed 's/:/ /' a_low.txt > a_space.txt
+  sed 's/:/ /' b_low.txt > b_space.txt
+  comm -12 <(sort a_space.txt) <(sort b_space.txt) | wc -l > sonuc.txt
+  # Not: comm ve wc kullanıldı. Seed'e göre tüm araçlar kullanılabilir.
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '1'}
+
+metadata:
+  domain: onar
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0020
+    bundle: metin-duzenle
+    tools:
+    - sed
+    - tr
+    konu: personel-vardiyalari
+    hedef: onar
+    girdi: duz-metin
+    kaynak: iki-dosya-capraz
+    cikti: tek-sayi
+    kesif: dosyayi-bul
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: yok
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

@@ -1,0 +1,79 @@
+id: gen-s-0042-birlestir
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  data dizinindeki part1.tsv ve part2.tsv dosyalarını item_id sütunu üzerinden birleştirerek, her iki dosyada da bulunan benzersiz item_id sayısını sonuc.txt dosyasına yazın.
+
+  Şu şartlar sağlanmalı:
+  - sonuc.txt dosyası sadece bir rakam içermelidir.
+
+setup: |
+  cat > part1.tsv <<'EOF'
+  item_id	name
+  101	Wrench
+  102	Hammer
+  103	Screwdriver
+  104	Pliers
+  105	Saw
+  EOF
+
+  cat > part2.tsv <<'EOF'
+  item_id	stock
+  101	50
+  103	20
+  104	15
+  106	30
+  107	10
+  EOF
+
+  mkdir -p data
+  mv part1.tsv data/
+  mv part2.tsv data/
+
+goal_tr: >
+  data dizinindeki iki tsv dosyasini item_id üzerinden birlestirerek, her
+  iki dosyada da bulunan benzersiz item_id sayisini sonuc.txt dosyasına
+  sadece rakam olarak yaz.
+
+reference_solution: |
+  find data -name "*.tsv" | sort > files.txt
+  file1=$(head -n 1 files.txt)
+  file2=$(tail -n 1 files.txt)
+  sort -k1,1 $file1 > sorted1.tsv
+  sort -k1,1 $file2 > sorted2.tsv
+  join -t$'\t' -1 1 -2 1 sorted1.tsv sorted2.tsv | wc -l > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '4'}
+
+metadata:
+  domain: birlestir
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0042
+    bundle: birlestir
+    tools:
+    - join
+    - sort
+    konu: envanter
+    hedef: birlestir
+    girdi: tsv
+    kaynak: iki-dosya-capraz
+    cikti: tek-sayi
+    kesif: dosyayi-bul
+    uslup: kabul-kriteri
+    direnc: yok
+    bukulme: olcek
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

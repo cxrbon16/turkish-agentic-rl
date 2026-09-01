@@ -1,0 +1,204 @@
+uc dogrulandi: https://t3ai.baykartech.net/Jailbreak/v1  model=t3ai-v2  anahtar=OPENAI_API_KEY (.env)  [.env: C:\Users\PC_2849_YD26\dev\turkish-agentic-rl\.env]
+uc: https://t3ai.baykartech.net/Jailbreak/v1   anahtar: OPENAI_API_KEY (.env)   istek araligi: 0.3sn
+model=t3ai-v2  99 task prompt bekliyor
+
+[1/99] gen-s-0000-ozetle  uslup=duz-hedef
+    YAZILDI (1. denemede)  sensors.txt dosyasındaki her satırın ilk 10 karakterini ve 13-16. karakterlerini ayırıp 
+[2/99] gen-s-0001-donustur  uslup=numarali-emir
+    YAZILDI (1. denemede)  1) shipments.log dosyasındaki her satırı işleyerek, durum değerine göre adlandırılmış kl
+[3/99] gen-s-0002-yeniden-duzenle  uslup=duz-hedef
+    YAZILDI (1. denemede)  patients.csv ve appointments.csv dosyalarını kullanarak, her hastanın adına göre oluştur
+[4/99] gen-s-0003-denetle  uslup=kisit-sakli
+    YAZILDI (1. denemede)  entries dizini altındaki tüm dosyalarda "ERROR" içeren satırları bulun. Bu satırları yıl
+[5/99] gen-s-0004-grupla-say  uslup=baglam-gomulu
+    YAZILDI (1. denemede)  Lojistik biriminden gelen son raporlar, gönderi süreçlerindeki gecikmelerin belirli bölg
+[6/99] gen-s-0005-onar  uslup=duz-hedef
+    YAZILDI (1. denemede)  orders dizinindeki sabit genişlikli dosyalarda bulunan ve fiyatı 15.00'den büyük olan si
+[7/99] gen-s-0006-toplu-yeniden-adlandir  uslup=kabul-kriteri
+    YAZILDI (1. denemede)  library dizinindeki tüm alt dizinlerde bulunan .ini dosyalarını, içlerindeki title değer
+[8/99] gen-s-0007-donustur  uslup=duz-hedef
+    YAZILDI (1. denemede)  shipments.ini dosyasındaki her bir bölüm için müşteri adı ile adlandırılan bir dizin olu
+[9/99] gen-s-0008-donustur  uslup=duz-hedef
+    YAZILDI (1. denemede)  books dizinindeki tüm .ini dosyalarının ikinci satırlarında yer alan yazar isimlerini (a
+[10/99] gen-s-0009-karsilastir  uslup=terse
+    YAZILDI (1. denemede)  logs1.csv ve logs2.csv dosyalarını karşılaştır. Sadece logs1.csv içinde olan satırları J
+[11/99] gen-s-0010-ayikla  uslup=numarali-emir
+    YAZILDI (1. denemede)  1) data_jan.txt, data_feb.txt ve data_mar.txt dosyalarındaki sabit genişlikli verileri a
+[12/99] gen-s-0011-ozetle  uslup=numarali-emir
+    YAZILDI (1. denemede)  1) inventory.txt dosyasındaki Item ve Quantity sütunlarını birleştirin.
+[13/99] gen-s-0012-arsivle  uslup=terse
+    YAZILDI (1. denemede)  vardiyalar dizinindeki JSON dosyalarını vardiyalar.tar.gz adıyla arşivleyip sıkıştır.
+[14/99] gen-s-0013-denetle  uslup=numarali-emir
+    YAZILDI (1. denemede)  1) orders.csv dosyasındaki siparişleri analiz ederek en az iki kez sipariş edilen ürünle
+[15/99] gen-s-0014-ozetle  uslup=baglam-gomulu
+    YAZILDI (1. denemede)  Kütüphanedeki kitapları düzenlemek için uzun bir gün geçirdim ve verileri daha iyi organ
+[16/99] gen-s-0015-denetle  uslup=numarali-emir
+    YAZILDI (1. denemede)  1) measurements dizinindeki tüm CSV dosyalarını bulun.
+[17/99] gen-s-0016-bol  uslup=baglam-gomulu
+    YAZILDI (1. denemede)  Bugün kütüphane arşivindeki kitap listelerini düzenlemeye çalışıyorum, ancak dosya boyut
+[18/99] gen-s-0017-onar  uslup=kisit-sakli
+    YAZILDI (1. denemede)  shifts.csv dosyasındaki Shift sütununda 'Day' olan satırların sayısını hesaplayın ve bu 
+[19/99] gen-s-0018-ozetle  uslup=terse
+    YAZILDI (1. denemede)  data/students.txt ve data/grades.txt dosyalarını kullanarak öğrenci ID ve notlarını içer
+[20/99] gen-s-0019-ayikla  uslup=kabul-kriteri
+    YAZILDI (1. denemede)  data/sensors dizinindeki tüm .csv dosyalarını işle. Bu dosyaların başlık satırlarını har
+[21/99] gen-s-0020-onar  uslup=duz-hedef
+    YAZILDI (1. denemede)  shifts_a.txt ve shifts_b.txt dosyalarındaki vardiya bilgilerini karşılaştırarak, her iki
+[22/99] gen-s-0021-ozetle  uslup=kisit-sakli
+    YAZILDI (1. denemede)  inventory.csv dosyasının ilk 3 satırı ile son 3 satırında bulunan adetlerin toplamını he
+[23/99] gen-s-0022-bol  uslup=baglam-gomulu
+    YAZILDI (1. denemede)  Bugün şirketle ilgili eski veri formatlarını düzenlemekle uğraşıyorum. Sipariş kayıtları
+[24/99] gen-s-0023-denetle  uslup=terse
+    YAZILDI (1. denemede)  logs dizinindeki .ini dosyalarını tara. cpu_load değeri 50'den büyük olan sunucuları, do
+[25/99] gen-s-0024-yeniden-duzenle  uslup=baglam-gomulu
+    YAZILDI (1. denemede)  Bugün laboratuvar verilerini düzenlemekle uğraşıyorum ve sensör kayıtlarının düzensiz ol
+[26/99] gen-s-0025-denetle  uslup=duz-hedef
+    YAZILDI (1. denemede)  books_data dizinindeki .ini uzantılı dosyaların içindeki toplam satır sayısını hesaplayı
+[27/99] gen-s-0026-grupla-say  uslup=terse
+    YAZILDI (1. denemede)  orders.ini dosyasındaki siparişleri items.ini ile eşleştirip sadece 'Main' kategorisinde
+[28/99] gen-s-0027-denetle  uslup=numarali-emir
+    YAZILDI (1. denemede)  1) weather_logs/station_a ve weather_logs/station_b dizinlerindeki dosyaları inceleyerek
+[29/99] gen-s-0028-yeniden-duzenle  uslup=kabul-kriteri
+    YAZILDI (1. denemede)  shifts/day ve shifts/night dizinlerindeki tüm .txt dosyalarını, isimlerini koruyarak arc
+[30/99] gen-s-0029-donustur  uslup=terse
+    YAZILDI (1. denemede)  data1.txt ve data2.txt dosyalarındaki tutarların toplamını hesaplayıp sonuc.txt dosyasın
+[31/99] gen-s-0030-bol  uslup=baglam-gomulu
+    YAZILDI (1. denemede)  Bugün ofiste işler oldukça yoğun, sürekli yeni sevkiyatlar geliyor ve verileri düzenleme
+[32/99] gen-s-0031-denetle  uslup=duz-hedef
+    YAZILDI (1. denemede)  orders dizinindeki tüm .ini dosyalarını bulun, her bir dosyanın satır sayısını hesaplayı
+[33/99] gen-s-0032-birlestir  uslup=numarali-emir
+    YAZILDI (1. denemede)  1) hospital/patients dizinindeki JSON dosyaları ile hospital/appointments/appts.csv dosy
+[34/99] gen-s-0033-arsivle  uslup=numarali-emir
+    YAZILDI (1. denemede)  1) shifts/2023 ve shifts/2024 dizinlerindeki tüm .ini dosyalarını arşivleyin.
+[35/99] gen-s-0034-ozetle  uslup=kisit-sakli
+    YAZILDI (1. denemede)  inventory/item_list.txt dosyasındaki ID’ler ile inventory/log_entries.txt dosyasındaki I
+[36/99] gen-s-0035-ayikla  uslup=duz-hedef
+    YAZILDI (1. denemede)  weather.log dosyasındaki her satırdan şehir ismini ve sıcaklık değerini ayıklayarak, her
+[37/99] gen-s-0036-bol  uslup=terse
+    YAZILDI (1. denemede)  data.tar.gz içindeki JSON dosyalarını çıkarın ve her iki dosyada da bulunan şehirleri te
+[38/99] gen-s-0037-ozetle  uslup=terse
+    YAZILDI (1. denemede)  logs dizinindeki sabit genişlikli log dosyalarından tarih ve mesaj kısımlarını ayıklayıp
+[39/99] gen-s-0038-toplu-yeniden-adlandir  uslup=baglam-gomulu
+    YAZILDI (1. denemede)  Bugün şirketin finansal kayıtlarını düzenlemem gerekiyor çünkü Ocak ve Şubat aylarına ai
+[40/99] gen-s-0039-ozetle  uslup=kisit-sakli
+    YAZILDI (1. denemede)  reviews.txt dosyasındaki her bir yorumun kaç kez tekrarlandığını hesaplayın. En çok tekr
+[41/99] gen-s-0040-donustur  uslup=numarali-emir
+    YAZILDI (1. denemede)  1) server1.csv ve server2.csv dosyalarındaki ortak mesajları bulun.
+[42/99] gen-s-0041-birlestir  uslup=duz-hedef
+    YAZILDI (1. denemede)  staff.txt ve shifts.txt dosyalarındaki personel ID'lerini eşleştirerek isimleri ve vardi
+[43/99] gen-s-0042-birlestir  uslup=kabul-kriteri
+    YAZILDI (1. denemede)  data dizinindeki part1.tsv ve part2.tsv dosyalarını item_id sütunu üzerinden birleştirer
+[44/99] gen-s-0043-dogrula  uslup=duz-hedef
+    YAZILDI (1. denemede)  appointments dizinindeki tüm dosyaların içeriğini birleştirin ve her satırdaki virgüller
+[45/99] gen-s-0044-karsilastir  uslup=duz-hedef
+    YAZILDI (1. denemede)  store_a.csv ve store_b.csv dosyalarındaki ürünleri karşılaştırarak, her iki dosyada da b
+[46/99] gen-s-0045-ayikla  uslup=duz-hedef
+    YAZILDI (1. denemede)  inventory.ini dosyasındaki her bölümün id değerini alıp, bu değerlerin ters çevrilmiş ha
+[47/99] gen-s-0046-donustur  uslup=duz-hedef
+    YAZILDI (1. denemede)  accounts.txt ve transactions.txt dosyalarını birleştirerek, her bir işlemin hesap adını 
+[48/99] gen-s-0047-ozetle  uslup=terse
+    YAZILDI (1. denemede)  logs/server_logs.tsv dosyasındaki ERROR içeren satırların sayısını sonuc.txt dosyasına s
+[49/99] gen-s-0048-ozetle  uslup=duz-hedef
+    YAZILDI (1. denemede)  weather_data dizinindeki .ini uzantılı dosyaları bulun ve her bir dosyadaki toplam satır
+[50/99] gen-s-0049-onar  uslup=duz-hedef
+    YAZILDI (1. denemede)  data/patient_records dizinindeki tüm CSV dosyalarından status değeri scheduled olan satı
+[51/99] gen-s-0050-denetle  uslup=baglam-gomulu
+    YAZILDI (1. denemede)  Okul kayıt sistemindeki verilerin doğruluğunu kontrol etmem gerekiyor çünkü bazı öğrenci
+[52/99] gen-s-0051-donustur  uslup=numarali-emir
+    YAZILDI (1. denemede)  1) shipments.ini dosyasındaki tüm şehir ve durum bilgilerini çıkarın.
+[53/99] gen-s-0052-onar  uslup=duz-hedef
+    YAZILDI (1. denemede)  entries.tsv dosyasındaki harcamaları kategorilere göre ayırarak, her kategorinin toplam 
+[54/99] gen-s-0053-ayikla  uslup=duz-hedef
+    YAZILDI (1. denemede)  ledger.txt dosyasındaki sabit genişlikli verilerden tarih ve açıklama alanlarını ayıklay
+[55/99] gen-s-0054-donustur  uslup=kabul-kriteri
+    YAZILDI (1. denemede)  shifts_a.ini ve shifts_b.ini dosyalarında yer alan ortak shift değerlerinin sayısını hes
+[56/99] gen-s-0055-grupla-say  uslup=kisit-sakli
+    YAZILDI (1. denemede)  grades.tsv dosyasındaki notları gruplandırarak her notun kaç kez geçtiğini hesapla ve so
+[57/99] gen-s-0056-karsilastir  uslup=kabul-kriteri
+    YAZILDI (1. denemede)  patients_a.txt ve patients_b.txt dosyalarındaki ortak hasta isimlerini belirleyip data/s
+[58/99] gen-s-0057-ozetle  uslup=duz-hedef
+    YAZILDI (1. denemede)  server logs dizinindeki .json uzantılı dosyalarda bulunan ERROR seviyesindeki kayıtların
+[59/99] gen-s-0058-ozetle  uslup=duz-hedef
+    YAZILDI (1. denemede)  orders dizinindeki tüm alt dizinlerde bulunan dosyaların toplam satır sayısını hesaplayı
+[60/99] gen-s-0059-arsivle  uslup=numarali-emir
+    YAZILDI (1. denemede)  1) appointments.tar arşivinden sadece .json uzantılı dosyaları, appointments/ dizin yapı
+[61/99] gen-s-0060-donustur  uslup=duz-hedef
+    YAZILDI (1. denemede)  weather_data dizinindeki her bir sabit genişlikli dosyanın son sütununu ters çevirin ve 
+[62/99] gen-s-0061-grupla-say  uslup=duz-hedef
+    YAZILDI (1. denemede)  data dizinindeki alt dizinlerde bulunan weather.ini dosyalarındaki condition değerlerini
+[63/99] gen-s-0063-bol  uslup=numarali-emir
+    YAZILDI (1. denemede)  1) "server logs.txt" dosyasını bulun.
+[64/99] gen-s-0064-ayikla  uslup=terse
+    YAZILDI (1. denemede)  weather_data/2023 dizinindeki .ini dosyalarından temp bölümündeki avg değerlerini çıkarı
+[65/99] gen-s-0065-dogrula  uslup=numarali-emir
+    YAZILDI (1. denemede)  1) data dizinindeki tüm CSV dosyalarını inceleyin.
+[66/99] gen-s-0066-birlestir  uslup=kabul-kriteri
+    YAZILDI (1. denemede)  employees.json ve shifts.json dosyalarındaki verileri id ve emp_id alanları üzerinden eş
+[67/99] gen-s-0067-sirala-sec  uslup=duz-hedef
+    YAZILDI (1. denemede)  log*.tsv dosyalarındaki ERROR satırlarının üçüncü kolonlarını al, alfabetik olarak sıral
+[68/99] gen-s-0068-donustur  uslup=numarali-emir
+    YAZILDI (1. denemede)  1) reviews.txt dosyasındaki her satırı ReviewID, User, Rating ve Comment alanlarını içer
+[69/99] gen-s-0069-ayikla  uslup=numarali-emir
+    YAZILDI (1. denemede)  1) ledger.txt dosyasındaki tekrarlanan satırları belirleyin.
+[70/99] gen-s-0070-ozetle  uslup=duz-hedef
+    YAZILDI (1. denemede)  weather_data dizinindeki tsv dosyalarının ilk ve son satırlarını ayıklayarak, her bir do
+[71/99] gen-s-0071-bol  uslup=kisit-sakli
+    YAZILDI (1. denemede)  book*.txt dosyalarındaki her kitabın Title ve Author bilgilerini çıkararak books_process
+[72/99] gen-s-0072-onar  uslup=kisit-sakli
+    YAZILDI (1. denemede)  appointments.txt dosyasındaki randevular ile cancellations.txt dosyasındaki iptalleri ka
+[73/99] gen-s-0073-ozetle  uslup=terse
+    YAZILDI (1. denemede)  sensors.csv dosyasının ilk 3 ve son 3 satırını birleştirip summary.csv dosyasına yaz.
+[74/99] gen-s-0074-karsilastir  uslup=terse
+    YAZILDI (1. denemede)  students a.txt ve students b.txt dosyalarını karşılaştır; ortak satırları same.txt'ye, s
+[75/99] gen-s-0075-yeniden-duzenle  uslup=baglam-gomulu
+    YAZILDI (1. denemede)  Bugün ofiste müşteri geri bildirimlerini analiz etmek için bazı verileri bir araya getir
+[76/99] gen-s-0076-denetle  uslup=numarali-emir
+    YAZILDI (1. denemede)  1) logs_web.tsv ve logs_db.tsv dosyalarındaki zaman damgalarını karşılaştırın.
+[77/99] gen-s-0077-ayikla  uslup=duz-hedef
+    YAZILDI (1. denemede)  entries_*.ini dosyalarının her birinden ilk ve son satırı ayıklayarak entries.csv dosyas
+[78/99] gen-s-0078-yeniden-duzenle  uslup=kisit-sakli
+    YAZILDI (1. denemede)  orders.json dosyasındaki her siparişin miktarını 10 ile çarparak toplam miktarı hesapla 
+[79/99] gen-s-0079-ozetle  uslup=duz-hedef
+    YAZILDI (1. denemede)  server.log dosyasındaki her satırın ilk 10 karakterinden oluşan tarih kısmını ve üçüncü 
+[80/99] gen-s-0080-denetle  uslup=numarali-emir
+    YAZILDI (1. denemede)  1) data/students_a.txt ve data/students_b.txt dosyalarını karşılaştırarak, her iki dosya
+[81/99] gen-s-0081-karsilastir  uslup=numarali-emir
+    YAZILDI (1. denemede)  1) warehouse1.csv ve warehouse2.csv dosyalarında bulunan ortak ürün ID'lerini belirleyin
+[82/99] gen-s-0082-birlestir  uslup=kisit-sakli
+    YAZILDI (1. denemede)  inventory/items/data ve inventory/prices/data dosyalarındaki verileri birleştirerek, her
+[83/99] gen-s-0083-denetle  uslup=terse
+    YAZILDI (1. denemede)  students_a.tsv ve students_b.tsv dosyalarını karşılaştır. Her iki dosyada da bulunan anc
+[84/99] gen-s-0084-ayikla  uslup=kisit-sakli
+    YAZILDI (1. denemede)  books ve books archive dizinlerindeki tsv dosyalarından, sadece her iki dosyada da bulun
+[85/99] gen-s-0085-ayikla  uslup=duz-hedef
+    YAZILDI (1. denemede)  logs dizini altındaki tüm server.csv dosyalarında bulunan ERROR seviyesindeki mesajları 
+[86/99] gen-s-0086-donustur  uslup=duz-hedef
+    YAZILDI (1. denemede)  inventory.log dosyasında BOM_ID değeri 12345 olan satırların toplam QTY miktarını hesapl
+[87/99] gen-s-0087-dogrula  uslup=terse
+    YAZILDI (1. denemede)  sensor_a.txt ve sensor_b.txt dosyalarını karşılaştır. Her iki dosyada ortak olan satırla
+[88/99] gen-s-0088-arsivle  uslup=kabul-kriteri
+    YAZILDI (1. denemede)  library dizinindeki tüm .csv dosyalarını bulup bunları library_archive.tar adında bir ar
+[89/99] gen-s-0089-ayikla  uslup=duz-hedef
+    YAZILDI (1. denemede)  shifts.csv dosyasındaki Shift sütunu 'Day' olan çalışanların isimlerini, her satırda bir
+[90/99] gen-s-0090-karsilastir  uslup=kabul-kriteri
+    YAZILDI (1. denemede)  students/math/grades.tsv ve students/physics/grades.tsv dosyalarını karşılaştırarak, her
+[91/99] gen-s-0091-denetle  uslup=terse
+    YAZILDI (1. denemede)  data dizinindeki tüm dosyalarda bulunan tekrarlanan satırları kaldırıp benzersiz satırla
+[92/99] gen-s-0092-donustur  uslup=duz-hedef
+    YAZILDI (1. denemede)  logs.tar.gz dosyasını açın ve logs_web.txt ile logs_db.txt dosyalarındaki ERROR ve DB_ER
+[93/99] gen-s-0093-onar  uslup=baglam-gomulu
+    YAZILDI (1. denemede)  Bugün hastane yönetim sistemi verilerini düzenlemem gerekiyor. Randevu kayıtları farklı 
+[94/99] gen-s-0094-donustur  uslup=baglam-gomulu
+    YAZILDI (1. denemede)  Bugün depodaki envanteri düzenlemekle uğraşıyorum ve bazı ürünlerin stok durumlarını hız
+[95/99] gen-s-0095-ayikla  uslup=kabul-kriteri
+    YAZILDI (1. denemede)  weather_*.log dosyalarında TEMP:15 ile başlayan (yani 15.0 ve üzeri) satırların sayısını
+[96/99] gen-s-0096-yeniden-duzenle  uslup=numarali-emir
+    YAZILDI (1. denemede)  1) weather_logs.json dosyasındaki geçersiz sıcaklık değerlerini (INVALID veya NA) 20.0 i
+[97/99] gen-s-0097-donustur  uslup=kabul-kriteri
+    YAZILDI (1. denemede)  shifts.tsv dosyasındaki isimleri tersine çevirin ve bunları shift_id ile virgülle ayırar
+[98/99] gen-s-0098-ayikla  uslup=terse
+    YAZILDI (1. denemede)  inventory.ini dosyasındaki her satırın eşittir işaretinden sonraki değerini ters çevirer
+[99/99] gen-s-0099-sirala-sec  uslup=baglam-gomulu
+    YAZILDI (1. denemede)  Sunucudaki log dosyalarını incelerken birçok farklı dizin altında JSON formatında kayıtl
+
+YAZILAN: 99/99

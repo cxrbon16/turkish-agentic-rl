@@ -1,0 +1,73 @@
+id: gen-s-0090-karsilastir
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  students/math/grades.tsv ve students/physics/grades.tsv dosyalarını karşılaştırarak, her iki dosyada da bulunan ortak satırları ortak_satirlar.txt dosyasına yaz.
+
+  Şu şartlar sağlanmalı:
+  - Sadece her iki dosyada da birebir aynı olan satırlar ortak_satirlar.txt dosyasına kaydedilmeli.
+  - Çıktı dosyası sadece bu ortak satırları içermeli.
+
+setup: |
+  mkdir -p students/math students/physics
+  cat > students/math/grades.tsv <<'EOF'
+  student_id	grade
+  101	85
+  102	90
+  103	78
+  105	92
+  EOF
+
+  cat > students/physics/grades.tsv <<'EOF'
+  student_id	grade
+  101	88
+  102	91
+  104	80
+  105	95
+  EOF
+
+goal_tr: >
+  students dizini altındaki math ve physics klasörlerinde bulunan grades.tsv
+  dosyalarını karşılaştırarak, her iki dosyada da tam olarak aynı olan
+  satırları ortak_satirlar.txt dosyasına yaz.
+
+reference_solution: |
+  sort students/math/grades.tsv > math_sorted.tsv
+  sort students/physics/grades.tsv > physics_sorted.tsv
+  comm -12 math_sorted.tsv physics_sorted.tsv > ortak_satirlar.txt
+  diff math_sorted.tsv physics_sorted.tsv > /dev/null || true
+
+outputs:
+  - {path: ortak_satirlar.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: ortak_satirlar.txt, value: "student_id\tgrade"}
+
+metadata:
+  domain: karsilastir
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0090
+    bundle: karsilastir
+    tools:
+    - diff
+    - comm
+    konu: ogrenci-notlari
+    hedef: karsilastir
+    girdi: tsv
+    kaynak: dizin-agaci
+    cikti: satir-listesi
+    kesif: veriye-bak
+    uslup: kabul-kriteri
+    direnc: yok
+    bukulme: yok
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

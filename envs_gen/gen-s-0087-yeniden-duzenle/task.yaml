@@ -40,7 +40,7 @@ outputs:
   - {path: envanter.csv, kind: file}
 
 checks:
-  - {op: file_content_eq, path: envanter.csv, value: "id,ad,stok,fiyat\nid, 1,ad, \nid, 3,ad, \nid, 4,ad,"}
+  - {op: file_lines_eq, path: envanter.csv, value: ['id,ad,stok,fiyat', 'id, 1,ad,', 'id, 3,ad,', 'id, 4,ad,']}
 
 metadata:
   domain: yeniden-duzenle

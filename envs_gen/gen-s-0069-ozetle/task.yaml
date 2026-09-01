@@ -49,8 +49,8 @@ outputs:
 checks:
   - {op: dir_entries_eq, path: output/temperatures, value: [ankara_1.txt.txt, ankara_2.txt.txt, ankara_3.txt.txt, istanbul_1.txt.txt, istanbul_2.txt.txt, istanbul_3.txt.txt, izmir_1.txt.txt, izmir_2.txt.txt, izmir_3.txt.txt]}
   - {op: dir_entries_eq, path: output/weather, value: [ankara_1.txt.txt, ankara_2.txt.txt, ankara_3.txt.txt, istanbul_1.txt.txt, istanbul_2.txt.txt, istanbul_3.txt.txt, izmir_1.txt.txt, izmir_2.txt.txt, izmir_3.txt.txt]}
-  - {op: file_content_eq, path: output/all_temperatures.txt, value: "istanbul\tistanbul\tistanbul\tankara\tankara\tankara\tizmir\tizmir\tizmir\n20\t25\t18\t22\t19\t24\t28\t27\t20\nsunny\trainy\tcloudy\tsunny\tcloudy\trainy\tsunny\tsunny\trainy\nhigh\tmedium\tlow\tmedium\thigh\tmedium\thigh\tmedium\tlow\n\t\t\t\tcorrupt"}
-  - {op: file_content_eq, path: output/all_weather.txt, value: "istanbul\tistanbul\tistanbul\tankara\tankara\tankara\tizmir\tizmir\tizmir\n20\t25\t18\t22\t19\t24\t28\t27\t20\nsunny\trainy\tcloudy\tsunny\tcloudy\trainy\tsunny\tsunny\trainy\nhigh\tmedium\tlow\tmedium\thigh\tmedium\thigh\tmedium\tlow\n\t\t\t\tcorrupt"}
+  - {op: file_lines_eq, path: output/all_temperatures.txt, value: ["istanbul\tistanbul\tistanbul\tankara\tankara\tankara\tizmir\tizmir\tizmir", "20\t25\t18\t22\t19\t24\t28\t27\t20", "sunny\trainy\tcloudy\tsunny\tcloudy\trainy\tsunny\tsunny\trainy", "high\tmedium\tlow\tmedium\thigh\tmedium\thigh\tmedium\tlow", corrupt]}
+  - {op: file_lines_eq, path: output/all_weather.txt, value: ["istanbul\tistanbul\tistanbul\tankara\tankara\tankara\tizmir\tizmir\tizmir", "20\t25\t18\t22\t19\t24\t28\t27\t20", "sunny\trainy\tcloudy\tsunny\tcloudy\trainy\tsunny\tsunny\trainy", "high\tmedium\tlow\tmedium\thigh\tmedium\thigh\tmedium\tlow", corrupt]}
 
 metadata:
   domain: ozetle

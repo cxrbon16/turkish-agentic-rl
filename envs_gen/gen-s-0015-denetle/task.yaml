@@ -1,0 +1,71 @@
+id: gen-s-0015-denetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) measurements dizinindeki tüm CSV dosyalarını bulun.
+  2) Her bir CSV dosyasının satır sayısını ve dosya adını toplam_satirlar.csv dosyasına yazın.
+
+setup: |
+  mkdir -p measurements
+  cat > measurements/sensor1.csv <<'EOF'
+  timestamp,value
+  1625097600,23.5
+  1625097660,24.1
+  1625097720,23.8
+  EOF
+  cat > measurements/sensor2.csv <<'EOF'
+  timestamp,value
+  1625097600,15.2
+  1625097660,15.5
+  1625097720,15.1
+  EOF
+  cat > measurements/sensor3.csv <<'EOF'
+  timestamp,value
+  1625097600,1012.5
+  1625097660,1013.1
+  1625097720,1012.8
+  EOF
+  touch measurements/README.txt
+  touch measurements/meta.log
+
+goal_tr: >
+  measurements dizinindeki tüm CSV dosyalarını bul ve her bir dosyanın satır
+  sayısını dosya adı ile birlikte toplam_satirlar.csv dosyasına yaz
+
+reference_solution: |
+  find measurements -name "*.csv" -exec wc -l {} + | grep -v "total" > toplam_satirlar.csv
+
+outputs:
+  - {path: toplam_satirlar.csv, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: toplam_satirlar.csv, value: [4 measurements/sensor2.csv, 4 measurements/sensor3.csv, 4 measurements/sensor1.csv]}
+
+metadata:
+  domain: denetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0015
+    bundle: dizin-istatistik
+    tools:
+    - wc
+    - find
+    konu: sensor-olcumleri
+    hedef: denetle
+    girdi: csv
+    kaynak: cok-dosya
+    cikti: csv
+    kesif: yok
+    uslup: numarali-emir
+    direnc: bom
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

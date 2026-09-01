@@ -1,0 +1,74 @@
+id: gen-s-0054-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  shifts_a.ini ve shifts_b.ini dosyalarında yer alan ortak shift değerlerinin sayısını hesaplayın ve bu sayıyı result.txt dosyasına yazın.
+
+  Şu şartlar sağlanmalı:
+  - result.txt dosyası sadece ortak shift değerlerinin sayısını içermelidir.
+  - Hesaplama, her iki dosyada da bulunan aynı shift değerlerini temel almalıdır.
+
+setup: |
+  cat > shifts_a.ini <<'EOF'
+  [Monday]
+  shift1=08:00-16:00
+  shift2=16:00-00:00
+  [Tuesday]
+  shift1=08:00-16:00
+  [Wednesday]
+  shift1=08:00-16:00
+  EOF
+  cat > shifts_b.ini <<'EOF'
+  [Monday]
+  shift1=08:00-16:00
+  shift3=00:00-08:00
+  [Wednesday]
+  shift1=08:00-16:00
+  shift2=16:00-00:00
+  EOF
+  cat > empty.ini <<'EOF'
+  EOF
+
+goal_tr: >
+  shifts_a.ini ve shifts_b.ini dosyalarındaki ortak shift değerlerinin
+  sayısını hesaplayıp result.txt dosyasına yazın.
+
+reference_solution: |
+  tar -cf - shifts_a.ini shifts_b.ini | gzip -c > shifts.tar.gz
+  gzip -d < shifts.tar.gz | tar -xf -
+  comm -12 <(grep '=' shifts_a.ini | cut -d'=' -f2 | sort) <(grep '=' shifts_b.ini | cut -d'=' -f2 | sort) | wc -l > result.txt
+
+outputs:
+  - {path: result.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: result.txt, value: '3'}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0054
+    bundle: arsiv
+    tools:
+    - tar
+    - gzip
+    konu: personel-vardiyalari
+    hedef: donustur
+    girdi: ini
+    kaynak: iki-dosya-capraz
+    cikti: tek-sayi
+    kesif: veriye-bak
+    uslup: kabul-kriteri
+    direnc: bos-dosya
+    bukulme: olcek
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

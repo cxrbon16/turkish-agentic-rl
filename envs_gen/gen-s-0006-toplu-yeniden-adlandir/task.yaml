@@ -1,0 +1,90 @@
+id: gen-s-0006-toplu-yeniden-adlandir
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  library dizinindeki tüm alt dizinlerde bulunan .ini dosyalarını, içlerindeki title değerine göre yeniden adlandırın ve adının değiştirildiği toplam dosya sayısını count.txt dosyasına yazın.
+
+  Şu şartlar sağlanmalı:
+  - Yeniden adlandırma işlemi, her .ini dosyasının içindeki title değerine göre yapılmalıdır.
+  - Sadece .ini dosyaları işleme alınmalıdır.
+  - Adı değiştirilen toplam dosya sayısı count.txt dosyasına kaydedilmelidir.
+  - Başlangıçtaki tüm alt dizinler taranmalıdır.
+
+setup: |
+  mkdir -p library/fiction
+  mkdir -p library/nonfiction
+  cat > library/fiction/old_title_1.ini <<'EOF'
+  title=The Great Gatsby
+  author=F. Scott Fitzgerald
+  EOF
+  cat > library/fiction/old_title_2.ini <<'EOF'
+  title=1984
+  author=George Orwell
+  EOF
+  cat > library/nonfiction/old_title_3.ini <<'EOF'
+  title=Sapiens
+  author=Yuval Noah Harari
+  EOF
+  cat > library/nonfiction/old_title_4.ini <<'EOF'
+  title=Cosmos
+  author=Carl Sagan
+  EOF
+  touch library/fiction/extra.txt
+  touch library/nonfiction/meta.log
+
+goal_tr: >
+  library dizinindeki tüm alt dizinlerde bulunan .ini dosyalarını, içinde
+  bulunan title değerine göre yeniden adlandır ve toplam kaç dosyanın adının
+  değiştiğini count.txt dosyasına yaz.
+
+reference_solution: |
+  find library -name "*.ini" -type f | while read -r file; do
+      dir=$(dirname "$file")
+      base=$(basename "$file")
+      title=$(grep '^title=' "$file" | cut -d'=' -f2-)
+      if [ -n "$title" ]; then
+          new_name="${title}.ini"
+          mv "$file" "$dir/$new_name"
+      fi
+  done
+  count=$(find library -type f | wc -l)
+  echo "$count" > count.txt
+
+outputs:
+  - {path: count.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: count.txt, value: '6'}
+  - {op: not_exists, path: library/fiction/old_title_1.ini}
+  - {op: not_exists, path: library/fiction/old_title_2.ini}
+  - {op: not_exists, path: library/nonfiction/old_title_3.ini}
+  - {op: not_exists, path: library/nonfiction/old_title_4.ini}
+
+metadata:
+  domain: toplu-yeniden-adlandir
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0006
+    bundle: yol-parcala
+    tools:
+    - basename
+    - dirname
+    konu: kutuphane-kayitlari
+    hedef: toplu-yeniden-adlandir
+    girdi: ini
+    kaynak: dizin-agaci
+    cikti: tek-sayi
+    kesif: veriye-bak
+    uslup: kabul-kriteri
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

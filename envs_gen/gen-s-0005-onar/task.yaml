@@ -1,0 +1,81 @@
+id: gen-s-0005-onar
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  orders dizinindeki sabit genişlikli dosyalarda bulunan ve fiyatı 15.00'den büyük olan siparişlerin ID'lerini, her satırda bir ID olacak şekilde fixed_orders.txt dosyasına yazın.
+
+setup: |
+  mkdir -p orders
+  cat > orders/order1.txt <<'EOF'
+  ORD001    2023-10-01    PIZZA     15.00
+  ORD002    2023-10-01    BURGER    10.00
+  ORD003    2023-10-01    PASTA     18.50
+  EOF
+  cat > orders/order2.txt <<'EOF'
+  ORD004    2023-10-02    SALAD     08.00
+  ORD005    2023-10-02    PIZZA     15.00
+  ORD006    2023-10-02    STEAK     25.00
+  EOF
+  cat > orders/order3.txt <<'EOF'
+  ORD007    2023-10-03    BURGER    10.00
+  ORD008    2023-10-03    SALAD     08.00
+  ORD009    2023-10-03    SUSHI     20.00
+  EOF
+
+goal_tr: >
+  orders dizinindeki sabit genislikli dosyalarda bulunan ve fiyatı 15.00'den
+  büyük olan siparişlerin ID'lerini fixed_orders.txt dosyasına her satırda
+  bir ID olacak şekilde yaz
+
+reference_solution: |
+  python3 -c "
+  import os
+  valid_orders = []
+  for filename in sorted(os.listdir('orders')):
+      with open(os.path.join('orders', filename), 'r') as f:
+          for line in f:
+              parts = line.split()
+              if len(parts) >= 4:
+                  try:
+                      price = float(parts[3])
+                      if price > 15.0:
+                          valid_orders.append(parts[0])
+                  except ValueError:
+                      continue
+  with open('fixed_orders.txt', 'w') as f:
+      f.write('\n'.join(valid_orders) + '\n')
+  "
+
+outputs:
+  - {path: fixed_orders.txt, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: fixed_orders.txt, value: [ORD003, ORD006, ORD009]}
+
+metadata:
+  domain: onar
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0005
+    bundle: python-veri
+    tools:
+    - python3
+    konu: restoran-siparisleri
+    hedef: onar
+    girdi: sabit-genislik
+    kaynak: cok-dosya
+    cikti: satir-listesi
+    kesif: dolayli-hedef
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: yok
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

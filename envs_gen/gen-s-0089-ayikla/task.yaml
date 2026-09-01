@@ -1,0 +1,58 @@
+id: gen-s-0089-ayikla
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  shifts.csv dosyasındaki Shift sütunu 'Day' olan çalışanların isimlerini, her satırda bir isim olacak şekilde employees_day.txt dosyasına yazın.
+
+setup: |
+  cat > shifts.csv <<'EOF'
+  Employee,Shift,Start_Time,End_Time
+  Alice,Day,08:00,16:00
+  Bob,Night,20:00,04:00
+  Charlie,Day,08:00,16:00
+  David,Swing,16:00,00:00
+  Eve,Night,20:00,04:00
+  Frank,Day,08:00,16:00
+  EOF
+
+goal_tr: >
+  shifts.csv dosyasındaki Shift sütunu 'Day' olan çalışanların isimlerini
+  employees_day.txt dosyasına her satıra bir isim gelecek şekilde yaz.
+
+reference_solution: |
+  grep ',Day,' shifts.csv | cut -d',' -f1 | tee employees_day.txt
+
+outputs:
+  - {path: employees_day.txt, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: employees_day.txt, value: [Alice, Charlie, Frank]}
+
+metadata:
+  domain: ayikla
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0089
+    bundle: dallandir
+    tools:
+    - tee
+    - cut
+    konu: personel-vardiyalari
+    hedef: ayikla
+    girdi: csv
+    kaynak: tek-dosya
+    cikti: satir-listesi
+    kesif: dolayli-hedef
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: yok
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

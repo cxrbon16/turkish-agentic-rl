@@ -2,45 +2,52 @@ id: gen-s-0008-donustur
 split: multi_step
 image: verifiable-dataset/base:latest
 workdir: /workspace
-max_turns: 16
+max_turns: 12
 
 # Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
 # asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
 prompt: |
-  Bugün muhasebe ekibi yıl sonu raporlarını hazırlıyor ve tüm harcamaları tek bir yerde görmek istiyor. Hava da oldukça güzel, pencereden gelen ışık ekranı aydınlatıyor. *muhasebe* klasöründeki tüm CSV dosyalarını birleştirip, her kalem için toplam tutarları hesapla ve sonuçları *kalem-toplam.csv* dosyasına CSV formatında kaydet.
+  books dizinindeki tüm .ini dosyalarının ikinci satırlarında yer alan yazar isimlerini (author= kısmından sonrasını) ayıklayın ve bu isimleri aralarına virgül koyarak tek bir satır halinde results.txt dosyasına yazın; dosyanın sonundaki yeni satırı silin.
 
 setup: |
-  mkdir -p muhasebe
-  printf "id,kalem,tutar\n1,kagit,100\n2,kalem,50\n" > "muhasebe/2023-01.csv"
-  printf "id,kalem,tutar\n3,defter,200\n4,silgi,25\n" > "muhasebe/2023-02.csv"
-  printf "id,kalem,tutar\n5,kalem,75\n6,kagit,150\n" > "muhasebe/2023-03.csv"
-  touch "muhasebe/empty file.csv"
-  seq 1 5 > "muhasebe/tuzak.txt"
+  mkdir -p books/fiction books/nonfiction
+  cat > books/fiction/book1.ini <<'EOF'
+  title=The Great Gatsby
+  author=F. Scott Fitzgerald
+  year=1925
+  EOF
+  cat > books/fiction/book2.ini <<'EOF'
+  title=1984
+  author=George Orwell
+  year=1949
+  EOF
+  cat > books/nonfiction/book3.ini <<'EOF'
+  title=Sapiens
+  author=Yuval Noah Harari
+  year=2011
+  EOF
+  cat > books/nonfiction/book4.ini <<'EOF'
+  title=Cosmos
+  author=Carl Sagan
+  year=1980
+  EOF
+  touch books/fiction/readme.txt
+  touch books/nonfiction/notes.log
 
 goal_tr: >
-  muhasebe klasorundeki tum CSV dosyalarini birlestir ve butun kalemlerin
-  toplam tutarlarini kalem-toplam.csv'ye CSV formatinda yaz
+  books dizinindeki tum .ini dosyalarinin ikinci satirlarindaki yazar
+  isimlerini (author= sonrasini) ayiklayarak, aralarinda virgül olacak
+  sekilde tek bir satirda results.txt dosyasina yaz; dosya sonundaki yeni
+  satiri silin.
 
 reference_solution: |
-  printf "kalem,tutar\n" > kalem-toplam.csv && \
-  find muhasebe -name "*.csv" -size +0 | \
-  xargs awk -F, 'NR>1{a[$2]+=$3} END{for(k in a) printf "%s,%d\n",k,a[k]}' | \
-  sort >> kalem-toplam.csv && \
-  seq 1 1 > /dev/null
+  find books -name "*.ini" -exec cat {} + | sed -n '2~3p' | cut -d'=' -f2 | paste -sd, - | tr -d '\n' | tee results.txt
 
 outputs:
-  - {path: kalem-toplam.csv, kind: csv}
+  - {path: results.txt, kind: file}
 
 checks:
-  - {op: file_content_eq, path: kalem-toplam.csv, value: 'kalem,tutar
-
-    defter,200
-
-    kagit,250
-
-    kalem,125
-
-    silgi,25'}
+  - {op: file_content_eq, path: results.txt, value: 'Carl Sagan,Yuval Noah Harari,George Orwell,F. Scott Fitzgerald'}
 
 metadata:
   domain: donustur
@@ -49,19 +56,19 @@ metadata:
   pipeline: spec-1
   seed:
     id: s-0008
-    bundle: uret
+    bundle: dallandir
     tools:
-    - printf
-    - seq
-    konu: muhasebe-kalemleri
+    - tee
+    - cut
+    konu: kutuphane-kayitlari
     hedef: donustur
-    girdi: csv
-    kaynak: cok-dosya
-    cikti: csv
-    kesif: dosyayi-bul
-    uslup: baglam-gomulu
-    direnc: bosluklu-ad
+    girdi: ini
+    kaynak: dizin-agaci
+    cikti: dizin-yapisi
+    kesif: dolayli-hedef
+    uslup: duz-hedef
+    direnc: son-newline-yok
     bukulme: tuzak-dosya
-    adim: 5
+    adim: 3
     image: verifiable-dataset/base:latest
     metadata: {}

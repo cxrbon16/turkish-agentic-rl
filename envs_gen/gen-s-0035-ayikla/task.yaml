@@ -1,0 +1,63 @@
+id: gen-s-0035-ayikla
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  weather.log dosyasındaki her satırdan şehir ismini ve sıcaklık değerini ayıklayarak, her şehir için şehir adıyla bir dizin oluşturun ve bu dizinlerin içinde sıcaklık.txt dosyasına ilgili sıcaklık değerlerini yazın. Örneğin, Istanbul/sicaklik.txt ve Ankara/sicaklik.txt dosyaları oluşturulmalıdır.
+
+setup: |
+  cat > weather.log <<'EOF'
+  2023-01-01,Istanbul,10C,Sunny
+  2023-01-01,Ankara,5C,Cloudy
+  2023-01-02,Istanbul,12C,Rainy
+  2023-01-02,Ankara,7C,Sunny
+  2023-01-03,Istanbul,11C,Cloudy
+  2023-01-03,Ankara,6C,Rainy
+  EOF
+
+goal_tr: >
+  weather.log dosyasındaki her satır için şehir ismini ve sıcaklık değerini
+  ayıklayarak, şehir adıyla oluşturulan bir dizin içinde sıcaklık.txt
+  dosyasına bu değerleri yaz.
+
+reference_solution: |
+  mkdir -p Istanbul Ankara
+  cut -d',' -f2,3 weather.log | tee >(cut -d',' -f2 | sort -u | xargs -I{} sh -c "mkdir -p {}") | while IFS=, read -r city temp; do
+    echo "$temp" > "$city/sicaklik.txt"
+  done
+
+outputs:
+  - {path: Istanbul/sicaklik.txt, kind: file}
+  - {path: Ankara/sicaklik.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: Ankara/sicaklik.txt, value: 6C}
+  - {op: file_content_eq, path: Istanbul/sicaklik.txt, value: 11C}
+
+metadata:
+  domain: ayikla
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0035
+    bundle: dallandir
+    tools:
+    - tee
+    - cut
+    konu: hava-durumu-kayitlari
+    hedef: ayikla
+    girdi: log-satiri
+    kaynak: tek-dosya
+    cikti: dizin-yapisi
+    kesif: yok
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

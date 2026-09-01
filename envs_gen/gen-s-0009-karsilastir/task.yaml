@@ -1,0 +1,71 @@
+id: gen-s-0009-karsilastir
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  logs1.csv ve logs2.csv dosyalarını karşılaştır. Sadece logs1.csv içinde olan satırları JSON formatında json_output.txt dosyasına kaydet.
+
+setup: |
+  cat > logs1.csv <<'CSV'
+  timestamp,level,message
+  2023-10-01T10:00:01,INFO,System start
+  2023-10-01T10:05:00,ERROR,Disk failure
+  2023-10-01T10:10:00,WARN,Memory low
+  2023-10-01T10:15:00,INFO,User login
+  2023-10-01T10:20:00,ERROR,Connection lost
+  CSV
+
+  cat > logs2.csv <<'CSV'
+  timestamp,level,message
+  2023-10-01T10:00:01,INFO,System start
+  2023-10-01T10:05:00,ERROR,Disk failure
+  2023-10-01T10:10:00,INFO,Memory low
+  2023-10-01T10:15:00,INFO,User login
+  2023-10-01T10:20:00,ERROR,Connection lost
+  CSV
+
+goal_tr: >
+  logs1.csv ve logs2.csv dosyalarındaki satırları karşılaştırarak sadece
+  logs1.csv dosyasında bulunan satırları json_output.txt dosyasına JSON
+  formatında yaz.
+
+reference_solution: |
+  sort logs1.csv > sorted1.csv
+  sort logs2.csv > sorted2.csv
+  comm -23 sorted1.csv sorted2.csv > unique.txt
+  diff sorted1.csv sorted2.csv > diff_output.txt
+  awk -F',' 'BEGIN {print "["} {printf "{\"line\":\"%s\"}", $0} END {print "]"}' unique.txt | sed 's/},/},\n/g' > json_output.txt
+
+outputs:
+  - {path: json_output.txt, kind: file}
+
+checks:
+  - {op: json_eq, path: json_output.txt, value: [{line: '2023-10-01T10:10:00,WARN,Memory low'}]}
+
+metadata:
+  domain: karsilastir
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0009
+    bundle: karsilastir
+    tools:
+    - diff
+    - comm
+    konu: sunucu-loglari
+    hedef: karsilastir
+    girdi: csv
+    kaynak: iki-dosya-capraz
+    cikti: json
+    kesif: yok
+    uslup: terse
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

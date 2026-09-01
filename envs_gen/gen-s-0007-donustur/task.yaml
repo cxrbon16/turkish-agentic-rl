@@ -1,0 +1,80 @@
+id: gen-s-0007-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  shipments.ini dosyasındaki her bir bölüm için müşteri adı ile adlandırılan bir dizin oluşturun ve bu dizinin içine status ve dest bilgilerini içeren info.txt adlı bir dosya yazın. Alice/info.txt, Bob/info.txt, Charlie/info.txt ve David/info.txt dosyaları bu şekilde oluşturulmalıdır.
+
+setup: |
+  cat > shipments.ini <<'EOF'
+  [SHIP001]
+  customer=Alice
+  status=shipped
+  dest=New York
+  [SHIP002]
+  customer=Bob
+  status=pending
+  dest=London
+  [SHIP003]
+  customer=Charlie
+  status=shipped
+  dest=Tokyo
+  [SHIP004]
+  customer=David
+  status=delivered
+  dest=Paris
+  EOF
+
+goal_tr: >
+  shipments.ini dosyasındaki her bölüm için müşteri adı ile başlayan bir
+  dizin oluştur ve içine status ve dest bilgilerini içeren bir dosya yaz
+
+reference_solution: |
+  seq 1 4 | while read -r i; do
+    section=$(printf "SHIP%03d" "$i")
+    customer=$(grep -A 3 "\[$section\]" shipments.ini | grep "customer=" | cut -d= -f2)
+    status=$(grep -A 3 "\[$section\]" shipments.ini | grep "status=" | cut -d= -f2)
+    dest=$(grep -A 3 "\[$section\]" shipments.ini | grep "dest=" | cut -d= -f2)
+    mkdir -p "$customer"
+    printf "status=%s\ndest=%s\n" "$status" "$dest" > "$customer/info.txt"
+  done
+
+outputs:
+  - {path: Alice/info.txt, kind: file}
+  - {path: Bob/info.txt, kind: file}
+  - {path: Charlie/info.txt, kind: file}
+  - {path: David/info.txt, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: Alice/info.txt, value: [status=shipped, dest=New York]}
+  - {op: file_lines_eq, path: Bob/info.txt, value: [status=pending, dest=London]}
+  - {op: file_lines_eq, path: Charlie/info.txt, value: [status=shipped, dest=Tokyo]}
+  - {op: file_lines_eq, path: David/info.txt, value: [status=delivered, dest=Paris]}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0007
+    bundle: uret
+    tools:
+    - printf
+    - seq
+    konu: kargo-takibi
+    hedef: donustur
+    girdi: ini
+    kaynak: tek-dosya
+    cikti: dizin-yapisi
+    kesif: veriye-bak
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

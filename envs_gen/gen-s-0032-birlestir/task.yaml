@@ -1,0 +1,74 @@
+id: gen-s-0032-birlestir
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) hospital/patients dizinindeki JSON dosyaları ile hospital/appointments/appts.csv dosyasındaki verileri birleştirerek, en az iki randevusu olan hastaların sayısını hesaplayın.
+  2) Bu sayıyı sonuc.txt dosyasına yazın.
+
+setup: |
+  mkdir -p hospital/patients hospital/appointments
+  cat > hospital/patients/p1.json <<'EOF'
+  {
+    "id": "P1",
+    "name": "Alice"
+  }
+  EOF
+  cat > hospital/patients/p2.json <<'EOF'
+  {
+    "id": "P2",
+    "name": "Bob"
+  }
+  EOF
+  cat > hospital/patients/p3.json <<'EOF'
+  {
+    "id": "P3",
+    "name": "Charlie"
+  }
+  EOF
+  printf "P1,2023-10-01\r\nP2,2023-10-02\r\nP1,2023-10-03\r\nP3,2023-10-04\r\nP2,2023-10-05\r\n" > hospital/appointments/appts.csv
+
+goal_tr: >
+  hospital/patients dizinindeki JSON dosyalarından ve
+  hospital/appointments/appts.csv dosyasından elde edilen verileri
+  birleştirerek, en az iki randevusu olan hastaların sayısını sonuc.txt
+  dosyasına yazın.
+
+reference_solution: |
+  find hospital/patients -name "*.json" -exec grep -o '"id": "[^"]*"' {} + | sed 's/"id": "//;s/"//' | sort > patients_ids.txt
+  tr -d '\r' < hospital/appointments/appts.csv | cut -d',' -f1 | sort > appt_patients.txt
+  join -1 1 -2 1 patients_ids.txt appt_patients.txt | cut -d' ' -f1 | uniq -c | awk '$1 >= 2 {print $2}' | wc -l > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '0'}
+
+metadata:
+  domain: birlestir
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0032
+    bundle: birlestir
+    tools:
+    - join
+    - sort
+    konu: hastane-randevulari
+    hedef: birlestir
+    girdi: json
+    kaynak: dizin-agaci
+    cikti: tek-sayi
+    kesif: yok
+    uslup: numarali-emir
+    direnc: crlf
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

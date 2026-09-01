@@ -1,0 +1,95 @@
+id: gen-s-0061-grupla-say
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  data dizinindeki alt dizinlerde bulunan weather.ini dosyalarındaki condition değerlerini gruplayarak, her bir hava durumu türünün kaç kez geçtiğini hesapla ve sonucu summary.json dosyasına geçerli bir JSON dizisi olarak yaz.
+
+setup: |
+  mkdir -p data/city1 data/city2 data/city3
+  cat > data/city1/weather.ini <<'EOF'
+  [2023-01-01]
+  temp=5
+  condition=Sunny
+  [2023-01-02]
+  temp=4
+  condition=Cloudy
+  EOF
+  cat > data/city2/weather.ini <<'EOF'
+  [2023-01-01]
+  temp=12
+  condition=Rainy
+  [2023-01-03]
+  temp=10
+  condition=Sunny
+  EOF
+  cat > data/city3/weather.ini <<'EOF'
+  [2023-01-01]
+  temp=-2
+  condition=Snowy
+  [2023-01-02]
+  temp=-5
+  condition=Snowy
+  EOF
+  cat > data/city1/readme.txt <<'EOF'
+  This is a metadata file.
+  EOF
+  cat > data/weather_backup.ini <<'EOF'
+  [2023-01-01]
+  temp=10
+  condition=Sunny
+  EOF
+
+goal_tr: >
+  data dizinindeki alt dizinlerde bulunan weather.ini dosyalarındaki
+  condition değerlerini gruplayarak, her bir hava durumu türünün kaç kez
+  geçtiğini hesapla ve sonucu summary.json dosyasına geçerli bir JSON dizisi
+  olarak yaz.
+
+reference_solution: |
+  python3 -c "
+  import os, json
+  counts = {}
+  for root, dirs, files in os.walk('data'):
+      for file in files:
+          if file == 'weather.ini':
+              with open(os.path.join(root, file), 'r') as f:
+                  for line in f:
+                      if line.startswith('condition='):
+                          cond = line.strip().split('=')[1]
+                          counts[cond] = counts.get(cond, 0) + 1
+  print(json.dumps(counts))
+  " > summary.json
+
+outputs:
+  - {path: summary.json, kind: json}
+
+checks:
+  - {op: json_eq, path: summary.json, value: {Snowy: 2, Sunny: 2, Cloudy: 1, Rainy: 1}}
+
+metadata:
+  domain: grupla-say
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0061
+    bundle: python-veri
+    tools:
+    - python3
+    konu: hava-durumu-kayitlari
+    hedef: grupla-say
+    girdi: ini
+    kaynak: dizin-agaci
+    cikti: json
+    kesif: yok
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

@@ -1,0 +1,79 @@
+id: gen-s-0025-denetle
+split: single_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 8
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  books_data dizinindeki .ini uzantılı dosyaların içindeki toplam satır sayısını hesaplayın ve bu sayıyı sonuc.txt dosyasına yazın.
+
+setup: |
+  mkdir -p books_data
+  cat > books_data/catalog.ini <<'INI'
+  [book1]
+  title=The Great Gatsby
+  author=F. Scott Fitzgerald
+  year=1925
+
+  [book2]
+  title=To Kill a Mockingbird
+  author=Harper Lee
+  year=1960
+
+  [book3]
+  title=1984
+  author=George Orwell
+  year=1949
+  INI
+
+  cat > books_data/returns.ini <<'INI'
+  [return1]
+  book_id=book1
+  status=returned
+
+  [return2]
+  book_id=book3
+  status=damaged
+  INI
+
+  touch books_data/dummy.txt
+  echo "not a real data file" > books_data/dummy.txt
+
+goal_tr: >
+  books_data dizinindeki .ini uzantılı dosyaları bulup içindeki satırların
+  toplam sayısını sonuc.txt dosyasına yazın.
+
+reference_solution: |
+  find books_data -name "*.ini" | xargs cat | wc -l > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '21'}
+
+metadata:
+  domain: denetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0025
+    bundle: bul-tasi
+    tools:
+    - find
+    - xargs
+    konu: kutuphane-kayitlari
+    hedef: denetle
+    girdi: ini
+    kaynak: iki-dosya-capraz
+    cikti: tek-sayi
+    kesif: yok
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 1
+    image: verifiable-dataset/base:latest
+    metadata: {}

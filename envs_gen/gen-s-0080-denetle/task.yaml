@@ -1,0 +1,80 @@
+id: gen-s-0080-denetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) data/students_a.txt ve data/students_b.txt dosyalarını karşılaştırarak, her iki dosyada da yer alan ancak notları farklı olan öğrencileri belirleyin.
+  2) Bu öğrencilerin bilgilerini bir JSON listesi olarak sonuc.json dosyasına yazın.
+
+setup: |
+  cat > students_a.txt <<'EOF'
+  101 Alice Smith     85
+  102 Bob Johnson     92
+  103 Charlie Brown   78
+  105 Eve Adams       88
+  106 Frank White     95
+  EOF
+
+  cat > students_b.txt <<'EOF'
+  101 Alice Smith     85
+  102 Bob Johnson     90
+  103 Charlie Brown   78
+  104 David Miller    82
+  106 Frank White     95
+  EOF
+
+  mkdir -p data
+  mv students_a.txt data/students_a.txt
+  mv students_b.txt data/students_b.txt
+
+goal_tr: >
+  data dizinindeki students_a.txt ve students_b.txt dosyalarini
+  karsilastirarak, her iki dosyada da bulunan ancak notlari farkli olan
+  ogrencileri bul ve sonuc.json dosyasina JSON listesi olarak yaz.
+
+reference_solution: |
+  sort data/students_a.txt > a.tmp
+  sort data/students_b.txt > b.tmp
+  comm -12 a.tmp b.tmp | cut -d' ' -f1 > common_ids.tmp
+  diff a.tmp b.tmp | grep -E '^<|^>' | cut -d' ' -f1 | sort -u > diff_ids.tmp
+  comm -12 common_ids.tmp diff_ids.tmp | while read id; do
+    name=$(grep "^$id " a.tmp | awk '{print $2 " " $3}')
+    grade_a=$(grep "^$id " a.tmp | awk '{print $4}')
+    grade_b=$(grep "^$id " b.tmp | awk '{print $4}')
+    echo "$id|$name|$grade_a|$grade_b"
+  done > mismatch.tmp
+  python3 -c "import json, sys; lines = open('mismatch.tmp').readlines(); data = [{\"id\": l.split('|')[0], \"name\": l.split('|')[1], \"grade_a\": int(l.split('|')[2]), \"grade_b\": int(l.split('|')[3])} for l in lines if l.strip()]; print(json.dumps(data))" > sonuc.json
+
+outputs:
+  - {path: sonuc.json, kind: json}
+
+checks:
+  - {op: json_eq, path: sonuc.json, value: []}
+
+metadata:
+  domain: denetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0080
+    bundle: karsilastir
+    tools:
+    - diff
+    - comm
+    konu: ogrenci-notlari
+    hedef: denetle
+    girdi: sabit-genislik
+    kaynak: iki-dosya-capraz
+    cikti: json
+    kesif: dosyayi-bul
+    uslup: numarali-emir
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

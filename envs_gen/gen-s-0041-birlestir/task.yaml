@@ -1,0 +1,75 @@
+id: gen-s-0041-birlestir
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  staff.txt ve shifts.txt dosyalarındaki personel ID'lerini eşleştirerek isimleri ve vardiyaları içeren merged.txt dosyasını oluşturun, ardından her vardiya için shift_Day.txt ve shift_Night.txt dosyalarını üretin.
+
+setup: |
+  cat > staff.txt <<'EOF'
+  101 Alice
+  102 Bob
+  103 Charlie
+  104 David
+  EOF
+
+  cat > shifts.txt <<'EOF'
+  101 Night
+  102 Day
+  104 Night
+  103 Day
+  EOF
+
+  printf "105 Eve\n106 Frank" > backup_staff.txt
+  touch dummy_shifts.txt
+  echo "101 Morning" > dummy_shifts.txt
+
+goal_tr: >
+  staff.txt ve shifts.txt dosyalarındaki personel ID'lerini eşleştirerek
+  isimleri ve vardiyaları içeren bir dosya oluştur, ardından her vardiya
+  için ayrı dosyalar üret.
+
+reference_solution: |
+  sort staff.txt > staff_sorted.txt
+  sort shifts.txt > shifts_sorted.txt
+  join staff_sorted.txt shifts_sorted.txt > merged.txt
+  grep -o 'Day' merged.txt | uniq > shift_Day.txt
+  grep -o 'Night' merged.txt | uniq > shift_Night.txt
+
+outputs:
+  - {path: merged.txt, kind: file}
+  - {path: shift_Day.txt, kind: file}
+  - {path: shift_Night.txt, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: merged.txt, value: [101 Alice Night, 102 Bob Day, 103 Charlie Day, 104 David Night]}
+  - {op: file_content_eq, path: shift_Day.txt, value: Day}
+  - {op: file_content_eq, path: shift_Night.txt, value: Night}
+
+metadata:
+  domain: birlestir
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0041
+    bundle: birlestir
+    tools:
+    - join
+    - sort
+    konu: personel-vardiyalari
+    hedef: birlestir
+    girdi: log-satiri
+    kaynak: iki-dosya-capraz
+    cikti: birden-cok-dosya
+    kesif: dosyayi-bul
+    uslup: duz-hedef
+    direnc: son-newline-yok
+    bukulme: tuzak-dosya
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}

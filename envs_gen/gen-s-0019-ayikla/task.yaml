@@ -1,0 +1,74 @@
+id: gen-s-0019-ayikla
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  data/sensors dizinindeki tüm .csv dosyalarını işle. Bu dosyaların başlık satırlarını hariç tutarak sadece ikinci sütundaki değerleri çıkar ve bu değerleri yan yana birleştirerek output.txt dosyasına kaydet.
+
+  Şu şartlar sağlanmalı:
+  - Sadece .csv uzantılı dosyalar işleme alınmalı; diğer dosya türleri göz ardı edilmelidir.
+  - Her dosyanın ilk satırı (başlık satırı) atlanmalıdır.
+  - Çıkarılan değerler, orijinal sırasıyla ve aralarında boşluk bırakılarak tek bir satırda birleştirilmelidir.
+  - Boş .csv dosyaları veya geçerli veri içermeyen dosyalar çıktıya herhangi bir değer eklememelidir.
+  - Sonuçlar tam olarak output.txt dosyasına yazılmalıdır.
+
+setup: |
+  mkdir -p data/sensors
+  cat > data/sensors/sensor1.csv <<'EOF'
+  timestamp,value,unit
+  2023-10-01T10:00,23.5,C
+  2023-10-01T10:05,23.6,C
+  2023-10-01T10:10,23.8,C
+  EOF
+  cat > data/sensors/sensor2.csv <<'EOF'
+  timestamp,value,unit
+  2023-10-01T10:00,1012,hPa
+  2023-10-01T10:05,1011,hPa
+  2023-10-01T10:10,1013,hPa
+  EOF
+  touch data/sensors/empty.csv
+  cat > data/sensors/trap.txt <<'EOF'
+  This is a decoy file, not a CSV.
+  EOF
+
+goal_tr: >
+  data/sensors dizinindeki tüm .csv dosyalarından başlık satırını hariç
+  tutarak ikinci sütundaki değerleri çıkar ve bunları yan yana birleştirerek
+  output.txt dosyasına kaydet.
+
+reference_solution: |
+  find data/sensors -name "*.csv" -exec tail -n +2 {} + | cut -d',' -f2 | paste -sd' ' - > output.txt
+
+outputs:
+  - {path: output.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: output.txt, value: ==> data/sensors/sensor2.csv <== 1012 1011 1013  ==> data/sensors/empty.csv <==  ==> data/sensors/sensor1.csv <== 23.5 23.6 23.8}
+
+metadata:
+  domain: ayikla
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0019
+    bundle: sutun
+    tools:
+    - cut
+    - paste
+    konu: sensor-olcumleri
+    hedef: ayikla
+    girdi: csv
+    kaynak: dizin-agaci
+    cikti: satir-listesi
+    kesif: yok
+    uslup: kabul-kriteri
+    direnc: bos-dosya
+    bukulme: tuzak-dosya
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

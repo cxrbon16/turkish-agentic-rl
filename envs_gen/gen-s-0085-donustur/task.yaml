@@ -39,17 +39,7 @@ outputs:
   - {path: cikti.csv, kind: file}
 
 checks:
-  - {op: file_content_eq, path: cikti.csv, value: '1,telefon,5,harika
-
-    2,laptop,4,iyi
-
-    3,telefon,5,harika
-
-    4,klavye,3,orta
-
-    5,telefon,2,kotu
-
-    id,urun,puan,yorum'}
+  - {op: file_lines_eq, path: cikti.csv, value: ['1,telefon,5,harika', '2,laptop,4,iyi', '3,telefon,5,harika', '4,klavye,3,orta', '5,telefon,2,kotu', 'id,urun,puan,yorum']}
 
 metadata:
   domain: donustur

@@ -39,7 +39,7 @@ outputs:
   - {path: tekrar_edenler.txt, kind: lines}
 
 checks:
-  - {op: file_lines_eq, path: tekrar_edenler.txt, value: ["istanbul\t30\tsunny"]}
+  - {op: file_content_eq, path: tekrar_edenler.txt, value: "istanbul\t30\tsunny"}
 
 metadata:
   domain: denetle

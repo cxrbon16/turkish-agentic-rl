@@ -1,0 +1,63 @@
+id: gen-s-0073-ozetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  sensors.csv dosyasının ilk 3 ve son 3 satırını birleştirip summary.csv dosyasına yaz.
+
+setup: |
+  cat > sensors.csv <<'EOF'
+  sensor_id,value,timestamp
+  S1,23.5,1625097600
+  S2,18.2,1625097660
+  S1,23.6,1625097720
+  S3,12.1,1625097780
+  S2,17.9,1625097840
+  S1,24.0,1625097900
+  S3,11.5,1625097960
+  S1,23.8,1625098020
+  S2,18.5,1625098080
+  S3,12.0,1625098140
+  EOF
+
+goal_tr: >
+  sensors.csv dosyasındaki ilk ve son 3 satırı birleştirerek summary.csv
+  dosyasına yaz.
+
+reference_solution: |
+  head -n 3 sensors.csv > summary.csv
+  tail -n 3 sensors.csv >> summary.csv
+
+outputs:
+  - {path: summary.csv, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: summary.csv, value: ['sensor_id,value,timestamp', 'S1,23.5,1625097600', 'S2,18.2,1625097660', 'S1,23.8,1625098020', 'S2,18.5,1625098080', 'S3,12.0,1625098140']}
+
+metadata:
+  domain: ozetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0073
+    bundle: satir-araligi
+    tools:
+    - head
+    - tail
+    konu: sensor-olcumleri
+    hedef: ozetle
+    girdi: csv
+    kaynak: tek-dosya
+    cikti: csv
+    kesif: veriye-bak
+    uslup: terse
+    direnc: bom
+    bukulme: yok
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

@@ -1,0 +1,72 @@
+id: gen-s-0099-sirala-sec
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Sunucudaki log dosyalarını incelerken birçok farklı dizin altında JSON formatında kayıtlar olduğunu fark ettim. Hangi dosyanın ne tür veriler içerdiğini hızlıca anlamam gerekiyor. logs dizini altındaki tüm JSON dosyalarını bul, her dosyadan ilk anahtar-değer çiftini ayıkla ve bunları dosya yoluyla birlikte sonuc.csv dosyasına virgülle ayrılmış olarak yaz.
+
+setup: |
+  mkdir -p logs/web logs/db logs/auth
+  cat > logs/web/access.json <<'EOF'
+  {"ip": "192.168.1.1", "status": 200, "bytes": 512}
+  {"ip": "192.168.1.2", "status": 404, "bytes": 2048}
+  {"ip": "192.168.1.1", "status": 500, "bytes": 128}
+  EOF
+  cat > logs/db/error.json <<'EOF'
+  {"id": 101, "level": "ERROR", "msg": "Connection timeout"}
+  {"id": 102, "level": "WARN", "msg": "Slow query"}
+  {"id": 103, "level": "ERROR", "msg": "Disk full"}
+  EOF
+  cat > logs/auth/audit.json <<'EOF'
+  {"user": "admin", "action": "login", "code": 0}
+  {"user": "guest", "action": "access_denied", "code": 403}
+  {"user": "admin", "action": "delete", "code": 0}
+  EOF
+  cat > logs/web/meta.txt <<'EOF'
+  This is a metadata file, not JSON.
+  EOF
+
+goal_tr: >
+  logs dizini altindaki tum JSON dosyalarini bul, her dosyadan ilk
+  anahtar-deger ciftini ayikla ve bunları dosya yoluyla birlikte sonuc.csv
+  dosyasina virgulle ayrilmis olarak yaz.
+
+reference_solution: |
+  find logs -name "*.json" | while read -r file; do
+    first_line=$(head -n 1 "$file")
+    key_value=$(echo "$first_line" | awk -F'[: ,}]' '{print $2}' | tr -d '"')
+    echo "$file,$key_value"
+  done > sonuc.csv
+
+outputs:
+  - {path: sonuc.csv, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: sonuc.csv, value: ['logs/auth/audit.json,', 'logs/web/access.json,', 'logs/db/error.json,']}
+
+metadata:
+  domain: sirala-sec
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0099
+    bundle: awk
+    tools:
+    - awk
+    konu: sunucu-loglari
+    hedef: sirala-sec
+    girdi: json
+    kaynak: dizin-agaci
+    cikti: csv
+    kesif: dosyayi-bul
+    uslup: baglam-gomulu
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

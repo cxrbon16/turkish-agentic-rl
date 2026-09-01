@@ -1,0 +1,65 @@
+id: gen-s-0050-denetle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 16
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Okul kayıt sistemindeki verilerin doğruluğunu kontrol etmem gerekiyor çünkü bazı öğrencilerin birden fazla dosyada mükerrer kayıtları olduğu söyleniyor. Bu karışıklığı gidermek için data dizinindeki tüm JSON dosyalarında bulunan ve en az iki dosyada tekrar eden öğrenci isimlerinin sayısını hesaplayıp sonuc.txt dosyasına yazman gerekiyor.
+
+setup: |
+  mkdir -p data
+  cat > data/s1.json <<'EOF'
+  {"name": "Ali", "grade": 85}
+  {"name": "Ayse", "grade": 92}
+  {"name": "Mehmet", "grade": 78}
+  EOF
+  cat > data/s2.json <<'EOF'
+  {"name": "Ayse", "grade": 92}
+  {"name": "Zeynep", "grade": 88}
+  {"name": "Ali", "grade": 85}
+  EOF
+  cat > data/s3.json <<'EOF'
+  {"name": "Mehmet", "grade": 78}
+  {"name": "Can", "grade": 95}
+  {"name": "Ayse", "grade": 92}
+  EOF
+
+goal_tr: >
+  data dizinindeki tum json dosyalarinda bulunan ve en az iki dosyada tekrar
+  eden ogrenci isimlerinin sayisini sonuc.txt dosyasina yaz.
+
+reference_solution: |
+  grep -h '"name":' data/*.json | sed 's/.*"name": "\(.*\)".*/\1/' | sort | uniq -c | awk '$1 >= 2' | wc -l > sonuc.txt
+
+outputs:
+  - {path: sonuc.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: sonuc.txt, value: '3'}
+
+metadata:
+  domain: denetle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0050
+    bundle: sirala
+    tools:
+    - sort
+    - uniq
+    konu: ogrenci-notlari
+    hedef: denetle
+    girdi: json
+    kaynak: cok-dosya
+    cikti: tek-sayi
+    kesif: dolayli-hedef
+    uslup: baglam-gomulu
+    direnc: yok
+    bukulme: kirli-veri
+    adim: 5
+    image: verifiable-dataset/base:latest
+    metadata: {}

@@ -39,11 +39,7 @@ outputs:
   - {path: kodlar.txt, kind: file}
 
 checks:
-  - {op: file_content_eq, path: kodlar.txt, value: '101A4567202B3210303C9876
-
-    101A4567404D1111505E2222
-
-    303C9876606F3333707G4444'}
+  - {op: file_lines_eq, path: kodlar.txt, value: [101A4567202B3210303C9876, 101A4567404D1111505E2222, 303C9876606F3333707G4444]}
 
 metadata:
   domain: ozetle

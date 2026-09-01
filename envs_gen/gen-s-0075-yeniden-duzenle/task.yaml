@@ -1,0 +1,65 @@
+id: gen-s-0075-yeniden-duzenle
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  Bugün ofiste müşteri geri bildirimlerini analiz etmek için bazı verileri bir araya getirmem gerekiyor. Yöneticim, ürün yorumlarının arşivlendiği dosyaları incelememi istedi. reviews.tar dosyasının içindeki tüm tsv dosyalarını bulup içeriklerini birleştirerek sonuc.json dosyasına bir JSON listesi olarak yazabilir misin?
+
+setup: |
+  mkdir -p "product reviews"
+  cat > "product reviews/item1.tsv" <<'EOF'
+  id	rating	text
+  1	5	Amazing
+  2	3	Okay
+  EOF
+  cat > "product reviews/item2.tsv" <<'EOF'
+  id	rating	text
+  3	4	Good
+  4	1	Bad
+  EOF
+  tar -cf reviews.tar "product reviews"
+  rm -rf "product reviews"
+
+goal_tr: >
+  reviews.tar icindeki tum tsv dosyalarini bulup iceriklerini birlestirerek
+  sonuc.json dosyasina JSON listesi olarak yaz
+
+reference_solution: |
+  mkdir -p extracted
+  tar -xf reviews.tar -C extracted
+  find extracted -name "*.tsv" -exec cat {} + | grep -v "id	rating	text" | awk -F'\t' '{printf "{\"id\": %s, \"rating\": %s, \"text\": \"%s\"}\n", $1, $2, $3}' | sed '$!s/$/,/' | sed '1i [' | sed '$a ]' > sonuc.json
+  rm -rf extracted
+
+outputs:
+  - {path: sonuc.json, kind: file}
+
+checks:
+  - {op: json_eq, path: sonuc.json, value: [{id: 3, rating: 4, text: Good}, {id: 4, rating: 1, text: Bad}, {id: 1, rating: 5, text: Amazing}, {id: 2, rating: 3, text: Okay}]}
+
+metadata:
+  domain: yeniden-duzenle
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0075
+    bundle: secerek-arsivle
+    tools:
+    - tar
+    - find
+    konu: urun-yorumlari
+    hedef: yeniden-duzenle
+    girdi: tsv
+    kaynak: cok-dosya
+    cikti: json
+    kesif: dosyayi-bul
+    uslup: baglam-gomulu
+    direnc: bosluklu-ad
+    bukulme: yok
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

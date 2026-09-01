@@ -1,0 +1,66 @@
+id: gen-s-0001-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 10
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) shipments.log dosyasındaki her satırı işleyerek, durum değerine göre adlandırılmış klasörler oluşturun: status_Transit, status_Delivered ve status_Pending.
+  2) Her satırdaki ID numarasını, ilgili durum klasörünün altında bir dosya olarak oluşturun: status_Transit/101, status_Transit/104, status_Delivered/102, status_Delivered/105 ve status_Pending/103.
+
+setup: |
+  cat > shipments.log <<'EOF'
+  101|Transit
+  102|Delivered
+  103|Pending
+  104|Transit
+  105|Delivered
+  EOF
+
+goal_tr: >
+  shipments.log dosyasındaki her satırı, durum değerine göre adlandırılmış
+  klasörler altında ID numarasıyla dosya olarak oluştur.
+
+reference_solution: |
+  sed 's/|/ /g' shipments.log | tr ' ' '\n' | sed -n '2~2p' | sort | uniq | while read status; do
+      mkdir -p "status_$status"
+      sed -n "/$status/s/^([0-9]*).*/\1/p" shipments.log | while read id; do
+          touch "status_$status/$id"
+      done
+  done
+
+outputs:
+  - {path: status_Transit, kind: dir}
+  - {path: status_Delivered, kind: dir}
+  - {path: status_Pending, kind: dir}
+  - {path: status_Transit/101, kind: file}
+  - {path: status_Transit/104, kind: file}
+  - {path: status_Delivered/102, kind: file}
+  - {path: status_Delivered/105, kind: file}
+  - {path: status_Pending/103, kind: file}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0001
+    bundle: metin-duzenle
+    tools:
+    - sed
+    - tr
+    konu: kargo-takibi
+    hedef: donustur
+    girdi: log-satiri
+    kaynak: tek-dosya
+    cikti: dizin-yapisi
+    kesif: dosyayi-bul
+    uslup: numarali-emir
+    direnc: bom
+    bukulme: olcek
+    adim: 2
+    image: verifiable-dataset/base:latest
+    metadata: {}

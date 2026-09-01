@@ -1,0 +1,71 @@
+id: gen-s-0046-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  accounts.txt ve transactions.txt dosyalarını birleştirerek, her bir işlemin hesap adını ve tutarını içeren bir metin dosyasını output/result.txt adıyla kaydedin.
+
+setup: |
+  cat > accounts.txt <<'EOF'
+  101,Cash
+  201,Accounts Payable
+  301,Owner Capital
+  401,Sales
+  501,Rent Expense
+  EOF
+
+  cat > transactions.txt <<'EOF'
+  101,1500.00
+  201,500.00
+  401,1000.00
+  501,200.00
+  EOF
+
+  cat > dummy.txt <<'EOF'
+  This is a trap file with no useful data.
+  EOF
+
+  mkdir -p output
+
+goal_tr: >
+  accounts.txt ve transactions.txt dosyalarini birleştirerek hesap adını ve
+  tutarını içeren bir metin dosyasını output dizinine kaydet.
+
+reference_solution: |
+  sort accounts.txt -o accounts_sorted.txt
+  sort transactions.txt -o transactions_sorted.txt
+  join -t ',' accounts_sorted.txt transactions_sorted.txt > output/result.txt
+
+outputs:
+  - {path: output/result.txt, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: output/result.txt, value: ['101,Cash,1500.00', '201,Accounts Payable,500.00', '401,Sales,1000.00', '501,Rent Expense,200.00']}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0046
+    bundle: birlestir
+    tools:
+    - join
+    - sort
+    konu: muhasebe-kalemleri
+    hedef: donustur
+    girdi: duz-metin
+    kaynak: cok-dosya
+    cikti: dizin-yapisi
+    kesif: veriye-bak
+    uslup: duz-hedef
+    direnc: yok
+    bukulme: tuzak-dosya
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

@@ -1,0 +1,56 @@
+id: gen-s-0068-donustur
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 12
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  1) reviews.txt dosyasındaki her satırı ReviewID, User, Rating ve Comment alanlarını içeren bir JSON nesnesine dönüştürün.
+  2) Elde edilen sonuçları reviews.json dosyasına yazın.
+
+setup: |
+  cat > reviews.txt <<'EOF'
+  ReviewID:101|User:Alice|Rating:5|Comment:Great product!
+  ReviewID:102|User:Bob|Rating:3|Comment:It is okay, but could be better.
+  ReviewID:103|User:Charlie|Rating:2|Comment:Disappointed with the quality.
+  EOF
+
+goal_tr: >
+  reviews.txt dosyasındaki her satırı, ReviewID, User, Rating ve Comment
+  alanlarını içeren bir JSON nesnesi olarak dönüştür ve sonuçları
+  reviews.json dosyasına yaz.
+
+reference_solution: |
+  sed 's/[|:]/ /g' reviews.txt | tr ' ' '\n' | sed 'N;N;N;N;s/\n/ /g' | sed 's/^/{"/' | sed 's/$/"}/' > reviews.json
+
+outputs:
+  - {path: reviews.json, kind: file}
+
+checks:
+  - {op: file_lines_eq, path: reviews.json, value: ['{"ReviewID 101 User Alice Rating"}', '{"5 Comment Great product! ReviewID"}', '{"102 User Bob Rating 3"}', '{"Comment It is okay, but"}', '{"could be better. ReviewID 103"}', '{"User Charlie Rating 2 Comment"}', '{"Disappointed"}', '{"with"}', '{"the"}', '{"quality."}']}
+
+metadata:
+  domain: donustur
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0068
+    bundle: metin-duzenle
+    tools:
+    - sed
+    - tr
+    konu: urun-yorumlari
+    hedef: donustur
+    girdi: duz-metin
+    kaynak: tek-dosya
+    cikti: json
+    kesif: dolayli-hedef
+    uslup: numarali-emir
+    direnc: yok
+    bukulme: yok
+    adim: 3
+    image: verifiable-dataset/base:latest
+    metadata: {}

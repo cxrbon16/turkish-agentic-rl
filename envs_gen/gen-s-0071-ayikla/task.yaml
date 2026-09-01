@@ -24,47 +24,7 @@ outputs:
   - {path: output.json, kind: json}
 
 checks:
-  - {op: file_content_eq, path: output.json, value: '"1}},"
-
-    "{good}},"
-
-    "{This}},"
-
-    "{is}},"
-
-    "{great!}},"
-
-    "{2}},"
-
-    "{bad}},"
-
-    "{This}},"
-
-    "{is}},"
-
-    "{terrible.}},"
-
-    "{3}},"
-
-    "{good}},"
-
-    "{It}},"
-
-    "{is}},"
-
-    "{okay.}},"
-
-    "{4}},"
-
-    "{neutral}},"
-
-    "{No}},"
-
-    "{opinion.}},"
-
-    "{"
-
-    "]"'}
+  - {op: file_lines_eq, path: output.json, value: ['"1}},"', '"{good}},"', '"{This}},"', '"{is}},"', '"{great!}},"', '"{2}},"', '"{bad}},"', '"{This}},"', '"{is}},"', '"{terrible.}},"', '"{3}},"', '"{good}},"', '"{It}},"', '"{is}},"', '"{okay.}},"', '"{4}},"', '"{neutral}},"', '"{No}},"', '"{opinion.}},"', '"{"', '"]"']}
 
 metadata:
   domain: ayikla

@@ -1,0 +1,77 @@
+id: gen-s-0052-onar
+split: multi_step
+image: verifiable-dataset/base:latest
+workdir: /workspace
+max_turns: 14
+
+# Bu task uretildi ve heniz tamamlanmadi: prompt creative writing
+# asamasinda, alt_solutions ise rakip cozum asamasinda eklenecek.
+prompt: |
+  entries.tsv dosyasındaki harcamaları kategorilere göre ayırarak, her kategorinin toplam tutarını içeren Office.txt, Travel.txt ve Food.txt dosyalarını oluşturun.
+
+setup: |
+  cat > entries.tsv <<'EOF'
+  date	category	amount	memo
+  2023-01-01	Office	15.00	Pens
+  2023-01-02	Travel	50.00	Taxi
+  2023-01-03	Office	20.00	Paper
+  2023-01-04	Food	12.50	Lunch
+  2023-01-05	Travel	100.00	Hotel
+  2023-01-06	Office	10.00	Ink
+  2023-01-07	Food	8.00	Coffee
+  2023-01-08	Office	5.00	Staples
+  2023-01-09	Travel	30.00	Train
+  2023-01-10	Food	15.00	Dinner
+  EOF
+
+goal_tr: >
+  entries.tsv dosyasındaki harcamaları kategorilere göre ayırarak her
+  kategorinin toplam tutarını içeren ayrı dosyalar oluşturun
+
+reference_solution: |
+  python3 -c "
+  import collections
+  data = collections.defaultdict(float)
+  with open('entries.tsv', 'r') as f:
+      next(f)
+      for line in f:
+          parts = line.strip().split('\t')
+          if len(parts) >= 3:
+              data[parts[1]] += float(parts[2])
+  for cat, total in data.items():
+      with open(f'{cat}.txt', 'w') as f:
+          f.write(f'{total:.2f}')
+  "
+
+outputs:
+  - {path: Office.txt, kind: file}
+  - {path: Travel.txt, kind: file}
+  - {path: Food.txt, kind: file}
+
+checks:
+  - {op: file_content_eq, path: Food.txt, value: '35.50'}
+  - {op: file_content_eq, path: Office.txt, value: '50.00'}
+  - {op: file_content_eq, path: Travel.txt, value: '180.00'}
+
+metadata:
+  domain: onar
+  language: tr
+  generated: true
+  pipeline: spec-1
+  seed:
+    id: s-0052
+    bundle: python-veri
+    tools:
+    - python3
+    konu: muhasebe-kalemleri
+    hedef: onar
+    girdi: tsv
+    kaynak: tek-dosya
+    cikti: birden-cok-dosya
+    kesif: yok
+    uslup: duz-hedef
+    direnc: bos-dosya
+    bukulme: yok
+    adim: 4
+    image: verifiable-dataset/base:latest
+    metadata: {}
