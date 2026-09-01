@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shlex
 import sys
 import tempfile
 from dataclasses import dataclass, field
@@ -31,9 +32,9 @@ from verifiable_dataset.terminal.checks import run_checks
 from verifiable_dataset.terminal.sandbox import DockerSandbox, docker_available
 from verifiable_dataset.terminal.task import Task, run_script
 
-# Bu sayidan uzun dosyalarda satir satir file_contains uretmek yerine
-# tek bir file_content_eq daha okunakli.
-MAX_LINE_CHECKS = 8
+# Bu satir sayisina kadar cikti satir kumesi olarak karsilastirilir;
+# ustunde tek bir file_content_eq daha okunakli kaliyor.
+MAX_SATIR = 200
 
 PROGRAM_SUFFIXES = {".py", ".sh", ".bash"}
 
@@ -108,9 +109,19 @@ def diff_trees(a: tuple[dict, dict], b: tuple[dict, dict]) -> TreeDiff:
 
 def infer_kind(rel: str, raw: bytes) -> str:
     """Bir dosyanin nasil kontrol edilecegini adindan ve iceriginden tahmin et."""
+    ad = rel.lower()
     suffix = Path(rel).suffix.lower()
     if suffix in PROGRAM_SUFFIXES:
         return "program"
+    # Arsivler byte byte karsilastirilamaz: icinde mtime, uid ve giris
+    # sirasi tasiniyor, yani dogru cozum bile neredeyse hicbir zaman
+    # byte-esit olmaz. Icerik listesi karsilastirilir.
+    if ad.endswith((".tar.gz", ".tgz")):
+        return "arsiv-gz"
+    if suffix == ".tar":
+        return "arsiv"
+    if suffix == ".gz":
+        return "gz"
     try:
         text = raw.decode("utf-8")
     except UnicodeDecodeError:
@@ -128,9 +139,29 @@ def infer_kind(rel: str, raw: bytes) -> str:
             # JSON gibi kontrol edilmeli, satir satir metin gibi degil.
             return "json"
     lines = [ln for ln in text.splitlines() if ln.strip()]
-    if 1 < len(lines) <= MAX_LINE_CHECKS:
+    # Cok satirli metinde sira, hedef cumlesi soylemedigi surece anlamsiz.
+    # Byte esitligi referansin rastgele sirasini hakikat yapiyordu: bir
+    # cozum basligi basa koydugu icin sifir aliyordu.
+    if 1 < len(lines) <= MAX_SATIR:
         return "lines"
     return "file"
+
+
+def kind_sec(rel: str, raw: bytes, override: dict | None) -> str:
+    """Bildirilen tur ile cikarilan turu birlestir.
+
+    Bildirilen tur cikarimi ZAYIFLATAMAZ. Uretici cogu ciktiya `file`
+    diyor; .tar ve .json dosyalarinin byte byte karsilastirilmasinin
+    sebebi buydu. Bildirim yalnizca cikarimin goremeyecegi yerde
+    dinleniyor -- bir betigin nasil calistirilacagi gibi.
+    """
+    cikarim = infer_kind(rel, raw)
+    bildirilen = (override or {}).get("kind")
+    if bildirilen == "program" and (override or {}).get("run"):
+        return "program"
+    if bildirilen == "dir":
+        return "dir"
+    return cikarim
 
 
 def checks_for_file(rel: str, raw: bytes, override: dict | None,
@@ -143,9 +174,34 @@ def checks_for_file(rel: str, raw: bytes, override: dict | None,
     degiller. Gevseklik ise op'un kendi semantiginde tasiniyor --
     json_eq sayilara tolerans, file_lines_eq siraya duyarsizlik verir.
     """
-    kind = (override or {}).get("kind") or infer_kind(rel, raw)
+    kind = kind_sec(rel, raw, override)
     notes: list[str] = []
     sorunlar: list[str] = []
+
+    # Arsiv: byte degil, icerik listesi. Komut taze bir konteynerde
+    # snapshot uzerinde kosuyor (bkz. op_run_stdout_eq).
+    ARSIV_KOMUT = {"arsiv": "tar -tf {p} | sort",
+                   "arsiv-gz": "tar -tzf {p} | sort",
+                   "gz": "gzip -dc {p}"}
+    if kind in ARSIV_KOMUT:
+        komut = ARSIV_KOMUT[kind].format(p=shlex.quote(rel))
+        if sandbox is None:
+            return [{"op": "is_file", "path": rel}], notes, sorunlar
+        res = sandbox.exec(komut)
+        if res.exit_code != 0:
+            sorunlar.append(f"{rel}: arsiv okunamadi -- `{komut}` exit={res.exit_code}")
+            return [{"op": "is_file", "path": rel}], notes, sorunlar
+        notes.append(f"{rel}: arsiv, icerik listesiyle karsilastiriliyor")
+        return ([{"op": "run_stdout_eq", "cmd": komut, "value": res.stdout.strip()}],
+                notes, sorunlar)
+
+    if kind == "json" and Path(rel).suffix.lower() == ".json":
+        pass  # asagida ele aliniyor
+    elif Path(rel).suffix.lower() == ".json":
+        # Uzantisi .json ama icerigi ayristirilamiyor: bildirilen tur ne
+        # olursa olsun bu bir kusur -- gecerli JSON yazan dogru cozum
+        # bozuk metnin byte'lariyla karsilastirilirdi.
+        sorunlar.append(f"{rel}: .json uzantili ama gecerli JSON degil")
 
     if kind == "program":
         # Referansin yazdigi her betik hedefin parcasi degil: cogu sadece

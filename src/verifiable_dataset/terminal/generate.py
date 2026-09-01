@@ -262,7 +262,7 @@ def generate_one(client, model: str, seed: Seed, out_dir: Path,
         aday.deneme = deneme
         try:
             yanit = client.chat.completions.create(
-                model=model, messages=mesajlar, temperature=0.7, max_tokens=2048)
+                model=model, messages=mesajlar, temperature=0.7, max_tokens=16384)
         except Exception as e:  # noqa: BLE001 - API hatasi adayi duserir, kosuyu degil
             aday.hata = f"model cagrisi basarisiz: {type(e).__name__}: {e}"
             return aday
