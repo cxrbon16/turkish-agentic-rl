@@ -101,6 +101,38 @@ class ThrottledClient:
         return getattr(self._inner, name)
 
 
+def preflight(base_url: str = "", api_key: str = "", model: str = "") -> tuple[bool, str]:
+    """Kosuya baslamadan once ucun bu modeli sunup sunmadigini dogrula.
+
+    Yanlis uca gitmek 40 adayin 40'inda ayni hatayi uretip ancak kosunun
+    sonunda fark edilebiliyordu. Tek bir /models sorgusu bunu basta soyler
+    ve nereye gidildigini de gozle gorulur kilar.
+    """
+    import json
+    import urllib.error
+    import urllib.request
+
+    url = resolve_base_url(base_url)
+    key, kaynak = resolve_key(api_key, url)
+    istek = urllib.request.Request(
+        url.rstrip("/") + "/models",
+        headers={"Authorization": f"Bearer {key}", "Accept": "application/json"})
+    try:
+        with urllib.request.urlopen(istek, timeout=30) as yanit:
+            veri = json.load(yanit)
+    except urllib.error.HTTPError as e:
+        govde = e.read().decode("utf-8", "replace")[:200]
+        return False, f"{url} /models HTTP {e.code}: {govde}  (anahtar: {kaynak})"
+    except Exception as e:  # noqa: BLE001 - ag hatasi da erken soylenmeli
+        return False, f"{url} adresine ulasilamadi: {type(e).__name__}: {e}"
+
+    adlar = [m.get("id", "") for m in veri.get("data", []) if isinstance(m, dict)]
+    if model and model not in adlar:
+        return False, (f"'{model}' bu ucta yok.\n  uc      : {url}\n"
+                       f"  anahtar : {kaynak}\n  sunulan : {', '.join(adlar) or '(bos)'}")
+    return True, f"{url}  model={model or '?'}  anahtar={kaynak}"
+
+
 def make_client(base_url: str = "", api_key: str = "", istek_araligi: float = 0.0,
                 verbose: bool = True):
     """OpenAI uyumlu istemciyi kur ve nereye baglandigini soyle.

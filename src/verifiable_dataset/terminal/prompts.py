@@ -24,7 +24,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from verifiable_dataset.terminal.llm import make_client, resolve_model
+from verifiable_dataset.terminal.llm import make_client, preflight, resolve_model
 from verifiable_dataset.terminal.task import Task
 
 TURKCE_HARFLER = set("çğıöşüÇĞİÖŞÜ")
@@ -252,6 +252,12 @@ def main() -> int:
     if not bekleyen:
         print("prompt bekleyen task yok")
         return 0
+
+    ok_uc, bilgi_uc = preflight(args.base_url, args.api_key, args.model)
+    if not ok_uc:
+        print(f"UC KONTROLU BASARISIZ: {bilgi_uc}")
+        return 2
+    print(f"uc dogrulandi: {bilgi_uc}")
 
     client = make_client(args.base_url, args.api_key, args.istek_araligi)
 

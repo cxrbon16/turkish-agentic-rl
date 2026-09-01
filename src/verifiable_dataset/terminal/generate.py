@@ -32,7 +32,7 @@ from verifiable_dataset.terminal.derive import checks_yaz
 from verifiable_dataset.terminal.gates import run_gauntlet
 from verifiable_dataset.terminal.sandbox import docker_available
 from verifiable_dataset.terminal.seeds import Seed, sample, tools_of_image
-from verifiable_dataset.terminal.llm import make_client, resolve_model
+from verifiable_dataset.terminal.llm import make_client, preflight, resolve_model
 from verifiable_dataset.terminal.task import Task
 
 PIPELINE_VERSION = "spec-1"
@@ -355,6 +355,12 @@ def main() -> int:
     if not args.model:
         print("--model verilmedi ve .env'de OPENAI_MODEL_NAME yok")
         return 2
+
+    ok_uc, bilgi_uc = preflight(args.base_url, args.api_key, args.model)
+    if not ok_uc:
+        print(f"UC KONTROLU BASARISIZ: {bilgi_uc}")
+        return 2
+    print(f"uc dogrulandi: {bilgi_uc}")
 
     ok, info = docker_available()
     if not ok:
