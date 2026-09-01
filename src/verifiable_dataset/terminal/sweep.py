@@ -19,7 +19,7 @@ import statistics
 import sys
 from pathlib import Path
 
-from verifiable_dataset.terminal.llm import make_client
+from verifiable_dataset.terminal.llm import make_client, preflight, resolve_model
 from verifiable_dataset.terminal.runner import Episode, run_model, run_reference
 from verifiable_dataset.terminal.sandbox import docker_available
 from verifiable_dataset.terminal.task import Task
@@ -88,6 +88,8 @@ def main() -> int:
     parser.add_argument("--out", default="", help="episode kayitlarini bu JSONL'e yaz")
     parser.add_argument("--istek-araligi", type=float, default=0.0,
                         help="iki API istegi arasinda en az bu kadar saniye bekle")
+    parser.add_argument("--ayrintili", action="store_true",
+                        help="her turu, modelin yorumunu ve komut ciktisini bas")
     args = parser.parse_args()
 
     ok, info = docker_available()
@@ -104,9 +106,15 @@ def main() -> int:
 
     client = None
     if not args.reference:
+        args.model = resolve_model(args.model)
         if not args.model:
-            print("--model verilmedi (ya da --reference kullan)")
+            print("--model verilmedi ve .env'de OPENAI_MODEL_NAME yok")
             return 2
+        ok_uc, bilgi_uc = preflight(args.base_url, args.api_key, args.model)
+        if not ok_uc:
+            print(f"UC KONTROLU BASARISIZ: {bilgi_uc}")
+            return 2
+        print(f"uc dogrulandi: {bilgi_uc}")
         client = make_client(args.base_url, args.api_key, args.istek_araligi)
 
     mode = "referans" if args.reference else f"{args.model} x{args.rollouts}"
@@ -114,7 +122,7 @@ def main() -> int:
 
     rows: list[dict] = []
     all_episodes: list[Episode] = []
-    for task_dir in task_dirs:
+    for sira, task_dir in enumerate(task_dirs, start=1):
         try:
             task = Task.load(task_dir)
         except Exception as e:  # noqa: BLE001 - a broken yaml must not stop the sweep
@@ -126,14 +134,34 @@ def main() -> int:
 
         n = 1 if args.reference else args.rollouts
         episodes: list[Episode] = []
-        for _ in range(n):
+        if args.ayrintili:
+            cizgi = "=" * 78
+            print(f"\n{cizgi}")
+            print(f"[{sira}/{len(task_dirs)}] {task.id}   "
+                  f"max_turns={task.max_turns}  check={len(task.checks)}")
+            print(cizgi)
+            print(f"GOREV: {' '.join(task.prompt.split())[:400]}\n")
+        for r in range(1, n + 1):
+            if args.ayrintili:
+                print(f"----- rollout {r}/{n} -----")
             try:
-                ep = (run_reference(task, verbose=False) if args.reference
-                      else run_model(task, client, args.model, args.protocol, verbose=False))
+                ep = (run_reference(task, verbose=args.ayrintili) if args.reference
+                      else run_model(task, client, args.model, args.protocol,
+                                     verbose=args.ayrintili))
             except Exception as e:  # noqa: BLE001 - one bad rollout must not stop the sweep
                 ep = Episode(task_id=task.id, solved=False, reward=0.0, turns=0,
                              grade={"passed": 0, "total": 0, "checks": []},
                              error=f"{type(e).__name__}: {e}")
+            if args.ayrintili:
+                durum = 'COZDU' if ep.solved else 'COZEMEDI'
+                print(f"  => {durum}  check {ep.grade.get('passed', 0)}/"
+                     f"{ep.grade.get('total', 0)}  kismi={ep.partial:.2f}  tur={ep.turns}")
+                for c in ep.grade.get('checks', []):
+                    if not c['ok']:
+                        print(f"     x {c['name']}: {c['detail'][:150]}")
+                if ep.error:
+                    print(f"     ! {ep.error[:200]}")
+                print()
             episodes.append(ep)
 
         all_episodes.extend(episodes)
